@@ -7,6 +7,7 @@ local mylayout = {}
 
 mylayout.name = "mstab"
 
+local tabbar_padding = beautiful.mstab_bar_padding or 0
 local tabbar_height = beautiful.mstab_bar_height or 40
 local corner_radius = beautiful.mstab_corner_width or beautiful.corner_radius or 0
 local tabbar_font = beautiful.mstab_font or beautiful.font or "Monospace 8"
@@ -87,10 +88,10 @@ function update_tabbar(clients, t, top_idx, area, master_area_width, slave_area_
     s.tabbar.x = area.x + master_area_width + t.gap
     s.tabbar.y = area.y + t.gap
     s.tabbar.width  = slave_area_width -  2*t.gap
-    s.tabbar.height = tabbar_height - 2*t.gap
+    s.tabbar.height = tabbar_height
 
     if tabbar_orientation == "bottom" then 
-        s.tabbar.y = area.y + area.height - tabbar_height + t.gap
+        s.tabbar.y = area.y + area.height - tabbar_height - t.gap
     end 
 
     -- update clientlist 
@@ -161,15 +162,15 @@ function mylayout.arrange(p)
             x = area.x + master_area_width + slave_area_width/4,
             y = area.y + tabbar_height + area.height/4,
             width = slave_area_width/2,
-            height = area.height/4 - tabbar_height,
+            height = area.height/4 - tabbar_height
          }
          if idx == t.top_idx then 
              g.width = slave_area_width
-             g.height = area.height - tabbar_height
+             g.height = area.height - tabbar_height - tabbar_padding
              g.x = area.x + master_area_width
              g.y = area.y
              if tabbar_orientation == "top" then 
-                 g.y = g.y + tabbar_height
+                 g.y = g.y + tabbar_height + tabbar_padding
              else
                  g.y = g.y
              end 
