@@ -162,11 +162,11 @@ function mylayout.arrange(p)
             x = area.x + master_area_width + slave_area_width/4,
             y = area.y + tabbar_height + area.height/4,
             width = slave_area_width/2,
-            height = area.height/4 - tabbar_height - tabbar_padding,
+            height = area.height/4 - tabbar_height
          }
          if idx == t.top_idx then 
              g.width = slave_area_width
-             g.height = area.height - tabbar_height
+             g.height = area.height - tabbar_height - tabbar_padding
              g.x = area.x + master_area_width
              g.y = area.y
              if tabbar_orientation == "top" then 
