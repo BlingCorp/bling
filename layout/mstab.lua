@@ -7,7 +7,7 @@ local mylayout = {}
 
 mylayout.name = "mstab"
 
-local tabbar_padding = beautiful.mstab_bar_padding or 0
+local tabbar_padding = beautiful.mstab_bar_padding or "default"
 local tabbar_height = beautiful.mstab_bar_height or 40
 local corner_radius = beautiful.mstab_corner_width or beautiful.corner_radius or 0
 local tabbar_font = beautiful.mstab_font or beautiful.font or "Monospace 8"
@@ -112,6 +112,11 @@ function mylayout.arrange(p)
 
     local master_area_width = area.width * mwfact
     local slave_area_width = area.width - master_area_width
+
+    -- "default" means that it uses standard useless gap size
+    if tabbar_padding == "default" then 
+        tabbar_padding = 2*t.gap
+    end
 
     -- Special case: No masters -> full screen slave width
     if nmaster == 0 then
