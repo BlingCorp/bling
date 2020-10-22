@@ -181,7 +181,7 @@ function mylayout.arrange(p)
     update_tabbar(slave_clients, t, t.top_idx, area, master_area_width, slave_area_width)
 end
 
-local icon_raw = beautiful.config_path .. "/bling/icons/layouts/mstab.png"
+local icon_raw = gears.filesystem.get_configuration_dir() .. "/bling/icons/layouts/mstab.png"
 
 local function get_icon()
     if icon_raw ~= nil then

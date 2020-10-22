@@ -1,3 +1,4 @@
+local gears = require("gears")
 local gcolor = require("gears.color")
 local beautiful = require("beautiful")
 local math = math
@@ -53,7 +54,7 @@ function mylayout.arrange(p)
     end
 end
 
-local icon_raw = beautiful.config_path .. "/bling/icons/layouts/vertical.png"
+local icon_raw = gears.filesystem.get_configuration_dir() .. "/bling/icons/layouts/vertical.png"
 
 local function get_icon()
     if icon_raw ~= nil then
