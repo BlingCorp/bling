@@ -9,7 +9,7 @@ mylayout.name = "mstab"
 
 local tabbar_padding = beautiful.mstab_bar_padding or "default"
 local tabbar_height = beautiful.mstab_bar_height or 40
-local corner_radius = beautiful.mstab_corner_width or beautiful.corner_radius or 0
+local border_radius = beautiful.mstab_border_radius or beautiful.border_radius or 0
 local tabbar_font = beautiful.mstab_font or beautiful.font or "Monospace 8"
 local bg_focus = beautiful.mstab_bg_focus or beautiful.bg_focus or "#ff0000"
 local bg_normal = beautiful.mstab_bg_normal or beautiful.bg_normal or "#000000"
@@ -61,13 +61,18 @@ function update_tabbar(clients, t, top_idx, area, master_area_width, slave_area_
             bg = client_bg,
             widget = wibox.container.background()
         }
+        -- focus with right click, kill with mid click, minimize with left click
+        local buttons = gears.table.join(awful.button({}, 1, function() c:raise() client.focus = c end),
+                                        awful.button({}, 2, function() c:kill() end),
+                                        awful.button({}, 3, function() c.minimized = true end))
+        client_box:buttons(buttons)
         clientlist:add(client_box)
     end
 
     -- if no tabbar exists, create one
     if not s.tabbar_exists then
 		s.tabbar = wibox {
-            shape = function(cr, width, height) gears.shape.rounded_rect(cr, width, height, corner_radius) end,
+            shape = function(cr, width, height) gears.shape.rounded_rect(cr, width, height, border_radius) end,
 		    bg = bg_normal,
 		    visible = true
 		}
