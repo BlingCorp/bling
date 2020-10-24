@@ -1,2 +1,11 @@
-# bling
-Utilities for the awesome window manager
+# Bling - Utilities for the AwesomeWM
+
+## Instalation:
+
+
+## Configuration:
+
+
+## Preview:
+
+
