@@ -5,6 +5,7 @@
 
 
 return {
-    layout = require("bling.layout")
+    layout = require("bling.layout"),
+    module = require("bling.module"),
 }
 
