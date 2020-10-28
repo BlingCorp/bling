@@ -29,4 +29,4 @@ end
 local enable = function() client.connect_signal("focus", flashfocus) end
 local disable = function() client.disconnect_signal("focus", flashfocus) end
 
-return {enable = enable, disable = disable}
+return {enable = enable, disable = disable, flashfocus = flashfocus}

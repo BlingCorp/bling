@@ -1,0 +1,46 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/a3c87ab5/
+Available layouts and modules	README.md	/^### Available layouts and modules$/;"	S
+Bling - Utilities for the AwesomeWM	README.md	/^# Bling - Utilities for the AwesomeWM$/;"	c
+Centered	README.md	/^### Centered$/;"	S
+Installation and configuration	README.md	/^## Installation and configuration$/;"	s
+Layouts	README.md	/^##### Layouts$/;"	T
+Mstab (tabbed)	README.md	/^### Mstab (tabbed)$/;"	S
+Preview	README.md	/^## Preview$/;"	s
+Theme variables	README.md	/^### Theme variables$/;"	S
+Tiled Wallpaper	README.md	/^### Tiled Wallpaper$/;"	S
+Tiled Wallpaper	README.md	/^##### Tiled Wallpaper $/;"	T
+Window swallowing	README.md	/^### Window swallowing$/;"	S
+Window swallowing	README.md	/^##### Window swallowing$/;"	T
+adjust_visiblity	layout/mstab.lua	/^        local function adjust_visiblity(t)$/;"	f
+buttons	layout/mstab.lua	/^        local buttons = gears.table.join(awful.button({}, 1, function() c:raise() client.focus =/;"	f
+check_if_swallow	module/window_swallowing.lua	/^local function check_if_swallow(c) $/;"	f
+copy_size	module/window_swallowing.lua	/^local function copy_size(c, parent_client)$/;"	f
+create_tiled_wallpaper	module/tiled_wallpaper.lua	/^function create_tiled_wallpaper(str, s, args_table)$/;"	f
+disable	module/flash_focus.lua	/^local disable = function() client.disconnect_signal("focus", flashfocus) end$/;"	f
+enable	module/flash_focus.lua	/^local enable = function() client.connect_signal("focus", flashfocus) end$/;"	f
+flashfocus	module/flash_focus.lua	/^local flashfocus = function(c)$/;"	f
+get_icon	layout/centered.lua	/^local function get_icon()$/;"	f
+get_icon	layout/horizontal.lua	/^local function get_icon()$/;"	f
+get_icon	layout/mstab.lua	/^local function get_icon()$/;"	f
+get_icon	layout/vertical.lua	/^local function get_icon()$/;"	f
+manage_clientspawn	module/window_swallowing.lua	/^local function manage_clientspawn(c)$/;"	f
+mylayout.arrange	layout/centered.lua	/^function mylayout.arrange(p)$/;"	f
+mylayout.arrange	layout/horizontal.lua	/^function mylayout.arrange(p)$/;"	f
+mylayout.arrange	layout/mstab.lua	/^function mylayout.arrange(p)$/;"	f
+mylayout.arrange	layout/vertical.lua	/^function mylayout.arrange(p)$/;"	f
+shape	layout/mstab.lua	/^            shape = function(cr, width, height) gears.shape.rounded_rect(cr, width, height, bord/;"	f
+start	module/window_swallowing.lua	/^local function start()$/;"	f
+stop	module/window_swallowing.lua	/^local function stop()$/;"	f
+t	layout/mstab.lua	/^        tag.connect_signal("property::selected", function(t) adjust_visiblity(t) end)$/;"	f
+t,	layout/mstab.lua	/^        tag.connect_signal("property::layout", function(t, layout) adjust_visiblity(t) end)$/;"	f
+t,	layout/mstab.lua	/^        tag.connect_signal("tagged", function(t, c) adjust_visiblity(t) end)$/;"	f
+t,	layout/mstab.lua	/^        tag.connect_signal("untagged", function(t, c) adjust_visiblity(t) end)$/;"	f
+toggle	module/window_swallowing.lua	/^local function toggle()$/;"	f
+update_tabbar	layout/mstab.lua	/^function update_tabbar(clients, t, top_idx, area, master_area_width, slave_area_width)$/;"	f
