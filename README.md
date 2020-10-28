@@ -45,6 +45,24 @@ awful.screen.connect_for_each_screen(function(s)  -- that way the wallpaper is a
 end)
 ```
 
+##### Flash Focus
+
+There are two ways you can use this module. You can just enable it by calling the `enable()` function:
+```lua
+bling.module.flash_focus.enable()
+```
+This connects to the focus signal of a client, which means that the flash focus will activate however you focus the client.
+
+The other way is to call the function itself like this: `bling.module.flash_focus.flashfocus(someclient)`. This allows you to just activate on certain keybinds:
+```lua
+awful.key({modkey}, "Up",
+    function() 
+        awful.client.focus.bydirection("up")
+        bling.module.flash_focus.flashfocus(client.focus)
+     end, {description = "focus up", group = "client"})
+```
+
+
 ### Theme variables
 Put those variables in your ``theme.lua`` if you want to edit appearance
 
@@ -69,6 +87,13 @@ dont_swallow_filter_activated -- whether the filter is activated or not
                               -- Set it to true if you want to filter clients that should be swallowed
 ```
 
+
+For flash focus:
+```lua
+flash_focus_start_opacity -- the starting opacity (default 0.6)
+flash_focus_step          -- the step of the animation (default 0.01)
+```
+
 ## Preview
 
 ### Mstab (tabbed)
@@ -87,5 +112,10 @@ screenshot by [branwright](https://github.com/branwright1)
 gif by me :)
 
 ### Tiled Wallpaper
+(not yet)
 
+### Flash Focus
+![](https://imgur.com/5txYrlV.gif)
+
+gif by [javacafe](https://github.com/JavaCafe01)
 
