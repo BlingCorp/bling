@@ -47,15 +47,16 @@ function update_tabbar(clients, t, top_idx, area, master_area_width, slave_area_
     -- create the list of clients for the tabbar
     local clientlist = wibox.layout.flex.horizontal()
     for idx,c in ipairs(clients) do
+        local client_title = c.name or c.class or ""
         local client_text = wibox.widget.textbox()
         client_text.font = tabbar_font
         client_text.align = "center"
         client_text.valign = "center"
-        client_text.markup = "<span foreground='" .. fg_normal .. "'>" .. c. name .. "</span>"
+        client_text.markup = "<span foreground='" .. fg_normal .. "'>" .. client_title .. "</span>"
         local client_bg = bg_normal
         if idx == top_idx then
             client_bg = bg_focus 
-            client_text.markup = "<span foreground='" .. fg_focus .. "'>" .. c. name .. "</span>"
+            client_text.markup = "<span foreground='" .. fg_focus .. "'>" .. client_title .. "</span>"
         end
         local client_box = wibox.widget {
             client_text,
