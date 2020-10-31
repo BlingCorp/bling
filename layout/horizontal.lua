@@ -54,7 +54,7 @@ function mylayout.arrange(p)
     end
 end
 
-local icon_raw = gears.filesystem.get_configuration_dir() .. "/bling/icons/layouts/horizontal.png"
+local icon_raw = gears.filesystem.get_configuration_dir() .. tostring(...):match("^.*bling"):gsub("%.", "/") .. "/icons/layouts/horizontal.png"
 
 local function get_icon()
     if icon_raw ~= nil then
