@@ -2,6 +2,8 @@ local awful = require("awful")
 local gears = require("gears")
 local beautiful = require("beautiful")
 
+local helpers = require(tostring(...):match(".*bling.module") .. ".helpers")
+
 -- It might actually swallow too much, that's why there is a filter option by classname
 -- without the don't-swallow-list it would also swallow for example 
 -- file pickers or new firefox windows spawned by an already existing one
@@ -56,12 +58,12 @@ local function manage_clientspawn(c)
     if (tostring(parent_pid) == tostring(parent_client.pid)) and check_if_swallow(c) then 
 
         c:connect_signal("unmanage", function()
-            parent_client.minimized = false 
+            helpers.turn_on(parent_client)
             copy_size(parent_client, c)
         end)
 
         copy_size(c, parent_client)
-        parent_client.minimized = true
+        helpers.turn_off(parent_client)
 
     end
 end
