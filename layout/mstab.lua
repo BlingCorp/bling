@@ -80,15 +80,17 @@ function update_tabbar(clients, t, top_idx, area, master_area_width, slave_area_
 		}
         s.tabbar_exists = true
         
-        -- Change visibility of the tab bar when layout, selected tag or number of clients changes
+        -- Change visibility of the tab bar when layout, selected tag or number of clients (visible, master, slave) changes
         local function adjust_visiblity(t)
-            s.tabbar.visible = (#t:clients() - t.master_count > 1) and (t.layout.name == "mstab")
+            s.tabbar.visible = (#t:clients() - t.master_count > 1) and (t.layout.name == mylayout.name)
         end
 
         tag.connect_signal("property::selected", function(t) adjust_visiblity(t) end)
         tag.connect_signal("property::layout", function(t, layout) adjust_visiblity(t) end)
         tag.connect_signal("tagged", function(t, c) adjust_visiblity(t) end)
         tag.connect_signal("untagged", function(t, c) adjust_visiblity(t) end)
+        tag.connect_signal("property::master_count", function(t) adjust_visiblity(t) end)
+        client.connect_signal("property::minimized", function(c) local t = c.first_tag adjust_visiblity(t) end)
     end
 
     -- update the tabbar size and position (to support gap size change on the fly)
