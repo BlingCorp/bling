@@ -1,5 +1,4 @@
 --[[
-WORK IN PROGRESS
 
 This module currently works by adding a new property to each client that is tabbed.
 That new property is called bling_tabbed. 
@@ -9,32 +8,6 @@ In the function themselves, the same object is refered to as "tabobj" which is w
 you will often see something like: "local tabobj = some_client.bling_tabbed" at the beginning
 of a function.
 
-The tabobj (or the bling_tabbed property - essentially two names for the same thing) 
-is a table with two entries: clients (a list of clients that are tabbed) and
-focused_idx (the index of the client in the tabobj.clients list that is currently focused).
-(New properties might be added as needed)
-
-To "make clients disappear and reappear" this module uses the functions in the helper module.
-
-There are the following functions:
-tabbed.init: Initalizes a tabobj (or a client.bling_tabbed) on the currently focused client
-tabbed.add: Adds a new client to an existing focused tabbed client via xprop selection (calls tabbed.init if there is no tabobj)
-tabbed.remove: Removes the currently focused client from it's tabbed accumulation
-tabbed.switch_to: Switches focus of a given tabobj by a given difference
-tabbed.update: Takes a tabobj, updates all bling_tabbed properties and calls update_tabbar 
-tabbed.update_tabbar: updates the tabbar of the tabobj that is given as an arg
-tabbed.iter: Iterate though all tabs analogous to awful.focus.byidx(1) 
-copy_size: Should copy the size, position and so on onto another client
-
-To use that module you would have to add the tabbed.add and the tabbed.remove function as keybindings
-
-TODO
-The following features have to be implemented:
-- consitent layout: When using a tiled layout and switching between different tabs, the place of the whole
-tabbed thingy changes
-- maybe for easy extensability, split functions like tabbed.remove, tabbed.add etc into two: one which 
-takes a client as an argument and another which just calls the function with client.focus as an argument. Might 
-be important for adding better tab bar support later on (for example closing windows from the tabbar)
 --]]
 
 local awful = require("awful")
@@ -45,12 +18,10 @@ local beautiful = require("beautiful")
 
 local helpers = require(tostring(...):match(".*bling.module") .. ".helpers")
 
+local bar_style = beautiful.tabbed_tabbar_style or "default"
 
-local bg_normal = beautiful.tabbed_bg_normal or beautiful.bg_normal or "#ffffff"
-local fg_normal = beautiful.tabbed_fg_focus  or beautiful.fg_normal or "#000000"
-local bg_focus  = beautiful.tabbed_bg_focus  or beautiful.bg_focus  or "#000000"
-local fg_focus  = beautiful.tabbed_fg_focus  or beautiful.fg_focus  or "#ffffff"
-local font      = beautiful.tabbed_font      or beautiful.font      or "Hack 15"
+local bar     = require(tostring(...):match(".*bling") .. ".widget." .. bar_style)
+
 
 local function copy_size(c, parent_client)
     if not c or not parent_client then
@@ -68,7 +39,9 @@ end
 
 tabbed = {}
 
+-- used to change focused tab relative to the currently focused one 
 tabbed.iter = function(idx)
+    if not idx then idx = 1 end
     if not client.focus.bling_tabbed then return end 
     local tabobj = client.focus.bling_tabbed
     local new_idx = (tabobj.focused_idx + idx) % #tabobj.clients
@@ -78,17 +51,38 @@ tabbed.iter = function(idx)
     tabbed.switch_to(tabobj, new_idx)
 end 
 
-tabbed.remove = function()
-    if not client.focus.bling_tabbed then return end
-    local tabobj = client.focus.bling_tabbed
-    table.remove(client.focus.bling_tabbed.clients, tabobj.focused_idx)
-    awful.titlebar.hide(client.focus)
-    client.focus.bling_tabbed = nil
+-- removes a given client from its tab object
+tabbed.remove = function(c) 
+    if not c.bling_tabbed then return end
+    local tabobj = c.bling_tabbed
+    table.remove(tabobj.clients, tabobj.focused_idx)
+    awful.titlebar.hide(c)
+    c.bling_tabbed = nil
     tabbed.switch_to(tabobj, 1)
+end
+
+-- removes the currently focused client from the tab object
+tabbed.pop = function()
+    if not client.focus.bling_tabbed then return end
+    tabbed.remove(client.focus)
 end 
 
-tabbed.add = function()
-    if not client.focus.bling_tabbed then tabbed.init() end
+-- adds a client to a given tabobj
+tabbed.add = function(c, tabobj)
+    if c.bling_tabbed then return end
+    copy_size(c, tabobj.clients[tabobj.focused_idx])
+    tabobj.clients[#tabobj.clients+1] = c
+    tabobj.focused_idx = #tabobj.clients
+    -- calls update even though switch_to calls update again
+    -- but the new client needs to have the tabobj property 
+    -- before a clean switch can happen
+    tabbed.update(tabobj)
+    tabbed.switch_to(tabobj, #tabobj.clients)
+end
+
+-- use xprop to select one client and make it tab in the currently focused tab
+tabbed.pick = function()
+    if not client.focus.bling_tabbed then tabbed.init(client.focus) end
     local tabobj = client.focus.bling_tabbed
     -- this function uses xprop to grab a client pid which is then 
     -- compared to all other client process ids
@@ -96,26 +90,45 @@ tabbed.add = function()
     local handle = io.popen("xprop _NET_WM_PID | cut -d' ' -f3")
     local output = handle:read("*a")
     handle:close()
+    -- search the client that was picked
     for _,c in ipairs(client.get()) do
         if tonumber(c.pid) == tonumber(output) then
-            if c.bling_tabbed then return end 
-            tabobj.clients[#tabobj.clients+1] = c
-            tabobj.focused_idx = #tabobj.clients
-            copy_size(c, client.focus)
+            tabbed.add(c, tabobj)
         end 
     end 
-    tabbed.switch_to(tabobj, #tabobj.clients)
 end
 
+-- update everything about one tab object
 tabbed.update = function(tabobj) 
     local currently_focused_c = tabobj.clients[tabobj.focused_idx]
+    -- update tabobj of each client and other things
     for idx,c in ipairs(tabobj.clients) do 
-        c.bling_tabbed = tabobj
-        copy_size(c, currently_focused_c)
+        if c.valid then 
+            c.bling_tabbed = tabobj
+            copy_size(c, currently_focused_c)
+            -- the following handles killing a client while the client is tabbed
+            -- the killed client has to be removed from the tabobj table and
+            -- a new tabbed client has to appear (otherwise accessing other tabbed clients
+            -- is impossible)
+            c:connect_signal("unmanage", function(c)
+                if not c.bling_tabbed then return end
+                local old_tabobj = c.bling_tabbed
+                local tabobj = {clients={}, focused_idx=1}
+                for _, c_temp in ipairs(old_tabobj.clients) do 
+                    if c_temp.window ~= c.window then
+                        tabobj.clients[#tabobj.clients+1] = c_temp
+                    end
+                end 
+                tabbed.update(tabobj)
+                tabbed.switch_to(tabobj, 1)
+            end)
+        end
     end 
+    
     tabbed.update_tabbar(tabobj)
 end
 
+-- change docused tab by absolute index
 tabbed.switch_to = function(tabobj, new_idx)
     local old_focused_c = tabobj.clients[tabobj.focused_idx]
     tabobj.focused_idx = new_idx
@@ -125,44 +138,32 @@ tabbed.switch_to = function(tabobj, new_idx)
         else  
             helpers.turn_on(c)
             c:raise()
+            if old_focused_c and old_focused_c.valid then 
+                c:swap(old_focused_c)
+            end
             copy_size(c, old_focused_c)
-        end 
+        end
     end 
     tabbed.update(tabobj)
 end
 
 tabbed.update_tabbar = function(tabobj)
-    local flexlist = wibox.layout.flex.horizontal()
+    local flexlist = bar.layout()
     -- itearte over all tabbed clients to create the widget tabbed list
     for idx,c in ipairs(tabobj.clients) do 
-        local title_temp = c.name or c.class
-        local bg_temp = bg_normal
-        local fg_temp = fg_normal
-        if idx == tabobj.focused_idx then
-            bg_temp = bg_focus 
-            fg_temp = fg_focus
-        end
         local buttons = gears.table.join(awful.button({}, 1, function()
             tabbed.switch_to(tabobj, idx) 
         end))
-        local text_temp = wibox.widget.textbox()
-        text_temp.align = "center"
-        text_temp.valign = "center"
-        text_temp.font = font
-        text_temp.markup = "<span foreground='" .. fg_temp .. "'>" .. title_temp.. "</span>"
-        local wid_temp = wibox.widget({
-            text_temp,
-            buttons = buttons,
-            bg = bg_temp,
-            widget = wibox.container.background()
-        })
+        wid_temp = bar.create(c, (idx==tabobj.focused_idx), buttons)
         flexlist:add(wid_temp)
     end 
     -- add tabbar to each tabbed client (clients will be hided anyway)
     for _,c in ipairs(tabobj.clients) do 
         local titlebar = awful.titlebar(c, {
-            height = 20,
-            position = "top"
+            bg_normal = bar.bg_normal,
+            bg_focus = bar.bg_focus,
+            height = bar.height,
+            position = bar.position
         })
         titlebar:setup {
             layout = wibox.layout.flex.horizontal,
@@ -172,12 +173,10 @@ tabbed.update_tabbar = function(tabobj)
 end 
 
 tabbed.init = function(c)
-    if not client.focus.bling_tabbed then 
-        local tabobj = {}
-        tabobj.clients = {client.focus}
-        tabobj.focused_idx = 1
-        tabbed.switch_to(tabobj, 1)
-    end
+    local tabobj = {}
+    tabobj.clients = {c}
+    tabobj.focused_idx = 1
+    tabbed.update(tabobj)
 end
 
 return tabbed
