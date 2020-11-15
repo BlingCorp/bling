@@ -13,14 +13,12 @@ of a function.
 local awful = require("awful")
 local wibox = require("wibox")
 local gears = require("gears")
-
 local beautiful = require("beautiful")
 
 local helpers = require(tostring(...):match(".*bling.module") .. ".helpers")
 
 local bar_style = beautiful.tabbed_tabbar_style or "default"
-
-local bar     = require(tostring(...):match(".*bling") .. ".widget.tabbed_tabbar." .. bar_style)
+local bar = require(tostring(...):match(".*bling") .. ".widget.tabbed_tabbar." .. bar_style)
 
 
 local function copy_size(c, parent_client)
@@ -56,7 +54,7 @@ tabbed.remove = function(c)
     if not c.bling_tabbed then return end
     local tabobj = c.bling_tabbed
     table.remove(tabobj.clients, tabobj.focused_idx)
-    awful.titlebar.hide(c)
+    awful.titlebar.hide(c, bar.position)
     c.bling_tabbed = nil
     tabbed.switch_to(tabobj, 1)
 end
@@ -162,7 +160,7 @@ tabbed.update_tabbar = function(tabobj)
         local titlebar = awful.titlebar(c, {
             bg_normal = bar.bg_normal,
             bg_focus = bar.bg_focus,
-            height = bar.height,
+            size = bar.size,
             position = bar.position
         })
         titlebar:setup {
@@ -177,6 +175,16 @@ tabbed.init = function(c)
     tabobj.clients = {c}
     tabobj.focused_idx = 1
     tabbed.update(tabobj)
+end
+
+if beautiful.tabbed_spawn_in_tab then 
+    client.connect_signal("manage", function(c)
+        local s = awful.screen.focused()
+        local previous_client = awful.client.focus.history.get(s, 1)
+        if previous_client and previous_client.bling_tabbed then 
+            tabbed.add(c, previous_client.bling_tabbed)
+        end
+    end)
 end
 
 return tabbed
