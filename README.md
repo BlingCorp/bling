@@ -135,16 +135,17 @@ tabbed_spawn_into_tab     -- set to true if you want new windows to spawn into y
 ### Flash Focus
 ![](https://imgur.com/5txYrlV.gif)
 
-<p align="center">gif by [javacafe](https://github.com/JavaCafe01)</p>
+<p align="center">git by [javacafe](https://github.com/JavaCafe01)</p>
 
 ### Wind swallowing
 ![](https://media.discordapp.net/attachments/635625813143978012/769180910683684864/20-10-23-14-40-32.gif)
 
 <p align="center">gif by me :)</p>
 
-##TODO
+## TODO
 - [ ] Scratchpad module
-- [ ] Add a cool alternative tabbar style  
+- [ ] Some more documentation on the tabbed module
+- [x] Add a cool alternative tabbar style  
 - [ ] Add another cool tabbar style (we need more styles)
 - [ ] Make the mstab layout compatible with vertical tabbars (left and right)
 - [ ] Add option to mstab layout to not shrink windows down when they are in the tabbed pane and unfocused (for example for people using transparent terminals)
