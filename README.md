@@ -120,27 +120,27 @@ tabbed_spawn_into_tab     -- set to true if you want new windows to spawn into y
 ### Mstab (dynamic tabbing layout)
 ![](https://media.discordapp.net/attachments/716379882363551804/769870675250249808/shot_1025032923.png)
 
-<p align="center">screenshot by [javacafe](https://github.com/JavaCafe01)</p>
+screenshot by [javacafe](https://github.com/JavaCafe01)
 
 ### Centered
 ![](https://media.discordapp.net/attachments/635625917623828520/768947400554446868/centered.png)
 
-<p align="center">screenshot by [branwright](https://github.com/branwright1)</p>
+screenshot by [branwright](https://github.com/branwright1)
 
 ### Tiled Wallpaper
 ![](https://media.discordapp.net/attachments/702548913999314964/773887721294135296/tiled-wallpapers.png?width=1920&height=1080)
 
-<p align="center">screenshots by me</p>
+screenshots by me
 
 ### Flash Focus
 ![](https://imgur.com/5txYrlV.gif)
 
-<p align="center">git by [javacafe](https://github.com/JavaCafe01)</p>
+git by [javacafe](https://github.com/JavaCafe01)
 
 ### Wind swallowing
 ![](https://media.discordapp.net/attachments/635625813143978012/769180910683684864/20-10-23-14-40-32.gif)
 
-<p align="center">gif by me :)</p>
+gif by me :)
 
 ## TODO
 - [ ] Scratchpad module
