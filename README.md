@@ -1,12 +1,18 @@
-# Bling - Utilities for the AwesomeWM
+# <center> 🌟 Bling - Utilities for the AwesomeWM 🌟 </center>
 
-## Installation and configuration
+## ❓ Why
+
+AwesomeWM is literally that - an awesome window manager. 
+
+It's unique selling point has always been the widget system allowing for fancy buttons, sliders, bars, dashboards and everything you can imagine. But that feature might also be a curse. Most modules focus on the widget side of things which left the actual window managing part of awesomeWM a little underdeveloped compared to for example xmonad even though it's probably just as powerfull in that regard. 
+
+This module is trying to fix exactly that: Adding new layouts and modules that - while making use of the widget system - don't focus on it but on new window managing features.
+
+## 🧭 Installation and configuration
 - `git clone` this repo into your `~/.config/awesome` folder
 - Put ``local bling = require("bling")`` somewhere in your ``rc.lua`` (remember to put it under ``beautiful.init...``)
 
-### Available layouts and modules
-
-##### Layouts
+##### 📎 Layouts
 
 Choose layouts from the list below and add them to to your `awful.layouts` list in your `rc.lua`.
 
@@ -18,18 +24,18 @@ bling.layout.vertical
 bling.layout.horizontal
 ```
 
-##### Window swallowing
+##### 😋 Window swallowing
 
-To activate and deactivate window swallowing there are the following functions (deactivated on default):
+To activate and deactivate window swallowing there are the following functions. If you want to activate it, just call the `start` function once in your `rc.lua`.
 ```lua
 bling.module.window_swallowing.start()   -- activates window swallowing
 bling.module.window_swallowing.stop()    -- deactivates window swallowing
 bling.module.window_swallowing.toggle()  -- toggles window swallowing
 ```
 
-##### Tiled Wallpaper 
+##### 🏬 Tiled Wallpaper 
 
-The function to set a tiled wallpaper can be called the follwing way (you don't need to set every option in the table of the last argument since there are reasonable defaults):
+The function to set an automatically created tiled wallpaper can be called the follwing way (you don't need to set every option in the table of the last argument since there are reasonable defaults):
 ```lua
 awful.screen.connect_for_each_screen(function(s)  -- that way the wallpaper is applied to every screen 
     bling.module.tiled_wallpaper("x", s, {        -- call the actual function ("x" is the string that will be tiled)
@@ -45,7 +51,7 @@ awful.screen.connect_for_each_screen(function(s)  -- that way the wallpaper is a
 end)
 ```
 
-##### Flash Focus
+##### 🔦 Flash Focus
 
 There are two ways you can use this module. You can just enable it by calling the `enable()` function:
 ```lua
@@ -62,11 +68,20 @@ awful.key({modkey}, "Up",
      end, {description = "focus up", group = "client"})
 ```
 
+##### 📑 Tabbing
 
-### Theme variables
-Put those variables in your ``theme.lua`` if you want to edit appearance
+You should bind these functions to keys in oder to use the tabbed module effectively:
+```lua
+bling.module.tabbed.pick()  -- makes you pick a client with your mouse to add to the tabbing group
+bling.module.tabbed.pop()   -- removes the focused client from the tabbing group
+bling.module.tabbed.iter()  -- iterates through the currently focused tabbing group
+```
 
-For the mstab layout:
+
+### 🌈 Theme variables
+Put those variables in your ``theme.lua`` if you want to edit appearance and some functionalities.
+
+For the **mstab layout**:
 ```lua
 mstab_tabbar_orientation  -- set to "bottom" for tabbar at button
 mstab_bar_height          -- height of the tabbar
@@ -78,7 +93,7 @@ mstab_bg_normal           -- foreground color of unfocused clients on the tabbar
 mstab_fg_normal           -- foreground color of unfocused clients on the tabbar
 ```
 
-For window swallowing:
+For **window swallowing**:
 ```lua
 dont_swallow_classname_list   -- list of client classnames that shouldn't be swallowed
                               -- default is {"firefox", "Gimp"}
@@ -88,34 +103,52 @@ dont_swallow_filter_activated -- whether the filter is activated or not
 ```
 
 
-For flash focus:
+For **flash focus**:
 ```lua
 flash_focus_start_opacity -- the starting opacity (default 0.6)
 flash_focus_step          -- the step of the animation (default 0.01)
 ```
 
-## Preview
+For **tabbed**:
+```lua
+tabbed_spawn_into_tab     -- set to true if you want new windows to spawn into your focused tabbing
 
-### Mstab (tabbed)
+```
+
+## 😲 Preview
+
+### Mstab (dynamic tabbing layout)
 ![](https://media.discordapp.net/attachments/716379882363551804/769870675250249808/shot_1025032923.png)
 
-screenshot by [javacafe](https://github.com/JavaCafe01)
+<p align="center">screenshot by [javacafe](https://github.com/JavaCafe01)</p>
 
 ### Centered
 ![](https://media.discordapp.net/attachments/635625917623828520/768947400554446868/centered.png)
 
-screenshot by [branwright](https://github.com/branwright1)
-
-### Window swallowing
-![](https://media.discordapp.net/attachments/635625813143978012/769180910683684864/20-10-23-14-40-32.gif)
-
-gif by me :)
+<p align="center">screenshot by [branwright](https://github.com/branwright1)</p>
 
 ### Tiled Wallpaper
-(not yet)
+![](https://media.discordapp.net/attachments/702548913999314964/773887721294135296/tiled-wallpapers.png?width=1920&height=1080)
+
+<p align="center">screenshots by me</p>
 
 ### Flash Focus
 ![](https://imgur.com/5txYrlV.gif)
 
-gif by [javacafe](https://github.com/JavaCafe01)
+<p align="center">gif by [javacafe](https://github.com/JavaCafe01)</p>
 
+### Wind swallowing
+![](https://media.discordapp.net/attachments/635625813143978012/769180910683684864/20-10-23-14-40-32.gif)
+
+<p align="center">gif by me :)</p>
+
+##TODO
+- [ ] Scratchpad module
+- [ ] Add a cool alternative tabbar style  
+- [ ] Add another cool tabbar style (we need more styles)
+- [ ] Make the mstab layout compatible with vertical tabbars (left and right)
+- [ ] Add option to mstab layout to not shrink windows down when they are in the tabbed pane and unfocused (for example for people using transparent terminals)
+
+All naming credit goes to javacafe.
+
+Contributions are welcomed 💛
