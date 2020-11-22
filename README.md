@@ -83,7 +83,7 @@ Put those variables in your ``theme.lua`` if you want to edit appearance and som
 
 For the **mstab layout**:
 ```lua
-mstab_tabbar_orientation  -- set to "bottom" for tabbar at button
+mstab_tabbar_position     -- set to "bottom" for tabbar at button
 mstab_bar_height          -- height of the tabbar
 mstab_border_radius       -- corners radius of the tabbar
 mstab_font                -- font of the tabbar
@@ -123,7 +123,7 @@ tabbed_spawn_into_tab     -- set to true if you want new windows to spawn into y
 screenshot by [javacafe](https://github.com/JavaCafe01)
 
 ### Centered
-![](https://media.discordapp.net/attachments/635625917623828520/768947400554446868/centered.png)
+![](https://media.discordapp.net/attachments/769673106842845194/780095998239834142/unknown.png)
 
 screenshot by [branwright](https://github.com/branwright1)
 
