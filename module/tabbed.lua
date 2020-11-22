@@ -17,8 +17,8 @@ local beautiful = require("beautiful")
 
 local helpers = require(tostring(...):match(".*bling.module") .. ".helpers")
 
-local bar_style = beautiful.tabbed_tabbar_style or "default"
-local bar = require(tostring(...):match(".*bling") .. ".widget.tabbed_tabbar." .. bar_style)
+local bar_style = beautiful.tabbar_style or "default"
+local bar = require(tostring(...):match(".*bling") .. ".widget.tabbar." .. bar_style)
 
 
 local function copy_size(c, parent_client)

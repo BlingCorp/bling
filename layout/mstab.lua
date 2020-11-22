@@ -8,19 +8,20 @@ local mylayout = {}
 
 mylayout.name = "mstab"
 
-local tabbar_padding = beautiful.mstab_bar_padding or "default"
-local tabbar_height = beautiful.mstab_bar_height or 40
-local border_radius = beautiful.mstab_border_radius or beautiful.border_radius or 0
-local tabbar_font = beautiful.mstab_font or beautiful.font or "Monospace 8"
-local bg_focus = beautiful.mstab_bg_focus or beautiful.bg_focus or "#ff0000"
-local bg_normal = beautiful.mstab_bg_normal or beautiful.bg_normal or "#000000"
-local fg_focus = beautiful.mstab_fg_focus or beautiful.fg_focus or "#000000"
-local fg_normal = beautiful.mstab_fg_normal or beautiful.fg_normal or "#ffffff"
 
-local tabbar_orientation = "top"
-if beautiful.mstab_tabbar_orientation == "bottom" then 
-    tabbar_orientation = "bottom"
-end 
+local tabbar_padding = beautiful.mstab_bar_padding or "default"
+local tabbar_height = beautiful.mstab_bar_height or beautiful.tabbar_size or 40
+local border_radius = beautiful.mstab_border_radius or beautiful.border_radius or 0
+local tabbar_font = beautiful.mstab_font or beautiful.tabbar_font or beautiful.font or "Monospace 8"
+local bg_focus = beautiful.mstab_bg_focus or beautiful.tabbar_bg_focus or beautiful.bg_focus or "#ff0000"
+local bg_normal = beautiful.mstab_bg_normal or beautiful.tabbar_bg_normal or beautiful.bg_normal or "#000000"
+local fg_focus = beautiful.mstab_fg_focus or beautiful.tabbar_fg_focus or beautiful.fg_focus or "#000000"
+local fg_normal = beautiful.mstab_fg_normal or beautiful.tabbar_fg_normal or beautiful.fg_normal or "#ffffff"
+
+local tabbar_position = beautiful.mstab_tabbar_position or beautiful.tabbar_position or "top"
+
+local bar_style = beautiful.mstab_tabbar_style or beautiful.tabbar_style or "default"
+local bar = require(tostring(...):match(".*bling") .. ".widget.tabbar." .. bar_style)
 
 -- The top_idx is the idx of the slave clients (excluding all master clients) 
 -- that should be on top of all other slave clients ("the focused slave")
@@ -45,29 +46,13 @@ function update_tabbar(clients, t, top_idx, area, master_area_width, slave_area_
     local s = t.screen
 
     -- create the list of clients for the tabbar
-    local clientlist = wibox.layout.flex.horizontal()
+    local clientlist = bar.layout() 
     for idx,c in ipairs(clients) do
-        local client_title = c.name or c.class or ""
-        local client_text = wibox.widget.textbox()
-        client_text.font = tabbar_font
-        client_text.align = "center"
-        client_text.valign = "center"
-        client_text.markup = "<span foreground='" .. fg_normal .. "'>" .. client_title .. "</span>"
-        local client_bg = bg_normal
-        if idx == top_idx then
-            client_bg = bg_focus 
-            client_text.markup = "<span foreground='" .. fg_focus .. "'>" .. client_title .. "</span>"
-        end
-        local client_box = wibox.widget {
-            client_text,
-            bg = client_bg,
-            widget = wibox.container.background()
-        }
         -- focus with right click, kill with mid click, minimize with left click
         local buttons = gears.table.join(awful.button({}, 1, function() c:raise() client.focus = c end),
                                         awful.button({}, 2, function() c:kill() end),
                                         awful.button({}, 3, function() c.minimized = true end))
-        client_box:buttons(buttons)
+        local client_box = bar.create(c, (idx==top_idx), buttons)
         clientlist:add(client_box)
     end
 
@@ -99,7 +84,7 @@ function update_tabbar(clients, t, top_idx, area, master_area_width, slave_area_
     s.tabbar.width  = slave_area_width -  2*t.gap
     s.tabbar.height = tabbar_height
 
-    if tabbar_orientation == "bottom" then 
+    if tabbar_position == "bottom" then 
         s.tabbar.y = area.y + area.height - tabbar_height - t.gap
     end 
 
@@ -183,7 +168,7 @@ function mylayout.arrange(p)
              g.height = area.height - tabbar_height - tabbar_padding
              g.x = area.x + master_area_width
              g.y = area.y
-             if tabbar_orientation == "top" then 
+             if tabbar_position == "top" then 
                  g.y = g.y + tabbar_height + tabbar_padding
              else
                  g.y = g.y
