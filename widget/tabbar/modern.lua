@@ -34,7 +34,7 @@ local function create_title_button(c, color_focus, color_unfocus)
     local tb = wibox.widget {
         tb_color,
         width = dpi(25),
-        height = dpi(20),
+        height = dpi(25),
         strategy = "min",
         layout = wibox.layout.constraint
     }
@@ -85,7 +85,7 @@ local function create(c, focused_bool, buttons)
             {
                 awful.widget.clienticon(c),
                 top = dpi(10),
-                left = dpi(10),
+                left = dpi(15),
                 bottom = dpi(10),
                 widget = wibox.container.margin
             },
