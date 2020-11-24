@@ -75,7 +75,19 @@ local function create(c, focused_bool, buttons)
             "<span foreground='" .. fg_temp .. "'>" .. title_temp .. "</span>"
     end)
 
-    local tab_content = text_temp
+    local tab_content = wibox.widget {
+        {
+            awful.widget.clienticon(c),
+            top = dpi(10),
+            left = dpi(15),
+            bottom = dpi(10),
+            widget = wibox.container.margin
+        },
+        text_temp,
+        nill,
+        expand = "none",
+        layout = wibox.layout.align.horizontal
+    }
 
     local close = create_title_button(c, close_color, bg_normal)
     close:connect_signal("button::press", function() c:kill() end)
