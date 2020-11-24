@@ -83,6 +83,7 @@ Put those variables in your ``theme.lua`` if you want to edit appearance and som
 
 For the **mstab layout**:
 ```lua
+mstab_bar_ontop           -- allow the bar to be ontop of clients (default -> false)
 mstab_tabbar_position     -- set to "bottom" for tabbar at button
 mstab_bar_height          -- height of the tabbar
 mstab_border_radius       -- corners radius of the tabbar
@@ -118,7 +119,7 @@ tabbed_spawn_into_tab     -- set to true if you want new windows to spawn into y
 ## 😲 Preview
 
 ### Mstab (dynamic tabbing layout)
-![](https://media.discordapp.net/attachments/716379882363551804/769870675250249808/shot_1025032923.png)
+![](https://imgur.com/HZRgApE.png)
 
 screenshot by [javacafe](https://github.com/JavaCafe01)
 
@@ -146,7 +147,7 @@ gif by me :)
 - [ ] Scratchpad module
 - [ ] Some more documentation on the tabbed module
 - [x] Add a cool alternative tabbar style  
-- [ ] Add another cool tabbar style (we need more styles)
+- [x] Add another cool tabbar style (we need more styles)
 - [ ] Make the mstab layout compatible with vertical tabbars (left and right)
 - [ ] Add option to mstab layout to not shrink windows down when they are in the tabbed pane and unfocused (for example for people using transparent terminals)
 
