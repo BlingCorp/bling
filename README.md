@@ -79,42 +79,7 @@ bling.module.tabbed.iter()  -- iterates through the currently focused tabbing gr
 
 
 ### 🌈 Theme variables
-Put those variables in your ``theme.lua`` if you want to edit appearance and some functionalities.
-
-For the **mstab layout**:
-```lua
-mstab_bar_ontop           -- allow the bar to be ontop of clients (default -> false)
-mstab_tabbar_position     -- set to "bottom" for tabbar at button
-mstab_bar_height          -- height of the tabbar
-mstab_border_radius       -- corners radius of the tabbar
-mstab_font                -- font of the tabbar
-mstab_bg_focus            -- background color of the focused client on the tabbar
-mstab_fg_focus            -- background color of the focused client on the tabbar
-mstab_bg_normal           -- foreground color of unfocused clients on the tabbar
-mstab_fg_normal           -- foreground color of unfocused clients on the tabbar
-```
-
-For **window swallowing**:
-```lua
-dont_swallow_classname_list   -- list of client classnames that shouldn't be swallowed
-                              -- default is {"firefox", "Gimp"}
-dont_swallow_filter_activated -- whether the filter is activated or not
-                              -- default is false.
-                              -- Set it to true if you want to filter clients that should be swallowed
-```
-
-
-For **flash focus**:
-```lua
-flash_focus_start_opacity -- the starting opacity (default 0.6)
-flash_focus_step          -- the step of the animation (default 0.01)
-```
-
-For **tabbed**:
-```lua
-tabbed_spawn_into_tab     -- set to true if you want new windows to spawn into your focused tabbing
-
-```
+You will find a list of all theme variables that are used in bling and comments on what they do in the `theme-car-template.lua` file - ready for you to copy them into your `theme.lua`. Theme variables are not only used to change the appearance of some features but also to adjust the functionality of some modules. So it is worth it to take a look at them.
 
 ## 😲 Preview
 
@@ -136,7 +101,7 @@ screenshots by me
 ### Flash Focus
 ![](https://imgur.com/5txYrlV.gif)
 
-git by [javacafe](https://github.com/JavaCafe01)
+gif by [javacafe](https://github.com/JavaCafe01)
 
 ### Wind swallowing
 ![](https://media.discordapp.net/attachments/635625813143978012/769180910683684864/20-10-23-14-40-32.gif)
@@ -145,7 +110,7 @@ gif by me :)
 
 ## TODO
 - [ ] Scratchpad module
-- [ ] Some more documentation on the tabbed module
+- [x] Some more documentation on the tabbed module
 - [x] Add a cool alternative tabbar style  
 - [x] Add another cool tabbar style (we need more styles)
 - [ ] Make the mstab layout compatible with vertical tabbars (left and right)
