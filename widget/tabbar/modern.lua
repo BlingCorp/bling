@@ -10,7 +10,7 @@ local fg_normal = beautiful.tabbar_fg_normal or beautiful.fg_normal or "#000000"
 local bg_focus = beautiful.tabbar_bg_focus or beautiful.bg_focus or "#000000"
 local fg_focus = beautiful.tabbar_fg_focus or beautiful.fg_focus or "#ffffff"
 local font = beautiful.tabbar_font or beautiful.font or "Hack 15"
-local size = beautiful.tabbar_size or dpi(20)
+local size = beautiful.tabbar_size or dpi(40)
 local border_radius =
     beautiful.mstab_border_radius or beautiful.border_radius or 6
 local position = beautiful.tabbar_orientation or "top"
