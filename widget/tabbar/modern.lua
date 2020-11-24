@@ -92,6 +92,13 @@ local function create(c, focused_bool, buttons)
     local close = create_title_button(c, close_color, bg_normal)
     close:connect_signal("button::press", function() c:kill() end)
 
+    local floating = create_title_button(c, float_color, bg_normal)
+    floating:connect_signal("button::press",
+                            function() c.floating = not c.floating end)
+
+    local min = create_title_button(c, min_color, bg_normal)
+    min:connect_signal("button::press", function() c.minimized = true end)
+
     if focused_bool then
         tab_content = wibox.widget {
             {
@@ -103,7 +110,7 @@ local function create(c, focused_bool, buttons)
             },
             text_temp,
             {
-                {close, layout = wibox.layout.fixed.horizontal},
+                {min, floating, close, layout = wibox.layout.fixed.horizontal},
                 top = dpi(10),
                 right = dpi(10),
                 bottom = dpi(10),
