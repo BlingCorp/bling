@@ -50,6 +50,11 @@ local function create_title_button(c, color_focus, color_unfocus)
     c:connect_signal("focus", update)
     c:connect_signal("unfocus", update)
 
+    tb:connect_signal("mouse::enter",
+                      function() tb_color.bg = color_focus .. "70" end)
+
+    tb:connect_signal("mouse::leave", function() tb_color.bg = color_focus end)
+
     tb.visible = true
     return tb
 end
