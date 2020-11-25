@@ -15,6 +15,7 @@ local flashfocus = function(c)
         }
 
         g:connect_signal("timeout", function()
+            if not c.valid then return end
             if q >= 1 then
                 c.opacity = 1
                 g:stop()
