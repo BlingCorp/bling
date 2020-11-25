@@ -12,7 +12,6 @@ of a function.
 local wibox = require("wibox")
 local gears = require("gears")
 local beautiful = require("beautiful")
-local naughty = require("naughty")
 local helpers = require(tostring(...):match(".*bling.module") .. ".helpers")
 
 local bar_style = beautiful.tabbar_style or "default"
