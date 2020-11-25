@@ -95,21 +95,7 @@ tabbed.update = function(tabobj)
             c.bling_tabbed = tabobj
             copy_size(c, currently_focused_c)
             -- the following handles killing a client while the client is tabbed
-            -- the killed client has to be removed from the tabobj table and
-            -- a new tabbed client has to appear (otherwise accessing other tabbed clients
-            -- is impossible)
-            c:connect_signal("unmanage", function(c)
-                if not c.bling_tabbed then return end
-                local old_tabobj = c.bling_tabbed
-                local tabobj = {clients = {}, focused_idx = 1}
-                for _, c_temp in ipairs(old_tabobj.clients) do
-                    if c_temp.window ~= c.window then
-                        tabobj.clients[#tabobj.clients + 1] = c_temp
-                    end
-                end
-                tabbed.update(tabobj)
-                tabbed.switch_to(tabobj, 1)
-            end)
+            c:connect_signal("unmanage", function(c) tabbed.remove(c) end)
         end
     end
 
