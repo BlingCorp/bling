@@ -12,7 +12,7 @@ of a function.
 local wibox = require("wibox")
 local gears = require("gears")
 local beautiful = require("beautiful")
-
+local naughty = require("naughty")
 local helpers = require(tostring(...):match(".*bling.module") .. ".helpers")
 
 local bar_style = beautiful.tabbar_style or "default"
@@ -76,14 +76,15 @@ tabbed.pick = function()
     local tabobj = client.focus.bling_tabbed
     -- this function uses xprop to grab a client pid which is then 
     -- compared to all other client process ids
-    -- io.popen is normally discouraged. Works fine for now 
-    local handle = io.popen("xprop _NET_WM_PID | cut -d' ' -f3")
-    local output = handle:read("*a")
-    handle:close()
-    -- search the client that was picked
-    for _, c in ipairs(client.get()) do
-        if tonumber(c.pid) == tonumber(output) then tabbed.add(c, tabobj) end
-    end
+
+    local xprop_cmd = [[ xprop _NET_WM_PID | cut -d' ' -f3 ]]
+    awful.spawn.easy_async_with_shell(xprop_cmd, function(output)
+        for _, c in ipairs(client.get()) do
+            if tonumber(c.pid) == tonumber(output) then
+                tabbed.add(c, tabobj)
+            end
+        end
+    end)
 end
 
 -- update everything about one tab object
