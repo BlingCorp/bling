@@ -140,7 +140,7 @@ local function create(c, focused_bool, buttons)
                 shape = gears.rectangle,
                 widget = wibox.container.background
             },
-            width = dpi(10),
+            width = border_radius + (border_radius / 2),
             height = size,
             strategy = "exact",
             layout = wibox.layout.constraint
@@ -167,7 +167,7 @@ local function create(c, focused_bool, buttons)
                 shape = gears.rectangle,
                 widget = wibox.container.background
             },
-            width = dpi(10),
+            width = border_radius + (border_radius / 2),
             height = size,
             strategy = "exact",
             layout = wibox.layout.constraint
