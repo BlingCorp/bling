@@ -129,16 +129,51 @@ local function create(c, focused_bool, buttons)
     local wid_temp = wibox.widget({
         buttons = buttons,
         {
-            tab_content,
-            bg = bg_temp,
-            shape = helpers.prrect(border_radius, true, true, false, false),
-            widget = wibox.container.background
+            {
+                {
+                    bg = bg_normal,
+                    shape = helpers.prrect(border_radius, false, false, true,
+                                           false),
+                    widget = wibox.container.background
+                },
+                bg = bg_temp,
+                shape = gears.rectangle,
+                widget = wibox.container.background
+            },
+            width = 10,
+            height = 40,
+            strategy = "exact",
+            layout = wibox.layout.constraint
         },
-        top = dpi(8),
-        left = dpi(5),
-        right = dpi(5),
-        bottom = dpi(0),
-        widget = wibox.container.margin
+        {
+            {
+                tab_content,
+                bg = bg_temp,
+                shape = helpers.prrect(border_radius, true, true, false, false),
+                widget = wibox.container.background
+            },
+            top = dpi(8),
+            widget = wibox.container.margin
+        },
+        {
+            {
+                {
+                    bg = bg_normal,
+                    shape = helpers.prrect(border_radius, false, false, false,
+                                           true),
+                    widget = wibox.container.background
+                },
+                bg = bg_temp,
+                shape = gears.rectangle,
+                widget = wibox.container.background
+            },
+            width = 10,
+            height = 40,
+            strategy = "exact",
+            layout = wibox.layout.constraint
+        },
+
+        layout = wibox.layout.align.horizontal
     })
     return wid_temp
 end
