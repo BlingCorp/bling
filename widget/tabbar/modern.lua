@@ -50,6 +50,11 @@ local function create_title_button(c, color_focus, color_unfocus)
     c:connect_signal("focus", update)
     c:connect_signal("unfocus", update)
 
+    tb:connect_signal("mouse::enter",
+                      function() tb_color.bg = color_focus .. "70" end)
+
+    tb:connect_signal("mouse::leave", function() tb_color.bg = color_focus end)
+
     tb.visible = true
     return tb
 end
@@ -124,16 +129,51 @@ local function create(c, focused_bool, buttons)
     local wid_temp = wibox.widget({
         buttons = buttons,
         {
-            tab_content,
-            bg = bg_temp,
-            shape = helpers.prrect(border_radius, true, true, false, false),
-            widget = wibox.container.background
+            {
+                {
+                    bg = bg_normal,
+                    shape = helpers.prrect(border_radius, false, false, true,
+                                           false),
+                    widget = wibox.container.background
+                },
+                bg = bg_temp,
+                shape = gears.rectangle,
+                widget = wibox.container.background
+            },
+            width = border_radius + (border_radius / 2),
+            height = size,
+            strategy = "exact",
+            layout = wibox.layout.constraint
         },
-        top = dpi(8),
-        left = dpi(5),
-        right = dpi(5),
-        bottom = dpi(0),
-        widget = wibox.container.margin
+        {
+            {
+                tab_content,
+                bg = bg_temp,
+                shape = helpers.prrect(border_radius, true, true, false, false),
+                widget = wibox.container.background
+            },
+            top = dpi(8),
+            widget = wibox.container.margin
+        },
+        {
+            {
+                {
+                    bg = bg_normal,
+                    shape = helpers.prrect(border_radius, false, false, false,
+                                           true),
+                    widget = wibox.container.background
+                },
+                bg = bg_temp,
+                shape = gears.rectangle,
+                widget = wibox.container.background
+            },
+            width = border_radius + (border_radius / 2),
+            height = size,
+            strategy = "exact",
+            layout = wibox.layout.constraint
+        },
+
+        layout = wibox.layout.align.horizontal
     })
     return wid_temp
 end

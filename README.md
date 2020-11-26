@@ -83,6 +83,11 @@ You will find a list of all theme variables that are used in bling and comments 
 
 ## 😲 Preview
 
+### Tabbing
+![](https://imgur.com/08AlNhQ.png)
+
+screenshot by [javacafe](https://github.com/JavaCafe01)
+
 ### Mstab (dynamic tabbing layout)
 ![](https://imgur.com/HZRgApE.png)
 
