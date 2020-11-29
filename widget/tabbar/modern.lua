@@ -24,6 +24,7 @@ local float_color = beautiful.tabbar_color_float or beautiful.xcolor5 or
 -- Helper to create buttons
 local function create_title_button(c, color_focus, color_unfocus)
     local tb_color = wibox.widget {
+        wibox.widget.textbox(),
         forced_width = dpi(8),
         forced_height = dpi(8),
         bg = color_focus,
@@ -131,6 +132,7 @@ local function create(c, focused_bool, buttons)
         {
             {
                 {
+                    wibox.widget.textbox(),
                     bg = bg_normal,
                     shape = helpers.prrect(border_radius, false, false, true,
                                            false),
@@ -158,6 +160,7 @@ local function create(c, focused_bool, buttons)
         {
             {
                 {
+                    wibox.widget.textbox(),
                     bg = bg_normal,
                     shape = helpers.prrect(border_radius, false, false, false,
                                            true),
