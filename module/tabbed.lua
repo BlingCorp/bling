@@ -8,7 +8,9 @@ In the function themselves, the same object is refered to as "tabobj" which is w
 you will often see something like: "local tabobj = some_client.bling_tabbed" at the beginning
 of a function.
 
---]] local awful = require("awful")
+--]]
+
+local awful = require("awful")
 local wibox = require("wibox")
 local gears = require("gears")
 local beautiful = require("beautiful")
@@ -33,7 +35,7 @@ tabbed = {}
 -- used to change focused tab relative to the currently focused one 
 tabbed.iter = function(idx)
     if not idx then idx = 1 end
-    if not client.focus.bling_tabbed then return end
+    if not client.focus or not client.focus.bling_tabbed then return end
     local tabobj = client.focus.bling_tabbed
     local new_idx = (tabobj.focused_idx + idx) % #tabobj.clients
     if new_idx == 0 then new_idx = #tabobj.clients end
@@ -42,7 +44,7 @@ end
 
 -- removes a given client from its tab object
 tabbed.remove = function(c)
-    if not c.bling_tabbed then return end
+    if not c or not c.bling_tabbed then return end
     local tabobj = c.bling_tabbed
     table.remove(tabobj.clients, tabobj.focused_idx)
     awful.titlebar.hide(c, bar.position)
@@ -52,7 +54,7 @@ end
 
 -- removes the currently focused client from the tab object
 tabbed.pop = function()
-    if not client.focus.bling_tabbed then return end
+    if not client.focus or not client.focus.bling_tabbed then return end
     tabbed.remove(client.focus)
 end
 
@@ -71,6 +73,7 @@ end
 
 -- use xprop to select one client and make it tab in the currently focused tab
 tabbed.pick = function()
+    if not client.focus then return end 
     if not client.focus.bling_tabbed then tabbed.init(client.focus) end
     local tabobj = client.focus.bling_tabbed
     -- this function uses xprop to grab a client pid which is then 
