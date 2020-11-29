@@ -32,6 +32,9 @@ theme.tabbar_fg_focus  = "#ff0000"          -- foreground color of unfocused cli
 
 -- mstab
 theme.mstab_bar_ontop = false               -- whether you want to allow the bar to be ontop of clients
+theme.mstab_dont_resize_flaves = false      -- whether the tabbed stack windows should be smaller than the
+                                            -- currently focused stack window (set it to true if you use
+                                            -- transparent terminals. False if you use shadows on solid ones
 theme.mstab_bar_padding = "default"         -- how much padding there should be between clients and your tabbar
                                             -- by default it will adjust based on your useless gaps. 
                                             -- If you want a custom value. Set it to the number of pixels (int)
@@ -48,4 +51,9 @@ theme.mstab_bg_focus    = "#000000"         -- background color of the focused c
 theme.mstab_fg_focus    = "#ffffff"         -- foreground color of the focused client on the tabbar
 theme.mstab_bg_normal   = "#1A2026"         -- background color of unfocused clients on the tabbar
 theme.mstab_fg_normal   = "#ff0000"         -- foreground color of unfocused clients on the tabbar
+
+-- the following variables are currently only for the "modern" tabbar style 
+theme.tabbar_color_close = "#f9929b"        -- chnges the color of the close button
+theme.tabbar_color_min   = "#fbdf90"        -- chnges the color of the minimize button
+theme.tabbar_color_float = "#ccaced"        -- chnges the color of the float button
 

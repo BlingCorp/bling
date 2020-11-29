@@ -10,20 +10,8 @@ mylayout.name = "mstab"
 
 local tabbar_ontop = beautiful.mstab_bar_ontop or false
 local tabbar_padding = beautiful.mstab_bar_padding or "default"
-local tabbar_height = beautiful.mstab_bar_height or beautiful.tabbar_size or 40
-local border_radius =
-    beautiful.mstab_border_radius or beautiful.border_radius or 0
-local tabbar_font = beautiful.mstab_font or beautiful.tabbar_font or
-                        beautiful.font or "Monospace 8"
-local bg_focus = beautiful.mstab_bg_focus or beautiful.tabbar_bg_focus or
-                     beautiful.bg_focus or "#ff0000"
-local bg_normal = beautiful.mstab_bg_normal or beautiful.tabbar_bg_normal or
-                      beautiful.bg_normal or "#000000"
-local fg_focus = beautiful.mstab_fg_focus or beautiful.tabbar_fg_focus or
-                     beautiful.fg_focus or "#000000"
-local fg_normal = beautiful.mstab_fg_normal or beautiful.tabbar_fg_normal or
-                      beautiful.fg_normal or "#ffffff"
-
+local border_radius = beautiful.mstab_border_radius or 
+                            beautiful.border_radius or 0
 local tabbar_position = beautiful.mstab_tabbar_position or
                             beautiful.tabbar_position or "top"
 
@@ -31,6 +19,8 @@ local bar_style = beautiful.mstab_tabbar_style or beautiful.tabbar_style or
                       "default"
 local bar = require(tostring(...):match(".*bling") .. ".widget.tabbar." ..
                         bar_style)
+local tabbar_size = bar.size or beautiful.mstab_bar_height or beautiful.tabbar_size or 40
+local dont_resize_slaves = beautiful.mstab_dont_resize_slaves or false
 
 -- The top_idx is the idx of the slave clients (excluding all master clients) 
 -- that should be on top of all other slave clients ("the focused slave")
@@ -54,12 +44,14 @@ function update_tabbar(clients, t, top_idx, area, master_area_width,
     for idx, c in ipairs(clients) do
         -- focus with right click, kill with mid click, minimize with left click
         local buttons = gears.table.join(
-                            awful.button({}, 1, function()
+            awful.button({}, 1, function()
                 c:raise()
                 client.focus = c
-            end), awful.button({}, 2, function() c:kill() end), awful.button({},
-                                                                             3,
-                                                                             function()
+            end), 
+            awful.button({}, 2, function() 
+                c:kill() 
+            end),
+            awful.button({}, 3, function()
                 c.minimized = true
             end))
         local client_box = bar.create(c, (idx == top_idx), buttons)
@@ -67,16 +59,15 @@ function update_tabbar(clients, t, top_idx, area, master_area_width,
     end
 
     -- if no tabbar exists, create one
-    if not s.tabbar_exists then
+    if not s.tabbar then
         s.tabbar = wibox {
             ontop = tabbar_ontop,
             shape = function(cr, width, height)
                 gears.shape.rounded_rect(cr, width, height, border_radius)
             end,
-            bg = bg_normal,
+            bg = bar.bg_normal,
             visible = true
         }
-        s.tabbar_exists = true
 
         -- Change visibility of the tab bar when layout, selected tag or number of clients (visible, master, slave) changes
         local function adjust_visiblity(t)
@@ -99,13 +90,26 @@ function update_tabbar(clients, t, top_idx, area, master_area_width,
     end
 
     -- update the tabbar size and position (to support gap size change on the fly)
-    s.tabbar.x = area.x + master_area_width + t.gap
-    s.tabbar.y = area.y + t.gap
-    s.tabbar.width = slave_area_width - 2 * t.gap
-    s.tabbar.height = tabbar_height
-
-    if tabbar_position == "bottom" then
-        s.tabbar.y = area.y + area.height - tabbar_height - t.gap
+    if tabbar_position == "top" then
+        s.tabbar.x = area.x + master_area_width + t.gap
+        s.tabbar.y = area.y + t.gap
+        s.tabbar.width = slave_area_width - 2 * t.gap
+        s.tabbar.height = tabbar_size
+    elseif tabbar_position == "bottom" then
+        s.tabbar.x = area.x + master_area_width + t.gap
+        s.tabbar.y = area.y + area.height - tabbar_size - t.gap
+        s.tabbar.width = slave_area_width - 2 * t.gap
+        s.tabbar.height = tabbar_size
+    elseif tabbar_position == "left" then 
+        s.tabbar.x = area.x + master_area_width + t.gap
+        s.tabbar.y = area.y + t.gap
+        s.tabbar.width = tabbar_size 
+        s.tabbar.height = area.height - 2 * t.gap
+    elseif tabbar_position == "right" then 
+        s.tabbar.x = area.x + master_area_width + slave_area_width - tabbar_size - t.gap
+        s.tabbar.y = area.y + t.gap
+        s.tabbar.width = tabbar_size
+        s.tabbar.height = area.height - 2 * t.gap
     end
 
     -- update clientlist 
@@ -136,7 +140,7 @@ function mylayout.arrange(p)
     -- Special case: One or zero slaves -> no tabbar (essentially tile right)
     if nslaves <= 1 then
         -- since update_tabbar isnt called that way we have to hide it manually
-        if s.tabbar_exists then s.tabbar.visible = false end
+        if s.tabbar then s.tabbar.visible = false end
         -- otherwise just do tile right 
         awful.layout.suit.tile.right.arrange(p)
         return
@@ -154,11 +158,21 @@ function mylayout.arrange(p)
         p.geometries[c] = g
     end
 
-    -- TODO: The way that the slave clients are arranged is currently very hacky and unclean
-    -- because of the requirement that the shadows shouldn't just add up when more slaves are added
-    -- Currently clients are just shrunken down and placed "under" the "focused slave client"
-    -- Ideal would be hide the same way as that small scratchpad script:
-    -- https://github.com/notnew/awesome-scratch/blob/master/scratch.lua
+    local tabbar_size_change  = 0 
+    local tabbar_width_change   = 0 
+    local tabbar_y_change       = 0   
+    local tabbar_x_change       = 0  
+    if tabbar_position == "top" then 
+        tabbar_size_change = tabbar_size + tabbar_padding
+        tabbar_y_change      = tabbar_size + tabbar_padding
+    elseif tabbar_position == "bottom" then 
+        tabbar_size_change = tabbar_size + tabbar_padding
+    elseif tabbar_position == "left" then 
+        tabbar_width_change  = tabbar_size + tabbar_padding
+        tabbar_x_change      = tabbar_size + tabbar_padding
+    elseif tabbar_position == "right" then 
+        tabbar_width_change  = tabbar_size + tabbar_padding
+    end
 
     -- Iterate through slaves
     -- (also creates a list of all slave clients for update_tabbar)
@@ -167,23 +181,19 @@ function mylayout.arrange(p)
         local c = p.clients[idx + nmaster]
         slave_clients[#slave_clients + 1] = c
         if c == client.focus then t.top_idx = #slave_clients end
-        local g = {x = 1, y = 1, width = 1, height = 1}
         local g = {
-            x = area.x + master_area_width + slave_area_width / 4,
-            y = area.y + tabbar_height + area.height / 4,
-            width = slave_area_width / 2,
-            height = area.height / 4 - tabbar_height
+            x = area.x + master_area_width      + tabbar_x_change,
+            y = area.y                          + tabbar_y_change,
+            width = slave_area_width            - tabbar_width_change,
+            height = area.height                - tabbar_size_change
         }
-        if idx == t.top_idx then
-            g.width = slave_area_width
-            g.height = area.height - tabbar_height - tabbar_padding
-            g.x = area.x + master_area_width
-            g.y = area.y
-            if tabbar_position == "top" then
-                g.y = g.y + tabbar_height + tabbar_padding
-            else
-                g.y = g.y
-            end
+        if not dont_resize_slaves and idx ~= t.top_idx then  
+            g = {
+                x = area.x + master_area_width + slave_area_width / 4,
+                y = area.y + tabbar_size + area.height / 4,
+                width = slave_area_width / 2,
+                height = area.height / 4 - tabbar_size
+            }
         end
         p.geometries[c] = g
     end

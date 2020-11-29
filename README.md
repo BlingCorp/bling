@@ -79,7 +79,7 @@ bling.module.tabbed.iter()  -- iterates through the currently focused tabbing gr
 
 
 ### 🌈 Theme variables
-You will find a list of all theme variables that are used in bling and comments on what they do in the `theme-car-template.lua` file - ready for you to copy them into your `theme.lua`. Theme variables are not only used to change the appearance of some features but also to adjust the functionality of some modules. So it is worth it to take a look at them.
+You will find a list of all theme variables that are used in bling and comments on what they do in the `theme-var-template.lua` file - ready for you to copy them into your `theme.lua`. Theme variables are not only used to change the appearance of some features but also to adjust the functionality of some modules. So it is worth it to take a look at them.
 
 ## 😲 Preview
 
@@ -118,8 +118,9 @@ gif by me :)
 - [x] Some more documentation on the tabbed module
 - [x] Add a cool alternative tabbar style  
 - [x] Add another cool tabbar style (we need more styles)
-- [ ] Make the mstab layout compatible with vertical tabbars (left and right)
-- [ ] Add option to mstab layout to not shrink windows down when they are in the tabbed pane and unfocused (for example for people using transparent terminals)
+- [x] Make the mstab layout compatible with vertical tabbars (left and right)
+- [x] Add option to mstab layout to not shrink windows down when they are in the tabbed pane and unfocused (for example for people using transparent terminals)
+- [ ] Keyboard based option to add windows to a tabbing object
 
 All naming credit goes to javacafe.
 
