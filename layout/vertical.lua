@@ -1,3 +1,4 @@
+local awful = require("awful")
 local gears = require("gears")
 local gcolor = require("gears.color")
 local beautiful = require("beautiful")
