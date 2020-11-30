@@ -38,19 +38,12 @@ theme.mstab_dont_resize_flaves = false      -- whether the tabbed stack windows 
 theme.mstab_bar_padding = "default"         -- how much padding there should be between clients and your tabbar
                                             -- by default it will adjust based on your useless gaps. 
                                             -- If you want a custom value. Set it to the number of pixels (int)
-
--- the following variables are still for mstab
--- you only need to set them if you want your mstab layout tabbar to have a different
--- look then your tabbed module tabbar. By default they will look the same.
 theme.mstab_border_radius = 0               -- border radius of the tabbar
-theme.mstab_tabbar_style = "default"        -- style of the tabbar ("default", "boxes" or "modern")
-theme.mstab_font = "Sans 11"                -- font of the tabbar
 theme.mstab_bar_height = 40                 -- height of the tabbar
 theme.mstab_tabbar_position = "top"         -- position of the tabbar (mstab currently does not support left,right)
-theme.mstab_bg_focus    = "#000000"         -- background color of the focused client on the tabbar
-theme.mstab_fg_focus    = "#ffffff"         -- foreground color of the focused client on the tabbar
-theme.mstab_bg_normal   = "#1A2026"         -- background color of unfocused clients on the tabbar
-theme.mstab_fg_normal   = "#ff0000"         -- foreground color of unfocused clients on the tabbar
+theme.mstab_tabbar_style = "default"        -- style of the tabbar ("default", "boxes" or "modern")
+                                            -- defaults to the tabbar_style so only change if you want a
+                                            -- different style for mstab and tabbed
 
 -- the following variables are currently only for the "modern" tabbar style 
 theme.tabbar_color_close = "#f9929b"        -- chnges the color of the close button

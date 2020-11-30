@@ -16,7 +16,7 @@ This module is trying to fix exactly that: Adding new layouts and modules that -
 
 Choose layouts from the list below and add them to to your `awful.layouts` list in your `rc.lua`.
 
-Everyone of them supports multiple master clients and master width factor making them as easyily useable as the default layouts.
+Everyone of them supports multiple master clients and master width factor making them as easily useable as the default layouts.
 ```Lua
 bling.layout.mstab
 bling.layout.centered
