@@ -89,6 +89,42 @@ tabbed.pick = function()
     end)
 end
 
+-- use dmenu to select a client and make it tab in the currently focused tab 
+tabbed.pick_with_dmenu = function(dmenu_command)
+    if not client.focus then return end
+    if not client.focus.bling_tabbed then tabbed.init(client.focus) end
+    local tabobj = client.focus.bling_tabbed
+
+    if not dmenu_command then dmenu_command = "rofi -dmenu -i" end
+
+    -- get all clients from the current tag
+    -- ignores the case where multiple tags are selected
+    local t = awful.screen.focused().selected_tag
+    local list_clients = {}
+    local list_clients_string = ""
+    for idx, c in ipairs(t:clients()) do
+        if not c.bling_tabbed then 
+            list_clients[#list_clients + 1] = c
+            if #list_clients ~= 1 then
+                list_clients_string = list_clients_string .. "\\n"
+            end
+            list_clients_string = list_clients_string .. tostring(c.window) .. " " .. c.name
+        end
+    end
+
+    if #list_clients == 0 then return end
+    
+    -- calls the actual dmenu
+    local xprop_cmd = [[ echo -e "]] .. list_clients_string .. [[" | ]] .. dmenu_command .. [[ | awk '{ print $1 }' ]]
+    awful.spawn.easy_async_with_shell(xprop_cmd, function(output)
+        for _, c in ipairs(list_clients) do
+            if tonumber(c.window) == tonumber(output) then
+                tabbed.add(c, tabobj)
+            end
+        end
+    end)
+end
+
 -- update everything about one tab object
 tabbed.update = function(tabobj)
     local currently_focused_c = tabobj.clients[tabobj.focused_idx]

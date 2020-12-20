@@ -120,7 +120,7 @@ gif by me :)
 - [x] Add another cool tabbar style (we need more styles)
 - [x] Make the mstab layout compatible with vertical tabbars (left and right)
 - [x] Add option to mstab layout to not shrink windows down when they are in the tabbed pane and unfocused (for example for people using transparent terminals)
-- [ ] Keyboard based option to add windows to a tabbing object
+- [x] Keyboard based option to add windows to a tabbing object
 
 All naming credit goes to javacafe.
 
