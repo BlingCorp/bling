@@ -95,16 +95,6 @@ local function create(c, focused_bool, buttons)
         layout = wibox.layout.align.horizontal
     }
 
-    local close = create_title_button(c, close_color, bg_normal)
-    close:connect_signal("button::press", function() c:kill() end)
-
-    local floating = create_title_button(c, float_color, bg_normal)
-    floating:connect_signal("button::press",
-                            function() c.floating = not c.floating end)
-
-    local min = create_title_button(c, min_color, bg_normal)
-    min:connect_signal("button::press", function() c.minimized = true end)
-
     if focused_bool then
         tab_content = wibox.widget {
             {
@@ -115,16 +105,44 @@ local function create(c, focused_bool, buttons)
                 widget = wibox.container.margin
             },
             text_temp,
-            {
-                {min, floating, close, layout = wibox.layout.fixed.horizontal},
-                top = dpi(10),
-                right = dpi(10),
-                bottom = dpi(10),
-                widget = wibox.container.margin
-            },
+            nil,
             expand = "none",
             layout = wibox.layout.align.horizontal
         }
+    end
+
+    local main_content = nil
+    local left_shape = nil
+    local right_shape = nil
+
+    if position == "top" then
+        main_content = wibox.widget {
+            {
+                tab_content,
+                bg = bg_temp,
+                shape = helpers.prrect(border_radius, true, true, false, false),
+                widget = wibox.container.background
+            },
+            top = dpi(8),
+            widget = wibox.container.margin
+        }
+
+        left_shape = helpers.prrect(border_radius, false, false, true, false)
+        right_shape = helpers.prrect(border_radius, false, false, false, true)
+    else
+        main_content = wibox.widget {
+            {
+                tab_content,
+                bg = bg_temp,
+                shape = helpers.prrect(border_radius, false, false, true, true),
+                widget = wibox.container.background
+            },
+            bottom = dpi(8),
+            widget = wibox.container.margin
+        }
+
+        left_shape = helpers.prrect(border_radius, false, true, false, false)
+        right_shape = helpers.prrect(border_radius, true, false, false, false)
     end
 
     local wid_temp = wibox.widget({
@@ -134,8 +152,7 @@ local function create(c, focused_bool, buttons)
                 {
                     wibox.widget.textbox(),
                     bg = bg_normal,
-                    shape = helpers.prrect(border_radius, false, false, true,
-                                           false),
+                    shape = left_shape,
                     widget = wibox.container.background
                 },
                 bg = bg_temp,
@@ -147,23 +164,13 @@ local function create(c, focused_bool, buttons)
             strategy = "exact",
             layout = wibox.layout.constraint
         },
-        {
-            {
-                tab_content,
-                bg = bg_temp,
-                shape = helpers.prrect(border_radius, true, true, false, false),
-                widget = wibox.container.background
-            },
-            top = dpi(8),
-            widget = wibox.container.margin
-        },
+        main_content,
         {
             {
                 {
                     wibox.widget.textbox(),
                     bg = bg_normal,
-                    shape = helpers.prrect(border_radius, false, false, false,
-                                           true),
+                    shape = right_shape,
                     widget = wibox.container.background
                 },
                 bg = bg_temp,
@@ -184,7 +191,7 @@ end
 return {
     layout = wibox.layout.flex.horizontal,
     create = create,
-    position = "top",
+    position = position,
     size = size,
     bg_normal = bg_normal,
     bg_focus = bg_focus
