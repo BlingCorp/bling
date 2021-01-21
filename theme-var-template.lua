@@ -32,7 +32,7 @@ theme.tabbar_fg_focus  = "#ff0000"          -- foreground color of unfocused cli
 
 -- mstab
 theme.mstab_bar_ontop = false               -- whether you want to allow the bar to be ontop of clients
-theme.mstab_dont_resize_flaves = false      -- whether the tabbed stack windows should be smaller than the
+theme.mstab_dont_resize_slaves = false      -- whether the tabbed stack windows should be smaller than the
                                             -- currently focused stack window (set it to true if you use
                                             -- transparent terminals. False if you use shadows on solid ones
 theme.mstab_bar_padding = "default"         -- how much padding there should be between clients and your tabbar
