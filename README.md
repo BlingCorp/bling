@@ -72,9 +72,10 @@ awful.key({modkey}, "Up",
 
 You should bind these functions to keys in oder to use the tabbed module effectively:
 ```lua
-bling.module.tabbed.pick()  -- makes you pick a client with your mouse to add to the tabbing group
-bling.module.tabbed.pop()   -- removes the focused client from the tabbing group
-bling.module.tabbed.iter()  -- iterates through the currently focused tabbing group
+bling.module.tabbed.pick()            -- picks a client with your cursor to add to the tabbing group
+bling.module.tabbed.pop()             -- removes the focused client from the tabbing group
+bling.module.tabbed.iter()            -- iterates through the currently focused tabbing group
+bling.module.tabbed.pick_with_dmenu() -- picks a client with a dmenu application (defaults to rofi, other options can be set with a string parameter like "dmenu")
 ```
 
 
