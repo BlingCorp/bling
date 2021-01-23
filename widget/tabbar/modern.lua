@@ -4,7 +4,7 @@ local wibox = require("wibox")
 local beautiful = require("beautiful")
 local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
-local helpers = require(tostring(...):match(".*bling") .. ".module.helpers")
+local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
 local bg_normal = beautiful.tabbar_bg_normal or beautiful.bg_normal or "#ffffff"
 local fg_normal = beautiful.tabbar_fg_normal or beautiful.fg_normal or "#000000"
@@ -134,7 +134,7 @@ local function create(c, focused_bool, buttons)
                 {
                     wibox.widget.textbox(),
                     bg = bg_normal,
-                    shape = helpers.prrect(border_radius, false, false, true,
+                    shape = helpers.shape.prrect(border_radius, false, false, true,
                                            false),
                     widget = wibox.container.background
                 },
@@ -151,7 +151,7 @@ local function create(c, focused_bool, buttons)
             {
                 tab_content,
                 bg = bg_temp,
-                shape = helpers.prrect(border_radius, true, true, false, false),
+                shape = helpers.shape.prrect(border_radius, true, true, false, false),
                 widget = wibox.container.background
             },
             top = dpi(8),
@@ -162,7 +162,7 @@ local function create(c, focused_bool, buttons)
                 {
                     wibox.widget.textbox(),
                     bg = bg_normal,
-                    shape = helpers.prrect(border_radius, false, false, false,
+                    shape = helpers.shape.prrect(border_radius, false, false, false,
                                            true),
                     widget = wibox.container.background
                 },
