@@ -7,5 +7,6 @@
 return {
     layout = require(... .. ".layout"),
     module = require(... .. ".module"),
+    helpers = require(... .. ".helpers"),
 }
 

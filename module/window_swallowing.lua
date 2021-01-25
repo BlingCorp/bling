@@ -2,7 +2,7 @@ local awful = require("awful")
 local gears = require("gears")
 local beautiful = require("beautiful")
 
-local helpers = require(tostring(...):match(".*bling.module") .. ".helpers")
+local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
 -- It might actually swallow too much, that's why there is a filter option by classname
 -- without the don't-swallow-list it would also swallow for example 
@@ -58,12 +58,12 @@ local function manage_clientspawn(c)
     if (tostring(parent_pid) == tostring(parent_client.pid)) and check_if_swallow(c) then 
 
         c:connect_signal("unmanage", function()
-            helpers.turn_on(parent_client)
+            helpers.client.turn_on(parent_client)
             copy_size(parent_client, c)
         end)
 
         copy_size(c, parent_client)
-        helpers.turn_off(parent_client)
+        helpers.client.turn_off(parent_client)
 
     end
 end
