@@ -14,7 +14,7 @@ local font = beautiful.tabbar_font or beautiful.font or "Hack 15"
 local size = beautiful.tabbar_size or dpi(40)
 local border_radius =
     beautiful.mstab_border_radius or beautiful.border_radius or 6
-local position = beautiful.tabbar_orientation or "top"
+local position = beautiful.tabbar_position or "top"
 local close_color = beautiful.tabbar_color_close or beautiful.xcolor1 or
                         "#f9929b"
 local min_color = beautiful.tabbar_color_min or beautiful.xcolor3 or "#fbdf90"
