@@ -32,7 +32,12 @@ local function emit_player_info()
     local art_script = [[
 sh -c '
 
-tmp_dir="/tmp/awesomewm/bling-playerctl/"
+tmp_dir="$XDG_CACHE_HOME/awesome/"
+
+if [ -z ${XDG_CACHE_HOME} ]; then
+    tmp_dir="$HOME/.cache/awesome/"
+fi
+
 tmp_cover_path=${tmp_dir}"cover.png"
 
 if [ ! -d $tmp_dir  ]; then
