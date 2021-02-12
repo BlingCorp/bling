@@ -3,8 +3,9 @@
 --      playing (boolean)
 -- bling::playerctl::album
 --      album_art (string)
--- bling::playerctl::title
+-- bling::playerctl::title_artist
 --      stdout (string)
+--      out    (string)
 -- bling::playerctl::info
 --      interval_sec (number)
 --      length_sec (number)
@@ -52,6 +53,7 @@ echo $tmp_cover_path
 ']]
 
     local song_title_cmd = "playerctl metadata title"
+    local song_artist_cmd = "playerctl metadata artist"
     local song_title = "No Song Playing"
 
     awful.widget.watch(song_title_cmd, update_interval, function(_, stdout)
@@ -62,7 +64,9 @@ echo $tmp_cover_path
             end)
             song_title = stdout
         end
-        awesome.emit_signal("bling::playerctl::title", stdout)
+        awful.spawn.easy_async_with_shell(song_artist_cmd, function(out)
+            awesome.emit_signal("bling::playerctl::title_artist", stdout, out)
+        end)
     end)
 
     local prog_cmd = "playerctl position"
