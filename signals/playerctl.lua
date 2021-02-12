@@ -13,20 +13,27 @@
 local awful = require("awful")
 local beautiful = require("beautiful")
 
-local update_interval = beautiful.playerctl_album_update_interval or 5
-local interval_status = beautiful.playerctl_position_update_interval or 1
+local interval = beautiful.playerctl_position_update_interval or 1
 
 local function emit_player_status()
-    local status_cmd = "playerctl status"
-    awful.widget.watch(status_cmd, interval_status, function(_, stdout)
-        local playing = false
-        if stdout:find("Playing") then
-            playing = true
-        else
-            playing = false
-        end
-        awesome.emit_signal("bling::playerctl::status", playing)
-    end)
+    local status_cmd = "playerctl status -F"
+
+    -- Follow status
+    awful.spawn.easy_async_with_shell(
+        "ps x | grep \"playerctl status\" | grep -v grep | awk '{print $1}' | xargs kill",
+        function()
+            awful.spawn.with_line_callback(status_cmd, {
+                stdout = function(line)
+                    local playing = false
+                    if line:find("Playing") then
+                        playing = true
+                    else
+                        playing = false
+                    end
+                    awesome.emit_signal("bling::playerctl::status", playing)
+                end
+            })
+        end)
 end
 
 local function emit_player_info()
@@ -52,27 +59,15 @@ curl -s "$link" --output $tmp_cover_path
 echo $tmp_cover_path
 ']]
 
-    local song_title_cmd = "playerctl metadata title"
-    local song_artist_cmd = "playerctl metadata artist"
-    local song_title = "No Song Playing"
+    -- Command that lists artist and title in a format to find and follow
+    local song_follow_cmd =
+        "playerctl metadata --format 'artist_{{artist}}title_{{title}}' -F"
 
-    awful.widget.watch(song_title_cmd, update_interval, function(_, stdout)
-        if not (song_title == stdout) then
-            awful.spawn.easy_async_with_shell(art_script, function(out)
-                local album_path = out:gsub('%\n', '')
-                awesome.emit_signal("bling::playerctl::album", album_path)
-            end)
-            song_title = stdout
-        end
-        awful.spawn.easy_async_with_shell(song_artist_cmd, function(out)
-            awesome.emit_signal("bling::playerctl::title_artist", stdout, out)
-        end)
-    end)
-
+    -- Progress Cmds
     local prog_cmd = "playerctl position"
     local length_cmd = "playerctl metadata mpris:length"
 
-    awful.widget.watch(prog_cmd, interval_status, function(_, interval)
+    awful.widget.watch(prog_cmd, interval, function(_, interval)
         awful.spawn.easy_async_with_shell(length_cmd, function(length)
             local length_sec = tonumber(length) -- in microseconds
             local interval_sec = tonumber(interval) -- in seconds
@@ -85,6 +80,27 @@ echo $tmp_cover_path
         end)
     end)
 
+    -- Follow title
+    awful.spawn.easy_async_with_shell(
+        "ps x | grep \"playerctl metadata\" | grep -v grep | awk '{print $1}' | xargs kill",
+        function()
+            awful.spawn.with_line_callback(song_follow_cmd, {
+                stdout = function(line)
+                    -- Get Album Art
+                    awful.spawn.easy_async_with_shell(art_script, function(out)
+                        local album_path = out:gsub('%\n', '')
+                        awesome.emit_signal("bling::playerctl::album",
+                                            album_path)
+                    end)
+
+                    -- Get Title and Artist
+                    local artist = line:match('artist_(.*)title_')
+                    local title = line:match('title_(.*)')
+                    awesome.emit_signal("bling::playerctl::title_artist", title,
+                                        artist)
+                end
+            })
+        end)
 end
 
 -- Emit info
