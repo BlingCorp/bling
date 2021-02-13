@@ -4,9 +4,9 @@
 -- bling::playerctl::album
 --      album_art (string)
 -- bling::playerctl::title_artist
---      stdout (string)
---      out    (string)
--- bling::playerctl::info
+--      title (string)
+--      artist    (string)
+-- bling::playerctl::position
 --      interval_sec (number)
 --      length_sec (number)
 --
@@ -56,7 +56,7 @@ link="$(playerctl metadata mpris:artUrl | sed -e 's/open.spotify.com/i.scdn.co/g
 
 curl -s "$link" --output $tmp_cover_path
 
-echo $tmp_cover_path
+echo "$tmp_cover_path"
 ']]
 
     -- Command that lists artist and title in a format to find and follow
