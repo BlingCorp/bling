@@ -11,7 +11,7 @@ local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 local window_swallowing_activated = false
 
 -- you might want to add or remove applications here
-local dont_swallow_classname_list = beautiful.dont_swallow_classname_list or {"firefox", "Gimp"} 
+local dont_swallow_classname_list = beautiful.dont_swallow_classname_list or {"firefox", "Gimp", "Google-chrome"} 
 local activate_dont_swallow_filter = beautiful.dont_swallow_filter_activated or true
 
 -- makes c the same size and position as parent_client
