@@ -15,6 +15,9 @@ theme.dont_swallow_filter_activated  = true                     -- whether the f
 theme.flash_focus_start_opacity = 0.6       -- the starting opacity
 theme.flash_focus_step = 0.01               -- the step of animation
 
+-- playerctl signal
+theme.playerctl_position_update_interval = 1  -- the update interval for fetching the position from playerctl
+
 -- tabbed
 theme.tabbed_spawn_in_tab = false           -- whether a new client should spawn into the focused tabbing container 
 
