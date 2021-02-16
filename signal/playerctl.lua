@@ -52,7 +52,7 @@ if [ ! -d $tmp_dir  ]; then
     mkdir -p $tmp_dir
 fi
 
-link="$(playerctl metadata mpris:artUrl | sed -e 's/open.spotify.com/i.scdn.co/g')"
+link="$(playerctl metadata mpris:artUrl)"
 
 curl -s "$link" --output $tmp_cover_path
 
