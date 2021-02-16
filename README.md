@@ -205,7 +205,7 @@ bling.module.tabbed.iter()            -- iterates through the currently focused 
 bling.module.tabbed.pick_with_dmenu() -- picks a client with a dmenu application (defaults to rofi, other options can be set with a string parameter like "dmenu")
 ```
 
-##### 🎵 Playerctl Signals
+##### 🎵 Playerctl
 
 This is a signal module in which you can connect to certain bling signals to grab playerctl info. Currently, this is what it supports:
 
@@ -217,11 +217,13 @@ This is a signal module in which you can connect to certain bling signals to gra
 
 This module relies on `playerctl` and `curl`. If you have this module disabled, you won't need those programs.
 
+To enable: `bling.signal.playerctl.enable()`
+
 ###### Signals
 
 ```lua
--- bling::playerctl::status -- first line is the signal
---      playing  (boolean)  -- indented lines are function parameters
+-- bling::playerctl::status     -- first line is the signal
+--      playing  (boolean)      -- indented lines are function parameters
 -- bling::playerctl::album
 --      album_art  (string)
 -- bling::playerctl::title_artist
