@@ -92,9 +92,11 @@ echo "$tmp_cover_path"
                         -- Get title and artist
                         local artist = line:match('artist_(.*)title_')
                         local title = line:match('title_(.*)')
-                        awesome.emit_signal(
-                            "bling::playerctl::title_artist_album", title,
-                            artist, album_path)
+                        if title and title ~= "" then
+                            awesome.emit_signal(
+                                "bling::playerctl::title_artist_album", title,
+                                artist, album_path)
+                        end
                     end)
                 end
             })
