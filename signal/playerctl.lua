@@ -81,19 +81,21 @@ echo "$tmp_cover_path"
 
     -- Follow title
     awful.spawn.easy_async_with_shell(
-        "ps x | grep \"playerctl metadata\" | grep -v grep | awk '{print $1}' | xargs kill",    function()
+        "ps x | grep \"playerctl metadata\" | grep -v grep | awk '{print $1}' | xargs kill",
+        function()
             awful.spawn.with_line_callback(song_follow_cmd, {
                 stdout = function(line)
                     local album_path = ""
                     awful.spawn.easy_async_with_shell(art_script, function(out)
                         -- Get album path
                         album_path = out:gsub('%\n', '')
+                        -- Get title and artist
+                        local artist = line:match('artist_(.*)title_')
+                        local title = line:match('title_(.*)')
+                        awesome.emit_signal(
+                            "bling::playerctl::title_artist_album", title,
+                            artist, album_path)
                     end)
-                    -- Get title and artist
-                    local artist = line:match('artist_(.*)title_')
-                    local title = line:match('title_(.*)')
-                    awesome.emit_signal("bling::playerctl::title_artist_album",
-                                        title, artist, album_path)
                 end
             })
         end)
