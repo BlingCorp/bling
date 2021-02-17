@@ -23,11 +23,10 @@ Here are the signals available:
 ```lua
 -- bling::playerctl::status     -- first line is the signal
 --      playing  (boolean)      -- indented lines are function parameters
--- bling::playerctl::album
---      album_art  (string)
--- bling::playerctl::title_artist
+-- bling::playerctl::title_artist_album
 --      title  (string)
 --      artist  (string)
+--      album_path (string)
 -- bling::playerctl::position
 --      interval_sec  (number)
 --      length_sec  (number)
@@ -45,11 +44,40 @@ local art = wibox.widget {
     widget = wibox.widget.imagebox
 }
 
-awesome.connect_signal("bling::playerctl::album", function(path)
-    art:set_image(gears.surface.load_uncached(path))
+local title_widget = wibox.widget {
+    markup = 'Nothing Playing',
+    align = 'center',
+    valign = 'center',
+    widget = wibox.widget.textbox
+}
+
+local artist_widget = wibox.widget {
+    markup = 'Nothing Playing',
+    align = 'center',
+    valign = 'center',
+    widget = wibox.widget.textbox
+}
+
+-- Get Song Info
+awesome.connect_signal("bling::playerctl::title_artist_album",
+                       function(title, artist, art_path)
+    -- Set art widget
+    art:set_image(gears.surface.load_uncached(art_path))
+
+    local my_title = "No Title"
+    local my_artist = "No Artist"
+
+    if title then
+        my_title = title
+        my_artist = artist
+    end
+
+    -- Set title and artist widgets
+    title_widget:set_markup_silently(my_title)
+    artist_widget:set_markup_silently(my_artist)
 end)
 ```
-Thats all! You don't even have to worry about updating the imagebox, the signals will handle that for you.
+Thats all! You don't even have to worry about updating the widgets, the signals will handle that for you.
 
 ### Theme Variables
 ```lua
