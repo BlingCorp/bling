@@ -20,21 +20,21 @@ local function emit_player_status()
     local status_cmd = "playerctl status -F"
 
     -- Follow status
-    awful.spawn.easy_async_with_shell(
-        "ps x | grep \"playerctl status\" | grep -v grep | awk '{print $1}' | xargs kill",
-        function()
-            awful.spawn.with_line_callback(status_cmd, {
-                stdout = function(line)
-                    local playing = false
-                    if line:find("Playing") then
-                        playing = true
-                    else
-                        playing = false
-                    end
-                    awesome.emit_signal("bling::playerctl::status", playing)
+    awful.spawn.easy_async({
+        "pkill", "--full", "--uid", os.getenv("USER"), "^playerctl status"
+    }, function()
+        awful.spawn.with_line_callback(status_cmd, {
+            stdout = function(line)
+                local playing = false
+                if line:find("Playing") then
+                    playing = true
+                else
+                    playing = false
                 end
-            })
-        end)
+                awesome.emit_signal("bling::playerctl::status", playing)
+            end
+        })
+    end)
 end
 
 local function emit_player_info()
@@ -82,31 +82,30 @@ echo "$tmp_cover_path"
     end)
 
     -- Follow title
-    awful.spawn.easy_async_with_shell(
-        "ps x | grep \"playerctl metadata\" | grep -v grep | awk '{print $1}' | xargs kill",
-        function()
-            awful.spawn.with_line_callback(song_follow_cmd, {
-                stdout = function(line)
-                    local album_path = ""
-                    awful.spawn.easy_async_with_shell(art_script, function(out)
-                        -- Get album path
-                        album_path = out:gsub('%\n', '')
-                        -- Get title and artist
-                        local artist = line:match('artist_(.*)title_')
-                        local title = line:match('title_(.*)')
-                        -- If the title is nil or empty then the players stopped
-                        if title and title ~= "" then
-                            awesome.emit_signal(
-                                "bling::playerctl::title_artist_album", title,
-                                artist, album_path)
-                        else
-                            awesome.emit_signal(
-                                "bling::playerctl::player_stopped")
-                        end
-                    end)
-                end
-            })
-        end)
+    awful.spawn.easy_async({
+        "pkill", "--full", "--uid", os.getenv("USER"), "^playerctl metadata"
+    }, function()
+        awful.spawn.with_line_callback(song_follow_cmd, {
+            stdout = function(line)
+                local album_path = ""
+                awful.spawn.easy_async_with_shell(art_script, function(out)
+                    -- Get album path
+                    album_path = out:gsub('%\n', '')
+                    -- Get title and artist
+                    local artist = line:match('artist_(.*)title_')
+                    local title = line:match('title_(.*)')
+                    -- If the title is nil or empty then the players stopped
+                    if title and title ~= "" then
+                        awesome.emit_signal(
+                            "bling::playerctl::title_artist_album", title,
+                            artist, album_path)
+                    else
+                        awesome.emit_signal("bling::playerctl::player_stopped")
+                    end
+                end)
+            end
+        })
+    end)
 end
 
 -- Emit info
