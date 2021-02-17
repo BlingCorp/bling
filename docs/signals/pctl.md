@@ -64,20 +64,23 @@ awesome.connect_signal("bling::playerctl::title_artist_album",
     -- Set art widget
     art:set_image(gears.surface.load_uncached(art_path))
 
-    local my_title = "No Title"
-    local my_artist = "No Artist"
-
-    if title then
-        my_title = title
-        my_artist = artist
-    end
-
     -- Set title and artist widgets
-    title_widget:set_markup_silently(my_title)
-    artist_widget:set_markup_silently(my_artist)
+    title_widget:set_markup_silently(title)
+    artist_widget:set_markup_silently(artist)
 end)
 ```
 Thats all! You don't even have to worry about updating the widgets, the signals will handle that for you.
+
+Here's another example in which you get a notification with the album art, title, and artist whenever the song changes.
+
+```lua
+local naughty = require("naughty")
+
+awesome.connect_signal("bling::playerctl::title_artist_album",
+                       function(title, artist, art_path)
+    naughty.notify({title = title, text = artist, image = art_path})
+end)
+```
 
 ### Theme Variables
 ```lua
