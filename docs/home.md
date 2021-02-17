@@ -23,3 +23,12 @@ local beautiful = require("beautiful")
 beautiful.init("some_theme.lua")
 local bling = require("bling")
 ```
+
+## Contributors
+A special thanks to all our contributors...
+
+<a href="https://github.com/Nooo37/bling/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Nooo37/bling" />
+</a>
+
+Made with [contributors-img](https://contrib.rocks).
