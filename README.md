@@ -1,5 +1,7 @@
 # <center> 🌟 Bling - Utilities for the AwesomeWM 🌟 </center>
 
+For documentation, go [here](https://nooo37.github.io/bling). This readme is out of date.
+
 ## ❓ Why
 
 AwesomeWM is literally that - an awesome window manager. 
