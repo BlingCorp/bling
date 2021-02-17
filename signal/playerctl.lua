@@ -1,11 +1,10 @@
 -- Provides:
 -- bling::playerctl::status
 --      playing (boolean)
--- bling::playerctl::album
---      album_art (string)
--- bling::playerctl::title_artist
+-- bling::playerctl::title_artist_album
 --      title (string)
 --      artist    (string)
+--      album_path (string)
 -- bling::playerctl::position
 --      interval_sec (number)
 --      length_sec (number)
@@ -86,18 +85,16 @@ echo "$tmp_cover_path"
         function()
             awful.spawn.with_line_callback(song_follow_cmd, {
                 stdout = function(line)
-                    -- Get Album Art
                     awful.spawn.easy_async_with_shell(art_script, function(out)
+                        -- Get album path
                         local album_path = out:gsub('%\n', '')
-                        awesome.emit_signal("bling::playerctl::album",
-                                            album_path)
+                        -- Get Title and Artist
+                        local artist = line:match('artist_(.*)title_')
+                        local title = line:match('title_(.*)')
+                        awesome.emit_signal(
+                            "bling::playerctl::title_artist_album", title,
+                            artist, album_path)
                     end)
-
-                    -- Get Title and Artist
-                    local artist = line:match('artist_(.*)title_')
-                    local title = line:match('title_(.*)')
-                    awesome.emit_signal("bling::playerctl::title_artist", title,
-                                        artist)
                 end
             })
         end)
