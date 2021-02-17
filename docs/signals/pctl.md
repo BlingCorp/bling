@@ -7,6 +7,7 @@ This is a signal module in which you can connect to certain bling signals to gra
 - If playing or not
 - Position
 - Song length
+- If there are no players on
 
 This module relies on `playerctl` and `curl`. If you have this module disabled, you won't need those programs. With this module, you can create a widget like below without worrying about the backend.
 
@@ -30,6 +31,8 @@ Here are the signals available:
 -- bling::playerctl::position
 --      interval_sec  (number)
 --      length_sec  (number)
+-- bling::playerctl::player_stopped
+--      (No params)
 ```
 
 ### Example Implementation

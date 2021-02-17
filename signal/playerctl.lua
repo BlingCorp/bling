@@ -1,3 +1,4 @@
+--
 -- Provides:
 -- bling::playerctl::status
 --      playing (boolean)
@@ -8,6 +9,7 @@
 -- bling::playerctl::position
 --      interval_sec (number)
 --      length_sec (number)
+-- bling::playerctl::player_stopped
 --
 local awful = require("awful")
 local beautiful = require("beautiful")
@@ -92,10 +94,14 @@ echo "$tmp_cover_path"
                         -- Get title and artist
                         local artist = line:match('artist_(.*)title_')
                         local title = line:match('title_(.*)')
+                        -- If the title is nil or empty then the players stopped
                         if title and title ~= "" then
                             awesome.emit_signal(
                                 "bling::playerctl::title_artist_album", title,
                                 artist, album_path)
+                        else
+                            awesome.emit_signal(
+                                "bling::playerctl::player_stopped")
                         end
                     end)
                 end
