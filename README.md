@@ -32,7 +32,7 @@ All naming credit goes to javacafe.
 
 ## Contributing
 
-Contributions are welcomed 💛
+Contributions are welcome 💛
 
 When adding a module/layout/signal, please add theme variables for customization and add the according documentation under `docs`.
 
