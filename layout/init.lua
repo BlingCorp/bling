@@ -12,11 +12,15 @@ beautiful.layout_horizontal = horizontal.get_icon()
 local centered = require(... .. ".centered")
 beautiful.layout_centered = centered.get_icon()
 
+local equalarea = require(... .. ".equalarea")
+
+beautiful.layout_centered = centered.get_icon()
 local layout = {
     mstab = mstab.layout,
     centered = centered.layout,
     vertical = vertical.layout,
-    horizontal = horizontal.layout
+    horizontal = horizontal.layout,
+    equalarea = equalarea.layout
 }
 
 return layout

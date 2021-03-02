@@ -11,6 +11,7 @@ bling.layout.mstab
 bling.layout.centered
 bling.layout.vertical
 bling.layout.horizontal
+bling.layout.equalarea
 ```
 
 ### Theme Variables
