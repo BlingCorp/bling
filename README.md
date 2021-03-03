@@ -9,6 +9,7 @@ All documentation, instructions, and previews are [here](https://nooo37.github.i
     - centered
     - vertical
     - horizontal
+    - equalarea
 - Modules
     - Flash Focus
     - Tabbed container
