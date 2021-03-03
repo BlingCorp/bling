@@ -43,3 +43,8 @@ theme.mstab_tabbar_style = "default"        -- style of the tabbar ("default", "
 ![](https://media.discordapp.net/attachments/769673106842845194/780095998239834142/unknown.png)
 
 *screenshot by [branwright](https://github.com/branwright1)*
+
+#### Equal area
+![](https://imgur.com/a/qt3qxyT)
+
+*screenshot by [bysmutheye](https://github.com/bysmutheye)*

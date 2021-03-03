@@ -13,8 +13,8 @@ local centered = require(... .. ".centered")
 beautiful.layout_centered = centered.get_icon()
 
 local equalarea = require(... .. ".equalarea")
+beautiful.layout_equalarea = equalarea.get_icon()
 
-beautiful.layout_centered = centered.get_icon()
 local layout = {
     mstab = mstab.layout,
     centered = centered.layout,

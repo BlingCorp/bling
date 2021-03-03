@@ -1,7 +1,11 @@
+local gears = require("gears")
+local gcolor = require("gears.color")
+local beautiful = require("beautiful")
 local math     = math
 local screen   = screen
-local tonumber = tonumber
-local equalarea = {name = "equalarea"}
+local mylayout = {}
+mylayout.name = "equalarea"
+
 local function divide(p,g,low,high,cls,mwfact,mcount)
   if low == high then
     p.geometries[cls[low]] = g
@@ -47,7 +51,7 @@ local function divide(p,g,low,high,cls,mwfact,mcount)
   return
 end
 
-local function arrange(p)
+function mylayout.arrange(p)
   local t   = p.tag or screen[p.screen].selected_tag
   local wa  = p.workarea
   local cls = p.clients
@@ -63,8 +67,18 @@ local function arrange(p)
   divide(p,g,1,#cls,cls,mwfact,mcount)
 end
 
-function equalarea.arrange(p)
-  return arrange(p)
+local icon_raw = gears.filesystem.get_configuration_dir() .. tostring(...):match("^.*bling"):gsub("%.", "/") .. "/icons/layouts/equalarea.png"
+
+local function get_icon()
+  if icon_raw ~= nil then
+    return gcolor.recolor_image(icon_raw, beautiful.fg_normal)
+  else
+    return nil
+  end
 end
 
-return {layout = equalarea}
+return {
+  layout = mylayout,
+  icon_raw = icon_raw,
+  get_icon = get_icon,
+}
