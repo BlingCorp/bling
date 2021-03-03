@@ -45,6 +45,6 @@ theme.mstab_tabbar_style = "default"        -- style of the tabbar ("default", "
 *screenshot by [branwright](https://github.com/branwright1)*
 
 #### Equal area
-![](https://imgur.com/a/qt3qxyT.png)
+![](https://imgur.com/JCFFywv.png)
 
 *screenshot by [bysmutheye](https://github.com/bysmutheye)*
