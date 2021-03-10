@@ -84,9 +84,9 @@ local function create(c, focused_bool, buttons)
     local tab_content = wibox.widget {
         {
             awful.widget.clienticon(c),
-            top = dpi(10),
+            top = dpi(6),
             left = dpi(15),
-            bottom = dpi(10),
+            bottom = dpi(6),
             widget = wibox.container.margin
         },
         text_temp,
@@ -99,9 +99,9 @@ local function create(c, focused_bool, buttons)
         tab_content = wibox.widget {
             {
                 awful.widget.clienticon(c),
-                top = dpi(10),
+                top = dpi(6),
                 left = dpi(15),
-                bottom = dpi(10),
+                bottom = dpi(6),
                 widget = wibox.container.margin
             },
             text_temp,
@@ -120,29 +120,35 @@ local function create(c, focused_bool, buttons)
             {
                 tab_content,
                 bg = bg_temp,
-                shape = helpers.shape.prrect(border_radius, true, true, false, false),
+                shape = helpers.shape.prrect(border_radius, true, true, false,
+                                             false),
                 widget = wibox.container.background
             },
             top = dpi(8),
             widget = wibox.container.margin
         }
 
-        left_shape = helpers.shape.prrect(border_radius, false, false, true, false)
-        right_shape = helpers.shape.prrect(border_radius, false, false, false, true)
+        left_shape = helpers.shape.prrect(border_radius, false, false, true,
+                                          false)
+        right_shape = helpers.shape.prrect(border_radius, false, false, false,
+                                           true)
     else
         main_content = wibox.widget {
             {
                 tab_content,
                 bg = bg_temp,
-                shape = helpers.shape.prrect(border_radius, false, false, true, true),
+                shape = helpers.shape.prrect(border_radius, false, false, true,
+                                             true),
                 widget = wibox.container.background
             },
             bottom = dpi(8),
             widget = wibox.container.margin
         }
 
-        left_shape = helpers.shape.prrect(border_radius, false, true, false, false)
-        right_shape = helpers.shape.prrect(border_radius, true, false, false, false)
+        left_shape = helpers.shape.prrect(border_radius, false, true, false,
+                                          false)
+        right_shape = helpers.shape.prrect(border_radius, true, false, false,
+                                           false)
     end
 
     local wid_temp = wibox.widget({
