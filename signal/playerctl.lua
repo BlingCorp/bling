@@ -34,6 +34,7 @@ local function emit_player_status()
                 awesome.emit_signal("bling::playerctl::status", playing)
             end
         })
+        collectgarbage("collect")
     end)
 end
 
@@ -79,6 +80,7 @@ echo "$tmp_cover_path"
                 end
             end
         end)
+        collectgarbage("collect")
     end)
 
     -- Follow title
@@ -103,8 +105,10 @@ echo "$tmp_cover_path"
                         awesome.emit_signal("bling::playerctl::player_stopped")
                     end
                 end)
+                collectgarbage("collect")
             end
         })
+        collectgarbage("collect")
     end)
 end
 
