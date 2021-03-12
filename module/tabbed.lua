@@ -8,9 +8,7 @@ In the function themselves, the same object is refered to as "tabobj" which is w
 you will often see something like: "local tabobj = some_client.bling_tabbed" at the beginning
 of a function.
 
---]]
-
-local awful = require("awful")
+--]] local awful = require("awful")
 local wibox = require("wibox")
 local gears = require("gears")
 local beautiful = require("beautiful")
@@ -73,7 +71,7 @@ end
 
 -- use xprop to select one client and make it tab in the currently focused tab
 tabbed.pick = function()
-    if not client.focus then return end 
+    if not client.focus then return end
     if not client.focus.bling_tabbed then tabbed.init(client.focus) end
     local tabobj = client.focus.bling_tabbed
     -- this function uses xprop to grab a client pid which is then 
@@ -103,19 +101,21 @@ tabbed.pick_with_dmenu = function(dmenu_command)
     local list_clients = {}
     local list_clients_string = ""
     for idx, c in ipairs(t:clients()) do
-        if not c.bling_tabbed then 
+        if not c.bling_tabbed then
             list_clients[#list_clients + 1] = c
             if #list_clients ~= 1 then
                 list_clients_string = list_clients_string .. "\\n"
             end
-            list_clients_string = list_clients_string .. tostring(c.window) .. " " .. c.name
+            list_clients_string = list_clients_string .. tostring(c.window) ..
+                                      " " .. c.name
         end
     end
 
     if #list_clients == 0 then return end
-    
+
     -- calls the actual dmenu
-    local xprop_cmd = [[ echo -e "]] .. list_clients_string .. [[" | ]] .. dmenu_command .. [[ | awk '{ print $1 }' ]]
+    local xprop_cmd = [[ echo -e "]] .. list_clients_string .. [[" | ]] ..
+                          dmenu_command .. [[ | awk '{ print $1 }' ]]
     awful.spawn.easy_async_with_shell(xprop_cmd, function(output)
         for _, c in ipairs(list_clients) do
             if tonumber(c.window) == tonumber(output) then
@@ -173,12 +173,27 @@ tabbed.update_tabbar = function(tabobj)
     end
     -- add tabbar to each tabbed client (clients will be hided anyway)
     for _, c in ipairs(tabobj.clients) do
+
+        local bar_shape = helpers.shape.rrect(0)
+        if bar.position == "top" then
+            bar_shape = helpers.shape.prrect(beautiful.tabbar_corner_radius,
+                                             true, true, false, false)
+        elseif bar.position == "bottom" then
+            bar_shape = helpers.shape.prrect(beautiful.tabbar_corner_radius,
+                                             false, false, true, true)
+        end
+
         local titlebar = awful.titlebar(c, {
-            bg = bar.bg_normal,
+            bg = bar.bg_normal .. "00",
             size = bar.size,
             position = bar.position
         })
-        titlebar:setup{layout = wibox.layout.flex.horizontal, flexlist}
+        titlebar:setup{
+            widget = wibox.container.background,
+            bg = bar.bg_normal,
+            shape = bar_shape,
+            {layout = wibox.layout.flex.horizontal, flexlist}
+        }
     end
 end
 
