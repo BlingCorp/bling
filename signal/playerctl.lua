@@ -34,6 +34,7 @@ local function emit_player_status()
                 awesome.emit_signal("bling::playerctl::status", playing)
             end
         })
+        collectgarbage("collect")
     end)
 end
 
@@ -79,6 +80,7 @@ echo "$tmp_cover_path"
                 end
             end
         end)
+        collectgarbage("collect")
     end)
 
     -- Follow title
@@ -103,8 +105,10 @@ echo "$tmp_cover_path"
                         awesome.emit_signal("bling::playerctl::player_stopped")
                     end
                 end)
+                collectgarbage("collect")
             end
         })
+        collectgarbage("collect")
     end)
 end
 
@@ -117,4 +121,12 @@ local enable = function()
     emit_player_info()
 end
 
-return {enable = enable}
+local disable = function()
+    awful.spawn.with_shell("pkill --full --uid " .. os.getenv("USER") ..
+                               " '^playerctl status -F'")
+
+    awful.spawn.with_shell("pkill --full --uid " .. os.getenv("USER") ..
+                               " '^playerctl metadata --format'")
+end
+
+return {enable = enable, disable = disable}
