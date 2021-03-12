@@ -1,9 +1,8 @@
+```lua
 --[[ Bling theme variables template
-
 This file has all theme variables of the bling module.
 Every variable has a small comment on what it does.
 You might just want to copy that whole part into your theme.lua and start adjusting from there.
-
 --]]
 
 
@@ -52,4 +51,4 @@ theme.mstab_tabbar_style = "default"        -- style of the tabbar ("default", "
 theme.tabbar_color_close = "#f9929b"        -- chnges the color of the close button
 theme.tabbar_color_min   = "#fbdf90"        -- chnges the color of the minimize button
 theme.tabbar_color_float = "#ccaced"        -- chnges the color of the float button
-
+```

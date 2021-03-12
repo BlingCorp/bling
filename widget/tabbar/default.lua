@@ -9,7 +9,7 @@ local bg_focus  = beautiful.tabbar_bg_focus  or beautiful.bg_focus  or "#000000"
 local fg_focus  = beautiful.tabbar_fg_focus  or beautiful.fg_focus  or "#ffffff"
 local font      = beautiful.tabbar_font      or beautiful.font      or "Hack 15"
 local size      = beautiful.tabbar_size or 20
-local position = beautiful.tabbar_orientation or "top"
+local position = beautiful.tabbar_position or "top"
 
 local function create(c, focused_bool, buttons)
     local flexlist = wibox.layout.flex.horizontal()

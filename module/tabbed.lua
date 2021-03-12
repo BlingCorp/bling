@@ -14,7 +14,7 @@ local awful = require("awful")
 local wibox = require("wibox")
 local gears = require("gears")
 local beautiful = require("beautiful")
-local helpers = require(tostring(...):match(".*bling.module") .. ".helpers")
+local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
 local bar_style = beautiful.tabbar_style or "default"
 local bar = require(tostring(...):match(".*bling") .. ".widget.tabbar." ..
@@ -147,9 +147,9 @@ tabbed.switch_to = function(tabobj, new_idx)
     tabobj.focused_idx = new_idx
     for idx, c in ipairs(tabobj.clients) do
         if idx ~= new_idx then
-            helpers.turn_off(c)
+            helpers.client.turn_off(c)
         else
-            helpers.turn_on(c)
+            helpers.client.turn_on(c)
             c:raise()
             if old_focused_c and old_focused_c.valid then
                 c:swap(old_focused_c)
