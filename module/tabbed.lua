@@ -176,10 +176,10 @@ tabbed.update_tabbar = function(tabobj)
 
         local bar_shape = helpers.shape.rrect(0)
         if bar.position == "top" then
-            bar_shape = helpers.shape.prrect(beautiful.tabbar_corner_radius,
+            bar_shape = helpers.shape.prrect(beautiful.tabbar_corner_radius or 0,
                                              true, true, false, false)
         elseif bar.position == "bottom" then
-            bar_shape = helpers.shape.prrect(beautiful.tabbar_corner_radius,
+            bar_shape = helpers.shape.prrect(beautiful.tabbar_corner_radius or 0,
                                              false, false, true, true)
         end
 
