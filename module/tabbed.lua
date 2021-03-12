@@ -182,6 +182,12 @@ tabbed.update_tabbar = function(tabobj)
         elseif bar.position == "bottom" then
             bar_shape = helpers.shape.prrect(beautiful.tabbar_radius or 0,
                                              false, false, true, true)
+        elseif bar.position == "right" then
+            bar_shape = helpers.shape.prrect(beautiful.tabbar_radius or 0,
+                                             false, true, true, false)
+        elseif bar.position == "left" then
+            bar_shape = helpers.shape.prrect(beautiful.tabbar_radius or 0,
+                                             true, false, false, true)
         end
 
         local titlebar = awful.titlebar(c, {
