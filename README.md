@@ -1,4 +1,7 @@
-# <center> 🌟 Bling - Utilities for the AwesomeWM 🌟 </center>
+<p align="center">
+        <img src="/images/bling_banner.png" />
+</p>
+<h1 align="center"></h1>
 
 All documentation, instructions, and previews are [here](https://nooo37.github.io/bling).
 
