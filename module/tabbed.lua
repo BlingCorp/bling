@@ -8,8 +8,7 @@ In the function themselves, the same object is refered to as "tabobj" which is w
 you will often see something like: "local tabobj = some_client.bling_tabbed" at the beginning
 of a function.
 
---]] 
-local awful = require("awful")
+--]] local awful = require("awful")
 local wibox = require("wibox")
 local gears = require("gears")
 local beautiful = require("beautiful")
@@ -177,16 +176,16 @@ tabbed.update_tabbar = function(tabobj)
 
         local bar_shape = helpers.shape.rrect(0)
         if bar.position == "top" then
-            bar_shape = helpers.shape.prrect(beautiful.tabbar_radius or 0,
+            bar_shape = helpers.shape.prrect(beautiful.tabbar_AA_radius or 0,
                                              true, true, false, false)
         elseif bar.position == "bottom" then
-            bar_shape = helpers.shape.prrect(beautiful.tabbar_radius or 0,
+            bar_shape = helpers.shape.prrect(beautiful.tabbar_AA_radius or 0,
                                              false, false, true, true)
         elseif bar.position == "right" then
-            bar_shape = helpers.shape.prrect(beautiful.tabbar_radius or 0,
+            bar_shape = helpers.shape.prrect(beautiful.tabbar_AA_radius or 0,
                                              false, true, true, false)
         elseif bar.position == "left" then
-            bar_shape = helpers.shape.prrect(beautiful.tabbar_radius or 0,
+            bar_shape = helpers.shape.prrect(beautiful.tabbar_AA_radius or 0,
                                              true, false, false, true)
         end
 
