@@ -24,6 +24,7 @@ theme.tabbed_spawn_in_tab = false           -- whether a new client should spawn
 -- tabbar general
 theme.tabbar_ontop  = false
 theme.tabbar_radius = 0                     -- border radius of the tabbar
+theme.tabbar_AA_radius = 0                  -- AA corner radius of the tabbar
 theme.tabbar_style = "default"              -- style of the tabbar ("default", "boxes" or "modern")
 theme.tabbar_font = "Sans 11"               -- font of the tabbar
 theme.tabbar_size = 40                      -- size of the tabbar
