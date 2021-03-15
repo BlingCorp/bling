@@ -14,23 +14,6 @@ local window_swallowing_activated = false
 local dont_swallow_classname_list = beautiful.dont_swallow_classname_list or {"firefox", "Gimp", "Google-chrome"} 
 local activate_dont_swallow_filter = beautiful.dont_swallow_filter_activated or true
 
--- makes c the same size and position as parent_client
-local function copy_size(c, parent_client)
-    if not c or not parent_client then
-        return
-    end
-    if not c.valid or not parent_client.valid then
-        return
-    end
-    c.floating = parent_client.floating
-    c.x = parent_client.x;
-    c.y = parent_client.y;
-    c.width = parent_client.width;
-    c.height = parent_client.height;
-    -- TODO that function should also support "copying" the 
-    -- index of the parent_client to the new c 
-end
-
 -- checks if client classname matches with any entry of the dont-swallow-list
 local function check_if_swallow(c) 
     if not activate_dont_swallow_filter then 
@@ -59,10 +42,10 @@ local function manage_clientspawn(c)
 
         c:connect_signal("unmanage", function()
             helpers.client.turn_on(parent_client)
-            copy_size(parent_client, c)
+            helpers.client.sync(parent_client, c)
         end)
 
-        copy_size(c, parent_client)
+        helpers.client.sync(c, parent_client)
         helpers.client.turn_off(parent_client)
 
     end

@@ -29,6 +29,21 @@ function _client.turn_on(c)
     client.focus = c
 end
 
+--- Sync two clients
+--
+-- @param to_c The client to which to write all properties
+-- @param from_c The client from which to read all properties
+function _client.sync(to_c, from_c)
+    if not from_c or not to_c then return end
+    if not from_c.valid or not to_c.valid then return end
+    if from_c.modal then return end
+    to_c.floating = from_c.floating
+    to_c.maximized = from_c.maximized
+    to_c.above = from_c.above
+    to_c.below = from_c.below
+    to_c:geometry(from_c:geometry())
+    -- TODO: Should also copy over the position in a tiling layout
+end
 
 
 return _client
