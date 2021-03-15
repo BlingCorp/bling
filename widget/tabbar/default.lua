@@ -42,7 +42,7 @@ end
 return {
     layout = wibox.layout.flex.horizontal,
     create = create,
-    position = "top",
+    position = position,
     size = size,
     bg_normal = bg_normal,
     bg_focus  = bg_focus
