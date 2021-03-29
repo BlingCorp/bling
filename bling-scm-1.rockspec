@@ -19,7 +19,6 @@ description = {
 
 dependencies = {
    "lua >= 5.1",
-   "awesome >= 4.0",
 }
 
 build = {
