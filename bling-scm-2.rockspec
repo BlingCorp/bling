@@ -1,5 +1,5 @@
 package = "bling"
-version = "scm-1"
+version = "scm-2"
 
 source = {
    url = "https://github.com/Nooo37/bling",
@@ -19,7 +19,6 @@ description = {
 
 dependencies = {
    "lua >= 5.1",
-   "awesome >= 4.0",
 }
 
 build = {
