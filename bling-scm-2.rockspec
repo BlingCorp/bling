@@ -1,5 +1,5 @@
 package = "bling"
-version = "scm-1"
+version = "scm-2"
 
 source = {
    url = "https://github.com/Nooo37/bling",
