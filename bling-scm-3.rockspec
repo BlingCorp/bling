@@ -1,8 +1,8 @@
 package = "bling"
-version = "scm-2"
+version = "scm-3"
 
 source = {
-   url = "https://github.com/Nooo37/bling",
+   url = "git://github.com/Nooo37/bling",
    branch = "master",
 }
 
