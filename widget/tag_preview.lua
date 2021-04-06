@@ -143,8 +143,11 @@ local enable = function(opts)
         scale = opts.scale or scale
     end
 
-    local prev_screen_width = math.floor(screen_width * scale)
-    local prev_screen_height = math.floor(screen_height * scale)
+    local prev_screen_width = math.floor(
+                                  awful.screen.focused().geometry.width * scale)
+    local prev_screen_height = math.floor(
+                                   awful.screen.focused().geometry.height *
+                                       scale)
 
     local tag_preview_box = wibox({
         visible = false,
@@ -152,7 +155,7 @@ local enable = function(opts)
         width = prev_screen_width,
         height = prev_screen_height,
         input_passthrough = true,
-        bg = beautiful.xbackground .. "00",
+        bg = "#00000000",
         x = widget_x,
         y = widget_y
     })
