@@ -6,7 +6,7 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local cairo = require("lgi").cairo
 
-local function draw_widget(tag_preview_box, tag, tag_preview_image, scale,
+local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
                            prev_screen_width, prev_screen_height, screen_radius,
                            client_radius, client_opacity, client_bg,
                            client_border_color, client_border_width, widget_bg,
@@ -15,7 +15,7 @@ local function draw_widget(tag_preview_box, tag, tag_preview_image, scale,
     local client_list = wibox.layout.manual()
     client_list.forced_height = prev_screen_height
     client_list.forced_width = prev_screen_width
-    for i, c in ipairs(tag:clients()) do
+    for i, c in ipairs(t:clients()) do
 
         local img_box = wibox.widget {
             image = gears.surface.load(c.icon),
@@ -26,9 +26,9 @@ local function draw_widget(tag_preview_box, tag, tag_preview_image, scale,
         }
 
         if tag_preview_image then
-            if c.prev_content or tag.selected then
+            if c.prev_content or t.selected then
                 local content
-                if tag.selected then
+                if t.selected then
                     content = gears.surface(c.content)
                 else
                     content = gears.surface(c.prev_content)
@@ -80,15 +80,6 @@ local function draw_widget(tag_preview_box, tag, tag_preview_image, scale,
             x = math.floor(c.x * scale),
             y = math.floor(c.y * scale)
         }
-
-        --[[
-        local pos_layout = wibox.widget {
-            client_box,
-            forced_height = prev_screen_height,
-            forced_width = prev_screen_width,
-            layout = wibox.layout.manual
-        }
-        --]]
 
         client_list:add(client_box)
 
@@ -166,8 +157,8 @@ local enable = function(opts)
         end
     end)
 
-    awesome.connect_signal("bling::tag_preview::update", function(tag)
-        draw_widget(tag_preview_box, tag, tag_preview_image, scale,
+    awesome.connect_signal("bling::tag_preview::update", function(t)
+        draw_widget(tag_preview_box, t, tag_preview_image, scale,
                     prev_screen_width, prev_screen_height, screen_radius,
                     client_radius, client_opacity, client_bg,
                     client_border_color, client_border_width, widget_bg,
