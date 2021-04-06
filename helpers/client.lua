@@ -1,11 +1,12 @@
 local awful = require("awful")
+local gears = require("gears")
 
 local _client = {}
 
 --- Turn off passed client
 -- Remove current tag from window's tags
 --
--- @param c a client
+-- @param c A client
 function _client.turn_off(c)
     local current_tag = awful.tag.selected(c.screen)
     local ctags = {}
@@ -43,6 +44,41 @@ function _client.sync(to_c, from_c)
     to_c.below = from_c.below
     to_c:geometry(from_c:geometry())
     -- TODO: Should also copy over the position in a tiling layout
+end
+
+--- Checks whether the passed client is a childprocess of a given process ID
+--
+-- @param c A client
+-- @param pid The process ID
+-- @return True if the passed client is a childprocess of the given PID otherwise false
+function _client.is_child_of(c, pid)
+    -- io.popen is normally discouraged. Should probably be changed 
+    if not c or not c.valid then return false end
+    if tostring(c.pid) == tostring(pid) then return true end
+    local pid_cmd = [[pstree -T -p -a -s ]] .. tostring(c.pid) ..
+                        [[ | sed '2q;d' | grep -o '[0-9]*$' | tr -d '\n']]
+    local handle = io.popen(pid_cmd)
+    local parent_pid = handle:read("*a")
+    handle:close()
+    return tostring(parent_pid) == tostring(pid) or
+                        tostring(parent_pid) == tostring(c.pid)
+end
+
+--- Finds all clients that satisfy the passed rule
+--
+-- @param rule The rule to be searched for
+function _client.find(rule)
+    local function matcher(c) return awful.rules.match(c, rule) end
+    local clients = client.get()
+    local findex = gears.table.hasitem(clients, client.focus) or 1
+    local start = gears.math.cycle(#clients, findex + 1)
+
+    local matches = {}
+    for c in awful.client.iterate(matcher, start) do
+        matches[#matches + 1] = c
+    end
+
+    return matches
 end
 
 

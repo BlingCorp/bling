@@ -31,14 +31,9 @@ end
 local function manage_clientspawn(c)
     -- get the last focused window to check if it is a parent window
     local parent_client=awful.client.focus.history.get(c.screen, 1)
-    if not parent_client then return end 
+    if not parent_client or not parent_client.valid then return end 
     
-    -- io.popen is normally discouraged. Should probably be changed 
-    local handle = io.popen([[pstree -T -p -a -s ]] .. tostring(c.pid) ..  [[ | sed '2q;d' | grep -o '[0-9]*$' | tr -d '\n']])
-    local parent_pid = handle:read("*a")
-    handle:close()
-
-    if (tostring(parent_pid) == tostring(parent_client.pid)) and check_if_swallow(c) then 
+    if helpers.client.is_child_of(c, parent_client.pid) and check_if_swallow(c) then 
 
         c:connect_signal("unmanage", function()
             helpers.client.turn_on(parent_client)
