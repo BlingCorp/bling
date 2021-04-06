@@ -171,7 +171,7 @@ local enable = function(opts)
                     widget_border_color, widget_border_width)
     end)
 
-    awesome.connect_signal("bling::tag_preview::visiblity", function(s, v)
+    awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
         tag_preview_box.screen = s
         tag_preview_box.visible = v
     end)
