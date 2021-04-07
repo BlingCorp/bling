@@ -12,5 +12,8 @@
 - Signals
     - [Playerctl](signals/pctl.md)
 
+- Widgets
+    - [Tag Preview](widgets/tag_preview.md)
+
 - Extra
     - [Theme Variable Template](theme.md)

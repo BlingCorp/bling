@@ -20,16 +20,6 @@ local bar_style = beautiful.tabbar_style or "default"
 local bar = require(tostring(...):match(".*bling") .. ".widget.tabbar." ..
                         bar_style)
 
-local function copy_size(c, parent_client)
-    if not c or not parent_client then return end
-    if not c.valid or not parent_client.valid then return end
-    c.floating = parent_client.floating
-    c.x = parent_client.x
-    c.y = parent_client.y
-    c.width = parent_client.width
-    c.height = parent_client.height
-end
-
 tabbed = {}
 
 -- used to change focused tab relative to the currently focused one 
@@ -61,7 +51,7 @@ end
 -- adds a client to a given tabobj
 tabbed.add = function(c, tabobj)
     if c.bling_tabbed then return end
-    copy_size(c, tabobj.clients[tabobj.focused_idx])
+    helpers.client.sync(c, tabobj.clients[tabobj.focused_idx])
     tabobj.clients[#tabobj.clients + 1] = c
     tabobj.focused_idx = #tabobj.clients
     -- calls update even though switch_to calls update again
@@ -132,7 +122,7 @@ tabbed.update = function(tabobj)
     for idx, c in ipairs(tabobj.clients) do
         if c.valid then
             c.bling_tabbed = tabobj
-            copy_size(c, currently_focused_c)
+            helpers.client.sync(c, currently_focused_c)
             -- the following handles killing a client while the client is tabbed
             c:connect_signal("unmanage", function(c) tabbed.remove(c) end)
         end
@@ -154,7 +144,7 @@ tabbed.switch_to = function(tabobj, new_idx)
             if old_focused_c and old_focused_c.valid then
                 c:swap(old_focused_c)
             end
-            copy_size(c, old_focused_c)
+            helpers.client.sync(c, old_focused_c)
         end
     end
     tabbed.update(tabobj)
