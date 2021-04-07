@@ -21,6 +21,8 @@ All documentation, instructions, and previews are [here](https://nooo37.github.i
     - Window Swallowing
 - Signals
     - Playerctl
+- Widgets
+    - Tag Preview
 
 ## TODO
 - [ ] Add external sources management for the wallpaper module (URLs, RSS feeds, NASA picture of the day, ...)
