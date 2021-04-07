@@ -4,8 +4,7 @@ This file has all theme variables of the bling module.
 Every variable has a small comment on what it does.
 You might just want to copy that whole part into your theme.lua and start adjusting from there.
 
---]]
-
+--]] -- LuaFormatter off
 
 -- window swallowing
 theme.dont_swallow_classname_list    = {"firefox", "Gimp"}      -- list of class names that should not be swallowed
@@ -53,3 +52,14 @@ theme.tabbar_color_close = "#f9929b"        -- chnges the color of the close but
 theme.tabbar_color_min   = "#fbdf90"        -- chnges the color of the minimize button
 theme.tabbar_color_float = "#ccaced"        -- chnges the color of the float button
 
+-- tag preview widget
+theme.tag_preview_widget_border_radius = 0          -- Border radius of the widget (With AA)
+theme.tag_preview_client_border_radius = 0          -- Border radius of each client in the widget (With AA)
+theme.tag_preview_client_opacity = 0.5              -- Opacity of each client
+theme.tag_preview_client_bg = "#000000"             -- The bg color of each client
+theme.tag_preview_client_border_color = "#ffffff"   -- The border color of each client
+theme.tag_preview_client_border_width = 3           -- The border width of each client
+theme.tag_preview_widget_bg = "#000000"             -- The bg color of the widget
+theme.tag_preview_widget_border_color = "#ffffff"   -- The border color of the widget
+theme.tag_preview_widget_border_width = 3           -- The border width of the widget
+-- LuaFormatter on
