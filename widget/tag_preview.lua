@@ -1,3 +1,9 @@
+-- bling::tag_preview::update   -- first line is the signal
+--      t   (tag)               -- indented lines are function parameters
+-- bling::tag_preview::visibility
+--      s   (screen)         
+--      v   (boolean)
+--
 local awful = require("awful")
 local wibox = require("wibox")
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
