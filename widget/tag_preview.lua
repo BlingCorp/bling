@@ -1,3 +1,5 @@
+--
+-- Provides:
 -- bling::tag_preview::update   -- first line is the signal
 --      t   (tag)               -- indented lines are function parameters
 -- bling::tag_preview::visibility
