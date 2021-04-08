@@ -48,5 +48,7 @@ build = {
        ["bling.widget.tabbar.boxes"] = "widget/tabbar/boxes.lua",
        ["bling.widget.tabbar.default"] = "widget/tabbar/default.lua",
        ["bling.widget.tabbar.modern"] = "widget/tabbar/modern.lua",
+       ["bling.widget.tag_preview"] = "widget/tag_preview.lua",
+       ["bling.widget"] = "widget/init.lua",
    },
 }
