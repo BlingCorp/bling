@@ -27,7 +27,7 @@ Here are the signals available:
 -- bling::tag_preview::update   -- first line is the signal
 --      t   (tag)               -- indented lines are function parameters
 -- bling::tag_preview::visibility
---      t   (tag)         
+--      s   (screen)         
 --      v   (boolean)
 ```
 
@@ -98,7 +98,7 @@ s.mytaglist = awful.widget.taglist {
                     -- BLING: Update the widget with the new tag
                     awesome.emit_signal("bling::tag_preview::update", c3)
                     -- BLING: Show the widget
-                    awesome.emit_signal("bling::tag_preview::visibility", c3, true)
+                    awesome.emit_signal("bling::tag_preview::visibility", s, true)
                 end
 
                 if self.bg ~= '#ff0000' then
@@ -110,7 +110,7 @@ s.mytaglist = awful.widget.taglist {
             self:connect_signal('mouse::leave', function()
 
                 -- BLING: Turn the widget off
-                awesome.emit_signal("bling::tag_preview::visibility", c3, false)
+                awesome.emit_signal("bling::tag_preview::visibility", s, false)
                 
                 if self.has_backup then self.bg = self.backup end
             end)

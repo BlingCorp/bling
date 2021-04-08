@@ -3,7 +3,7 @@
 -- bling::tag_preview::update   -- first line is the signal
 --      t   (tag)               -- indented lines are function parameters
 -- bling::tag_preview::visibility
---      t   (tag)         
+--      s   (screen)         
 --      v   (boolean)
 --
 local awful = require("awful")
@@ -183,9 +183,9 @@ local enable = function(opts)
                     widget_border_color, widget_border_width, geo, margin)
     end)
 
-    awesome.connect_signal("bling::tag_preview::visibility", function(t, v)
-        tag_preview_box.x = t.screen.geometry.x + widget_x
-        tag_preview_box.y = t.screen.geometry.y + widget_y
+    awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
+        tag_preview_box.x = s.geometry.x + widget_x
+        tag_preview_box.y = s.geometry.y + widget_y
         tag_preview_box.visible = v
     end)
 end
