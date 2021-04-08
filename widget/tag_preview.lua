@@ -23,6 +23,7 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
     local client_list = wibox.layout.manual()
     client_list.forced_height = prev_screen_height
     client_list.forced_width = prev_screen_width
+    local tag_screen = t.screen
     for i, c in ipairs(t:clients()) do
 
         local img_box = wibox.widget {
@@ -85,8 +86,8 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
         }
 
         client_box.point = {
-            x = math.floor(c.x * scale),
-            y = math.floor(c.y * scale)
+            x = math.floor((c.x - tag_screen.geometry.x) * scale),
+            y = math.floor((c.y - tag_screen.geometry.y) * scale)
         }
 
         client_list:add(client_box)
@@ -154,9 +155,7 @@ local enable = function(opts)
         width = prev_screen_width,
         height = prev_screen_height,
         input_passthrough = true,
-        bg = "#00000000",
-        x = widget_x,
-        y = widget_y
+        bg = "#00000000"
     })
 
     tag.connect_signal("property::selected", function(t)
@@ -174,7 +173,8 @@ local enable = function(opts)
     end)
 
     awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
-        tag_preview_box.screen = s
+        tag_preview_box.x = s.geometry.x + widget_x
+        tag_preview_box.y = s.geometry.y + widget_y
         tag_preview_box.visible = v
     end)
 end
