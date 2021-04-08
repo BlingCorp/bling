@@ -15,8 +15,10 @@ bling.widget.tag_preview.enable {
     show_client_content = false,  -- Whether or not to show the client content
     x = 10,                       -- The x-coord of the popup
     y = 10,                       -- The y-coord of the popup
-    scale = 0.25                  -- The scale of the previews compared to the screen
-}
+    scale = 0.25,                 -- The scale of the previews compared to the screen
+    honor_padding = false,        -- Honor padding when creating widget size
+    honor_workarea = false        -- Honor work area when creating widget size
+}   
 ```
 
 Here are the signals available:
@@ -25,7 +27,7 @@ Here are the signals available:
 -- bling::tag_preview::update   -- first line is the signal
 --      t   (tag)               -- indented lines are function parameters
 -- bling::tag_preview::visibility
---      s   (screen)         
+--      t   (tag)         
 --      v   (boolean)
 ```
 
@@ -96,7 +98,7 @@ s.mytaglist = awful.widget.taglist {
                     -- BLING: Update the widget with the new tag
                     awesome.emit_signal("bling::tag_preview::update", c3)
                     -- BLING: Show the widget
-                    awesome.emit_signal("bling::tag_preview::visibility", mouse.screen, true)
+                    awesome.emit_signal("bling::tag_preview::visibility", c3, true)
                 end
 
                 if self.bg ~= '#ff0000' then
@@ -108,7 +110,7 @@ s.mytaglist = awful.widget.taglist {
             self:connect_signal('mouse::leave', function()
 
                 -- BLING: Turn the widget off
-                awesome.emit_signal("bling::tag_preview::visibility", mouse.screen, false)
+                awesome.emit_signal("bling::tag_preview::visibility", c3, false)
                 
                 if self.has_backup then self.bg = self.backup end
             end)
@@ -132,6 +134,7 @@ theme.tag_preview_client_border_width = 3           -- The border width of each 
 theme.tag_preview_widget_bg = "#000000"             -- The bg color of the widget
 theme.tag_preview_widget_border_color = "#ffffff"   -- The border color of the widget
 theme.tag_preview_widget_border_width = 3           -- The border width of the widget
+theme.tag_preview_widget_margin = 0                 -- The margin of the widget
 ```
 
 NOTE: I recommend to only use the widget border radius theme variable when not using shadows with a compositor, as anti-aliased rounding with the outer widgets made with AwesomeWM rely on the actual bg being transparent. If you want rounding with shadows on the widget, use a compositor like [jonaburg's fork](https://github.com/jonaburg/picom).

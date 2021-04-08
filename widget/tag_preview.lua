@@ -3,7 +3,7 @@
 -- bling::tag_preview::update   -- first line is the signal
 --      t   (tag)               -- indented lines are function parameters
 -- bling::tag_preview::visibility
---      s   (screen)         
+--      t   (tag)         
 --      v   (boolean)
 --
 local awful = require("awful")
@@ -15,14 +15,14 @@ local dpi = beautiful.xresources.apply_dpi
 local cairo = require("lgi").cairo
 
 local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
-                           prev_screen_width, prev_screen_height, screen_radius,
-                           client_radius, client_opacity, client_bg,
-                           client_border_color, client_border_width, widget_bg,
-                           widget_border_color, widget_border_width)
+                           screen_radius, client_radius, client_opacity,
+                           client_bg, client_border_color, client_border_width,
+                           widget_bg, widget_border_color, widget_border_width,
+                           geo, margin)
 
     local client_list = wibox.layout.manual()
-    client_list.forced_height = prev_screen_height
-    client_list.forced_width = prev_screen_width
+    client_list.forced_height = geo.height
+    client_list.forced_width = geo.width
     local tag_screen = t.screen
     for i, c in ipairs(t:clients()) do
 
@@ -86,8 +86,8 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
         }
 
         client_box.point = {
-            x = math.floor((c.x - tag_screen.geometry.x) * scale),
-            y = math.floor((c.y - tag_screen.geometry.y) * scale)
+            x = math.floor((c.x - geo.x) * scale),
+            y = math.floor((c.y - geo.y) * scale)
         }
 
         client_list:add(client_box)
@@ -98,15 +98,21 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
         {
             {
                 {
-                    client_list,
-                    forced_height = prev_screen_height,
-                    forced_width = prev_screen_width,
-                    bg = widget_bg,
-                    widget = wibox.container.background
+                    {
+                        client_list,
+                        forced_height = geo.height,
+                        forced_width = geo.width,
+                        bg = widget_bg,
+                        widget = wibox.container.background
+                    },
+                    layout = wibox.layout.align.horizontal
                 },
-                layout = wibox.layout.align.horizontal
+                layout = wibox.layout.align.vertical
+
             },
-            layout = wibox.layout.align.vertical
+            margins = margin,
+            widget = wibox.container.margin
+
         },
         bg = widget_bg,
         border_width = widget_border_width,
@@ -120,6 +126,7 @@ local enable = function(opts)
     local tag_preview_image = false
     local widget_x = dpi(20)
     local widget_y = dpi(20)
+    local margin = beautiful.tag_preview_widget_margin or dpi(0)
     local screen_radius = beautiful.tag_preview_widget_border_radius or dpi(0)
     local client_radius = beautiful.tag_preview_client_border_radius or dpi(0)
     local client_opacity = beautiful.tag_preview_client_opacity or 0.5
@@ -135,25 +142,21 @@ local enable = function(opts)
                                     dpi(3)
 
     local scale = 0.2
+    local work_area = false
+    local padding = false
 
     if opts then
         tag_preview_image = opts.show_client_content or tag_preview_image
         widget_x = opts.x or widget_x
         widget_y = opts.y or widget_y
         scale = opts.scale or scale
+        work_area = opts.honor_workarea or work_area
+        padding = opts.honor_padding or padding
     end
-
-    local prev_screen_width = math.floor(
-                                  awful.screen.focused().workarea.width * scale)
-    local prev_screen_height = math.floor(
-                                   awful.screen.focused().workarea.height *
-                                       scale)
 
     local tag_preview_box = wibox({
         visible = false,
         ontop = true,
-        width = prev_screen_width,
-        height = prev_screen_height,
         input_passthrough = true,
         bg = "#00000000"
     })
@@ -165,16 +168,24 @@ local enable = function(opts)
     end)
 
     awesome.connect_signal("bling::tag_preview::update", function(t)
-        draw_widget(tag_preview_box, t, tag_preview_image, scale,
-                    prev_screen_width, prev_screen_height, screen_radius,
+
+        local geo = t.screen:get_bounding_geometry{
+            honor_padding = padding,
+            honor_workarea = work_area
+        }
+
+        tag_preview_box.width = scale * geo.width + margin * 2
+        tag_preview_box.height = scale * geo.height + margin * 2
+
+        draw_widget(tag_preview_box, t, tag_preview_image, scale, screen_radius,
                     client_radius, client_opacity, client_bg,
                     client_border_color, client_border_width, widget_bg,
-                    widget_border_color, widget_border_width)
+                    widget_border_color, widget_border_width, geo, margin)
     end)
 
-    awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
-        tag_preview_box.x = s.geometry.x + widget_x
-        tag_preview_box.y = s.geometry.y + widget_y
+    awesome.connect_signal("bling::tag_preview::visibility", function(t, v)
+        tag_preview_box.x = t.screen.geometry.x + widget_x
+        tag_preview_box.y = t.screen.geometry.y + widget_y
         tag_preview_box.visible = v
     end)
 end

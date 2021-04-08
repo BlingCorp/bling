@@ -62,4 +62,5 @@ theme.tag_preview_client_border_width = 3           -- The border width of each 
 theme.tag_preview_widget_bg = "#000000"             -- The bg color of the widget
 theme.tag_preview_widget_border_color = "#ffffff"   -- The border color of the widget
 theme.tag_preview_widget_border_width = 3           -- The border width of the widget
+theme.tag_preview_widget_margin = 0                 -- The margin of the widget
 -- LuaFormatter on
