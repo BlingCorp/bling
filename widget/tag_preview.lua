@@ -144,9 +144,9 @@ local enable = function(opts)
     end
 
     local prev_screen_width = math.floor(
-                                  awful.screen.focused().geometry.width * scale)
+                                  awful.screen.focused().workarea.width * scale)
     local prev_screen_height = math.floor(
-                                   awful.screen.focused().geometry.height *
+                                   awful.screen.focused().workarea.height *
                                        scale)
 
     local tag_preview_box = wibox({
