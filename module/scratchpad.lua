@@ -75,7 +75,17 @@ end
 
 --- Turns the scratchpad off if it is focused otherwise it raises the scratchpad
 function Scratchpad:toggle()
-    if client.focus and awful.rules.match(client.focus, self.rule) then
+    local is_turn_off = false
+    if self.retarded then
+        local matches = self:find()
+        if matches[1] and matches[1].first_tag then
+            is_turn_off = matches[1].first_tag.selected
+        end
+    else
+        is_turn_off = client.focus and awful.rules.match(client.focus, self.rule)
+    end
+    
+    if is_turn_off then
         self:turn_off()
     else
         self:turn_on()

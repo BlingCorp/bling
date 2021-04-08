@@ -19,12 +19,14 @@ All documentation, instructions, and previews are [here](https://nooo37.github.i
     - Tiled Wallpaper
     - Wallpaper Easy Setup
     - Window Swallowing
+    - Scratchpad
 - Signals
     - Playerctl
 
 ## TODO
+- [ ] Add a built-in option to animate scratchpads with [awestore](https://github.com/K4rakara/awestore)
 - [ ] Add external sources management for the wallpaper module (URLs, RSS feeds, NASA picture of the day, ...)
-- [ ] Scratchpad module
+- [x] Scratchpad module
 - [x] Some more documentation on the tabbed module
 - [x] Add a cool alternative tabbar style  
 - [x] Add another cool tabbar style (we need more styles)
