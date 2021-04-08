@@ -8,6 +8,7 @@
     - [Tiled Wallpaper](module/twall.md)
     - [Wallpaper Easy Setup](module/wall.md)
     - [Window Swallowing](module/swal.md)
+    - [Scratchpad](module/scratch.md)
 
 - Signals
     - [Playerctl](signals/pctl.md)
