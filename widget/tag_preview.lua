@@ -154,9 +154,7 @@ local enable = function(opts)
         width = prev_screen_width,
         height = prev_screen_height,
         input_passthrough = true,
-        bg = "#00000000",
-        x = widget_x,
-        y = widget_y
+        bg = "#00000000"
     })
 
     tag.connect_signal("property::selected", function(t)
@@ -174,7 +172,8 @@ local enable = function(opts)
     end)
 
     awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
-        tag_preview_box.screen = s
+        tag_preview_box.x = s.geometry.x + widget_x
+        tag_preview_box.y = s.geometry.y + widget_y
         tag_preview_box.visible = v
     end)
 end
