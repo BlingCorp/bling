@@ -23,6 +23,7 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
     local client_list = wibox.layout.manual()
     client_list.forced_height = prev_screen_height
     client_list.forced_width = prev_screen_width
+    local tag_screen = t.screen
     for i, c in ipairs(t:clients()) do
 
         local img_box = wibox.widget {
@@ -85,8 +86,8 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
         }
 
         client_box.point = {
-            x = math.floor(c.x * scale),
-            y = math.floor(c.y * scale)
+            x = math.floor((c.x - tag_screen.geometry.x) * scale),
+            y = math.floor((c.y - tag_screen.geometry.y) * scale)
         }
 
         client_list:add(client_box)
