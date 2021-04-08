@@ -76,7 +76,7 @@ end
 --- Turns the scratchpad off if it is focused otherwise it raises the scratchpad
 function Scratchpad:toggle()
     local is_turn_off = false
-    if self.retarded then
+    if self.dont_focus_before_close then
         local matches = self:find()
         if matches[1] and matches[1].first_tag then
             is_turn_off = matches[1].first_tag.selected
