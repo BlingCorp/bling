@@ -2,7 +2,6 @@ local awful = require("awful")
 
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
-
 local Scratchpad = {}
 
 --- Creates a new scratchpad object based on the argument
@@ -19,10 +18,8 @@ end
 --- Find all clients that satisfy the the rule
 --
 -- @return A list of all clients that satisfy the rule
-function Scratchpad:find()
-    return helpers.client.find(self.rule)
-end
- 
+function Scratchpad:find() return helpers.client.find(self.rule) end
+
 --- Applies the objects scratchpad properties to a given client
 --
 -- @param c A client to which to apply the properties 
@@ -30,11 +27,16 @@ function Scratchpad:apply(c)
     if not c or not c.valid then return end
     c.floating = self.floating
     c.sticky = self.sticky
-    c:geometry(self.geometry)
+    c:geometry({
+        x = self.geometry.x + awful.screen.focused().geometry.x,
+        y = self.geometry.y + awful.screen.focused().geometry.y,
+        width = self.geometry.width,
+        height = self.geometry.height
+    })
     if self.autoclose then
         c:connect_signal("unfocus", function(c)
-                             c.sticky = false -- client won't turn off if sticky
-                             helpers.client.turn_off(c)
+            c.sticky = false -- client won't turn off if sticky
+            helpers.client.turn_off(c)
         end)
     end
 end
@@ -47,7 +49,7 @@ function Scratchpad:turn_on()
         c = matches[1]
         if self.reapply then self:apply(c) end
         -- c.sticky was set to false in turn_off so it has to be reapplied anyway
-        c.sticky = self.sticky 
+        c.sticky = self.sticky
         helpers.client.turn_on(c)
         return
     else
@@ -82,9 +84,10 @@ function Scratchpad:toggle()
             is_turn_off = matches[1].first_tag.selected
         end
     else
-        is_turn_off = client.focus and awful.rules.match(client.focus, self.rule)
+        is_turn_off = client.focus and
+                          awful.rules.match(client.focus, self.rule)
     end
-    
+
     if is_turn_off then
         self:turn_off()
     else
