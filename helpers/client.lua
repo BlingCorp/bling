@@ -8,7 +8,7 @@ local _client = {}
 --
 -- @param c A client
 function _client.turn_off(c)
-    local current_tag = awful.tag.selected(c.screen)
+    local current_tag = c.screen.selected_tag
     local ctags = {}
     for k, tag in pairs(c:tags()) do
         if tag ~= current_tag then table.insert(ctags, tag) end
@@ -20,7 +20,7 @@ end
 --
 -- @param c A client
 function _client.turn_on(c)
-    local current_tag = awful.tag.selected(c.screen)
+    local current_tag = c.screen.selected_tag
     ctags = {current_tag}
     for k, tag in pairs(c:tags()) do
         if tag ~= current_tag then table.insert(ctags, tag) end
@@ -60,8 +60,8 @@ function _client.is_child_of(c, pid)
     local handle = io.popen(pid_cmd)
     local parent_pid = handle:read("*a")
     handle:close()
-    return tostring(parent_pid) == tostring(pid) or
-                        tostring(parent_pid) == tostring(c.pid)
+    return tostring(parent_pid) == tostring(pid) or tostring(parent_pid) ==
+               tostring(c.pid)
 end
 
 --- Finds all clients that satisfy the passed rule
@@ -80,6 +80,5 @@ function _client.find(rule)
 
     return matches
 end
-
 
 return _client
