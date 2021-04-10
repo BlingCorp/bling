@@ -50,11 +50,45 @@ function Scratchpad:turn_on()
         if self.reapply then self:apply(c) end
         -- c.sticky was set to false in turn_off so it has to be reapplied anyway
         c.sticky = self.sticky
+        local new_y = c.y
+        local new_x = c.x
+
+        -- Get the tweens
+        local anim_x = self.awestore.x
+        local anim_y = self.awestore.y
+
+        -- Subscribe
+        if anim_x then
+            anim_x:subscribe(function(x) if c then c.x = x end end)
+        end
+        if anim_y then
+            anim_y:subscribe(function(y) if c then c.y = y end end)
+        end
+
         helpers.client.turn_on(c)
-        return
+
+        -- Unsubscribe
+        if anim_x then
+            anim_x:set(new_x)
+            local unsub
+            unsub = anim_x.ended:subscribe(
+                        function()
+                    unsub()
+                    return
+                end)
+        end
+        if anim_y then
+            anim_y:set(new_y)
+            local unsub_y
+            unsub_y = anim_y.ended:subscribe(
+                          function()
+                    unsub_y()
+                    return
+                end)
+        end
     else
         -- if no client was found, spawn one, find the corresponding window,
-        -- apply the properties only once (until the next closing)
+        --  apply the properties only once (until the next closing)
         local pid = awful.spawn.with_shell(self.command)
         local function inital_apply(c)
             if helpers.client.is_child_of(c, pid) then self:apply(c) end
@@ -71,7 +105,39 @@ function Scratchpad:turn_off()
     local c = matches[1]
     if c then
         c.sticky = false
-        helpers.client.turn_off(c)
+
+        -- Get the tweens
+        local anim_x = self.awestore.x
+        local anim_y = self.awestore.y
+
+        -- Subscribe
+        if anim_x then
+            anim_x:subscribe(function(x) if c then c.x = x end end)
+        end
+        if anim_y then
+            anim_y:subscribe(function(y) if c then c.y = y end end)
+        end
+
+        -- Unsubscribe
+        if anim_x then
+            anim_x:set(anim_x:initial())
+            local unsub
+            unsub = anim_x.ended:subscribe(
+                        function()
+                    helpers.client.turn_off(c)
+                    unsub()
+                end)
+        end
+        if anim_y then
+            anim_y:set(anim_y:initial())
+
+            local unsub
+            unsub = anim_y.ended:subscribe(
+                        function()
+                    helpers.client.turn_off(c)
+                    unsub()
+                end)
+        end
     end
 end
 
