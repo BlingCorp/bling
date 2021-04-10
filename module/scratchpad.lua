@@ -10,6 +10,7 @@ local Scratchpad = {}
 -- @return The new scratchpad object
 function Scratchpad:new(info)
     info = info or {}
+    info.awestore = info.awestore or {}
     setmetatable(info, self)
     self.__index = self
     return info
@@ -80,12 +81,9 @@ function Scratchpad:turn_on()
         if anim_y then
             anim_y:set(new_y)
             local unsub_y
-            unsub_y = anim_y.ended:subscribe(
-                          function()
-                    unsub_y()
-                    return
-                end)
+            unsub_y = anim_y.ended:subscribe(function() unsub_y() end)
         end
+        return
     else
         -- if no client was found, spawn one, find the corresponding window,
         --  apply the properties only once (until the next closing)
@@ -138,6 +136,8 @@ function Scratchpad:turn_off()
                     unsub()
                 end)
         end
+
+        if not anim_x and not anim_y then helpers.client.turn_off(c) end
     end
 end
 
