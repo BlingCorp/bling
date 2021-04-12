@@ -3,6 +3,7 @@ local awful = require("awful")
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
 local Scratchpad = {}
+local in_anim = false
 
 --- Creates a new scratchpad object based on the argument
 --
@@ -45,7 +46,7 @@ end
 --- Turns the scratchpad on
 function Scratchpad:turn_on()
     local matches = self:find()
-    if matches[1] then
+    if matches[1] and not in_anim then
         -- if a client was found, turn it on
         c = matches[1]
         if self.reapply then self:apply(c) end
@@ -60,10 +61,16 @@ function Scratchpad:turn_on()
 
         -- Subscribe
         if anim_x then
-            anim_x:subscribe(function(x) if c then c.x = x end end)
+            anim_x:subscribe(function(x)
+                if c then c.x = x end
+                in_anim = true
+            end)
         end
         if anim_y then
-            anim_y:subscribe(function(y) if c then c.y = y end end)
+            anim_y:subscribe(function(y)
+                if c then c.y = y end
+                in_anim = true
+            end)
         end
 
         helpers.client.turn_on(c)
@@ -71,17 +78,21 @@ function Scratchpad:turn_on()
         -- Unsubscribe
         if anim_x then
             anim_x:set(new_x)
-            local unsub
-            unsub = anim_x.ended:subscribe(
-                        function()
-                    unsub()
-                    return
+            local unsub_x
+            unsub_x = anim_x.ended:subscribe(
+                          function()
+                    in_anim = false
+                    unsub_x()
                 end)
         end
         if anim_y then
             anim_y:set(new_y)
             local unsub_y
-            unsub_y = anim_y.ended:subscribe(function() unsub_y() end)
+            unsub_y = anim_y.ended:subscribe(
+                          function()
+                    in_anim = false
+                    unsub_y()
+                end)
         end
         return
     else
@@ -101,7 +112,7 @@ end
 function Scratchpad:turn_off()
     local matches = self:find()
     local c = matches[1]
-    if c then
+    if c and not in_anim then
         c.sticky = false
 
         -- Get the tweens
@@ -110,10 +121,16 @@ function Scratchpad:turn_off()
 
         -- Subscribe
         if anim_x then
-            anim_x:subscribe(function(x) if c then c.x = x end end)
+            anim_x:subscribe(function(x)
+                if c then c.x = x end
+                in_anim = true
+            end)
         end
         if anim_y then
-            anim_y:subscribe(function(y) if c then c.y = y end end)
+            anim_y:subscribe(function(y)
+                if c then c.y = y end
+                in_anim = true
+            end)
         end
 
         -- Unsubscribe
@@ -122,6 +139,7 @@ function Scratchpad:turn_off()
             local unsub
             unsub = anim_x.ended:subscribe(
                         function()
+                    in_anim = false
                     helpers.client.turn_off(c)
                     unsub()
                 end)
@@ -132,6 +150,7 @@ function Scratchpad:turn_off()
             local unsub
             unsub = anim_y.ended:subscribe(
                         function()
+                    in_anim = false
                     helpers.client.turn_off(c)
                     unsub()
                 end)
