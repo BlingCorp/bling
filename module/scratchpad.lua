@@ -3,6 +3,7 @@ local awful = require("awful")
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
 local Scratchpad = {}
+local in_anim = false
 
 --- Creates a new scratchpad object based on the argument
 --
@@ -10,6 +11,7 @@ local Scratchpad = {}
 -- @return The new scratchpad object
 function Scratchpad:new(info)
     info = info or {}
+    info.awestore = info.awestore or {}
     setmetatable(info, self)
     self.__index = self
     return info
@@ -44,17 +46,58 @@ end
 --- Turns the scratchpad on
 function Scratchpad:turn_on()
     local matches = self:find()
-    if matches[1] then
+    if matches[1] and not in_anim then
         -- if a client was found, turn it on
         c = matches[1]
         if self.reapply then self:apply(c) end
         -- c.sticky was set to false in turn_off so it has to be reapplied anyway
         c.sticky = self.sticky
+        local new_y = c.y
+        local new_x = c.x
+
+        -- Get the tweens
+        local anim_x = self.awestore.x
+        local anim_y = self.awestore.y
+
+        -- Subscribe
+        if anim_x then
+            anim_x:subscribe(function(x)
+                if c and c.valid then c.x = x end
+                in_anim = true
+            end)
+        end
+        if anim_y then
+            anim_y:subscribe(function(y)
+                if c and c.valid then c.y = y end
+                in_anim = true
+            end)
+        end
+
         helpers.client.turn_on(c)
+
+        -- Unsubscribe
+        if anim_x then
+            anim_x:set(new_x)
+            local unsub_x
+            unsub_x = anim_x.ended:subscribe(
+                          function()
+                    in_anim = false
+                    unsub_x()
+                end)
+        end
+        if anim_y then
+            anim_y:set(new_y)
+            local unsub_y
+            unsub_y = anim_y.ended:subscribe(
+                          function()
+                    in_anim = false
+                    unsub_y()
+                end)
+        end
         return
     else
         -- if no client was found, spawn one, find the corresponding window,
-        -- apply the properties only once (until the next closing)
+        --  apply the properties only once (until the next closing)
         local pid = awful.spawn.with_shell(self.command)
         local function inital_apply(c)
             if helpers.client.is_child_of(c, pid) then self:apply(c) end
@@ -69,9 +112,51 @@ end
 function Scratchpad:turn_off()
     local matches = self:find()
     local c = matches[1]
-    if c then
+    if c and not in_anim then
         c.sticky = false
-        helpers.client.turn_off(c)
+
+        -- Get the tweens
+        local anim_x = self.awestore.x
+        local anim_y = self.awestore.y
+
+        -- Subscribe
+        if anim_x then
+            anim_x:subscribe(function(x)
+                if c and c.valid then c.x = x end
+                in_anim = true
+            end)
+        end
+        if anim_y then
+            anim_y:subscribe(function(y)
+                if c and c.valid then c.y = y end
+                in_anim = true
+            end)
+        end
+
+        -- Unsubscribe
+        if anim_x then
+            anim_x:set(anim_x:initial())
+            local unsub
+            unsub = anim_x.ended:subscribe(
+                        function()
+                    in_anim = false
+                    helpers.client.turn_off(c)
+                    unsub()
+                end)
+        end
+        if anim_y then
+            anim_y:set(anim_y:initial())
+
+            local unsub
+            unsub = anim_y.ended:subscribe(
+                        function()
+                    in_anim = false
+                    helpers.client.turn_off(c)
+                    unsub()
+                end)
+        end
+
+        if not anim_x and not anim_y then helpers.client.turn_off(c) end
     end
 end
 
