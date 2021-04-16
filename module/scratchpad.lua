@@ -62,13 +62,13 @@ function Scratchpad:turn_on()
         -- Subscribe
         if anim_x then
             anim_x:subscribe(function(x)
-                if c then c.x = x end
+                if c and c.valid then c.x = x end
                 in_anim = true
             end)
         end
         if anim_y then
             anim_y:subscribe(function(y)
-                if c then c.y = y end
+                if c and c.valid then c.y = y end
                 in_anim = true
             end)
         end
@@ -122,13 +122,13 @@ function Scratchpad:turn_off()
         -- Subscribe
         if anim_x then
             anim_x:subscribe(function(x)
-                if c then c.x = x end
+                if c and c.valid then c.x = x end
                 in_anim = true
             end)
         end
         if anim_y then
             anim_y:subscribe(function(y)
-                if c then c.y = y end
+                if c and c.valid then c.y = y end
                 in_anim = true
             end)
         end
