@@ -79,7 +79,7 @@ awesome.connect_signal("bling::playerctl::title_artist_album",
     -- Set art widget
     art:set_image(gears.surface.load_uncached(art_path))
 
-    -- Set title and artist widgets
+    -- Set player name, title and artist widgets
     name_widget:set_markup_silently(player_name)
     title_widget:set_markup_silently(title)
     artist_widget:set_markup_silently(artist)
@@ -117,7 +117,7 @@ theme.playerctl_update_on_activity = true
 theme.playerctl_position_update_interval = 1
 ```
 
-#### Example Configuration
+#### Example Configurations
 ```lua
 -- Prioritize ncspot over all other players and ignore firefox players (e.g. YouTube and Twitch tabs) completely
 bling.signal.playerctl.enable {
@@ -125,6 +125,7 @@ bling.signal.playerctl.enable {
     player = {"ncspot", "%any"}
 }
 
+-- OR in your theme file:
 -- Same config as above but with theme variables
 theme.playerctl_ignore = "firefox"
 theme.playerctl_player = {"ncspot", "%any"}
@@ -133,5 +134,5 @@ theme.playerctl_player = {"ncspot", "%any"}
 theme.playerctl_player = {"vlc", "%any", "spotify"}
 
 -- Disable priority of most recently active players
-theme.update_on_activity = false
+theme.playerctl_update_on_activity = false
 ```
