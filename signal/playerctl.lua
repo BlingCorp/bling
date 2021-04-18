@@ -3,14 +3,17 @@
 -- Provides:
 -- bling::playerctl::status
 --      playing (boolean)
+--      player_name (string)
 -- bling::playerctl::title_artist_album
 --      title (string)
 --      artist  (string)
 --      album_path (string)
+--      player_name (string)
 -- bling::playerctl::position
 --      interval_sec (number)
 --      length_sec (number)
--- bling::playerctl::player_stopped
+--      player_name (string)
+-- bling::playerctl::no_players
 --      (No parameters)
 
 local gears = require("gears")
@@ -41,7 +44,6 @@ function position_cb()
                                 player.player_name)
             last_position = position
             last_length = length
-            collectgarbage("collect")
         end
     end
 end
@@ -232,9 +234,8 @@ local function start_manager()
     function manager:on_name_vanished(name)
         if #manager.players == 0 then
             position_timer:stop()
-            awesome.emit_signal("bling::playerctl::player_stopped")
+            awesome.emit_signal("bling::playerctl::no_players")
         end
-        collectgarbage("collect")
     end
 end
 
@@ -291,7 +292,6 @@ local function playerctl_disable()
     last_title = ""
     last_artist = ""
     last_artUrl = ""
-    collectgarbage("collect")
 end
 
 return {enable = playerctl_enable, disable = playerctl_disable}
