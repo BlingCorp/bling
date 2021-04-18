@@ -15,6 +15,9 @@ theme.flash_focus_start_opacity = 0.6       -- the starting opacity
 theme.flash_focus_step = 0.01               -- the step of animation
 
 -- playerctl signal
+theme.playerctl_ignore = {}                   -- list of players to be ignored
+theme.playerctl_player = {}                   -- list of players to be used in priority order
+theme.playerctl_update_on_activity = true     -- whether to prioritize the most recently active players or not
 theme.playerctl_position_update_interval = 1  -- the update interval for fetching the position from playerctl
 
 -- tabbed
