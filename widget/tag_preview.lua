@@ -26,72 +26,74 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
     local tag_screen = t.screen
     for i, c in ipairs(t:clients()) do
 
-        local img_box = wibox.widget {
-            image = gears.surface.load(c.icon),
-            resize = true,
-            forced_height = 100 * scale,
-            forced_width = 100 * scale,
-            widget = wibox.widget.imagebox
-        }
+        if not c.hidden and not c.minimized then
 
-        if tag_preview_image then
-            if c.prev_content or t.selected then
-                local content
-                if t.selected then
-                    content = gears.surface(c.content)
-                else
-                    content = gears.surface(c.prev_content)
+            local img_box = wibox.widget {
+                image = gears.surface.load(c.icon),
+                resize = true,
+                forced_height = 100 * scale,
+                forced_width = 100 * scale,
+                widget = wibox.widget.imagebox
+            }
+
+            if tag_preview_image then
+                if c.prev_content or t.selected then
+                    local content
+                    if t.selected then
+                        content = gears.surface(c.content)
+                    else
+                        content = gears.surface(c.prev_content)
+                    end
+                    local cr = cairo.Context(content)
+                    local x, y, w, h = cr:clip_extents()
+                    local img = cairo.ImageSurface.create(cairo.Format.ARGB32,
+                                                          w - x, h - y)
+                    cr = cairo.Context(img)
+                    cr:set_source_surface(content, 0, 0)
+                    cr.operator = cairo.Operator.SOURCE
+                    cr:paint()
+
+                    img_box = wibox.widget {
+                        image = gears.surface.load(img),
+                        resize = true,
+                        opacity = client_opacity,
+                        forced_height = math.floor(c.height * scale),
+                        forced_width = math.floor(c.width * scale),
+                        widget = wibox.widget.imagebox
+                    }
                 end
-                local cr = cairo.Context(content)
-                local x, y, w, h = cr:clip_extents()
-                local img = cairo.ImageSurface.create(cairo.Format.ARGB32,
-                                                      w - x, h - y)
-                cr = cairo.Context(img)
-                cr:set_source_surface(content, 0, 0)
-                cr.operator = cairo.Operator.SOURCE
-                cr:paint()
-
-                img_box = wibox.widget {
-                    image = gears.surface.load(img),
-                    resize = true,
-                    opacity = client_opacity,
-                    forced_height = math.floor(c.height * scale),
-                    forced_width = math.floor(c.width * scale),
-                    widget = wibox.widget.imagebox
-                }
             end
-        end
 
-        local client_box = wibox.widget {
-            {
-                nil,
+            local client_box = wibox.widget {
                 {
                     nil,
-                    img_box,
+                    {
+                        nil,
+                        img_box,
+                        nil,
+                        expand = "outside",
+                        layout = wibox.layout.align.horizontal
+                    },
                     nil,
                     expand = "outside",
-                    layout = wibox.layout.align.horizontal
+                    widget = wibox.layout.align.vertical
                 },
-                nil,
-                expand = "outside",
-                widget = wibox.layout.align.vertical
-            },
-            forced_height = math.floor(c.height * scale),
-            forced_width = math.floor(c.width * scale),
-            bg = client_bg,
-            border_color = client_border_color,
-            border_width = client_border_width,
-            shape = helpers.shape.rrect(client_radius),
-            widget = wibox.container.background
-        }
+                forced_height = math.floor(c.height * scale),
+                forced_width = math.floor(c.width * scale),
+                bg = client_bg,
+                border_color = client_border_color,
+                border_width = client_border_width,
+                shape = helpers.shape.rrect(client_radius),
+                widget = wibox.container.background
+            }
 
-        client_box.point = {
-            x = math.floor((c.x - geo.x) * scale),
-            y = math.floor((c.y - geo.y) * scale)
-        }
+            client_box.point = {
+                x = math.floor((c.x - geo.x) * scale),
+                y = math.floor((c.y - geo.y) * scale)
+            }
 
-        client_list:add(client_box)
-
+            client_list:add(client_box)
+        end
     end
 
     tag_preview_box:setup{

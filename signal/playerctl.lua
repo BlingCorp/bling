@@ -19,7 +19,6 @@
 local gears = require("gears")
 local awful = require("awful")
 local beautiful = require("beautiful")
-local naughty = require("naughty")
 local Playerctl = require("lgi").Playerctl
 
 local manager = nil
