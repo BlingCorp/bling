@@ -3,7 +3,7 @@
 </p>
 <h1 align="center"></h1>
 
-All documentation, instructions, and previews are [here](https://nooo37.github.io/bling).
+All documentation, instructions, and previews are [here](https://blingcorp.github.io/bling/).
 
 ## Features
 
