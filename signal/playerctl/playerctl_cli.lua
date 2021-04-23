@@ -9,7 +9,7 @@
 -- bling::playerctl::position
 --      interval_sec (number)
 --      length_sec (number)
--- bling::playerctl::player_stopped
+-- bling::playerctl::no_players
 --
 local awful = require("awful")
 local beautiful = require("beautiful")
@@ -102,7 +102,7 @@ echo "$tmp_cover_path"
                             "bling::playerctl::title_artist_album", title,
                             artist, album_path)
                     else
-                        awesome.emit_signal("bling::playerctl::player_stopped")
+                        awesome.emit_signal("bling::playerctl::no_players")
                     end
                 end)
                 collectgarbage("collect")
