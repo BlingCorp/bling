@@ -270,9 +270,11 @@ local function playerctl_enable(args)
     args.interval = args.interval or beautiful.playerctl_position_update_interval
     parse_args(args)
 
+    -- Grab playerctl library
+    Playerctl = require("lgi").Playerctl
+
     -- Ensure main event loop has started before starting player manager 
     gears.timer.delayed_call(start_manager)
-    Playerctl = require("lgi").Playerctl
 end
 
 local function playerctl_disable()

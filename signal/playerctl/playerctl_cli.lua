@@ -116,7 +116,8 @@ end
 -- emit_player_status()
 -- emit_player_info()
 
-local enable = function()
+local enable = function(args)
+    interval = (args and args.interval) or interval
     emit_player_status()
     emit_player_info()
 end
