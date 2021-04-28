@@ -419,16 +419,16 @@ body.sticky .sidebar-toggle {
 }
 
 .markdown-section th {
-  border: 1px solid #aaa;
-  color: #a6bcce;
+  border: 1px solid #29343d;
+  color: #9fb4c4;
   background-color: #13181c;
   font-weight: bold;
   padding: 6px 13px;
 }
 
 .markdown-section td {
-  border: 1px solid #aaa;
-  color: #a6bcce;
+  border: 1px solid #29343d;
+  color: #9fb4c4;
   background-color: #13181c;
   padding: 6px 13px;
 }
