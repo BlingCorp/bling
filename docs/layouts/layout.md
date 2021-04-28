@@ -22,7 +22,7 @@ theme.mstab_dont_resize_slaves = false      -- whether the tabbed stack windows 
                                             -- currently focused stack window (set it to true if you use
                                             -- transparent terminals. False if you use shadows on solid ones
 theme.mstab_bar_padding = "default"         -- how much padding there should be between clients and your tabbar
-                                            -- by default it will adjust based on your useless gaps. 
+                                            -- by default it will adjust based on your useless gaps.
                                             -- If you want a custom value. Set it to the number of pixels (int)
 theme.mstab_border_radius = 0               -- border radius of the tabbar
 theme.mstab_bar_height = 40                 -- height of the tabbar

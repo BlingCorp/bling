@@ -20,9 +20,9 @@ To initalize a scratchpad you can do something like the following:
 
 ```lua
 local bling = require("bling")
-local awestore = require("awestore")                  -- Totally optional, only required if you are using animations. 
+local awestore = require("awestore")                  -- Totally optional, only required if you are using animations.
 
--- These are example awestore tween stores. You can use one for just y, just x, or both. 
+-- These are example awestore tween stores. You can use one for just y, just x, or both.
 -- The duration and easing is up to you. Please check out the awestore docs to learn more.
 local anim_y = awestore.tweened(1100, {
     duration = 300,
@@ -34,7 +34,7 @@ local anim_x = awestore.tweened(1920, {
     easing = awestore.easing.cubic_in_out
 })
 
-local term_scratch = bling.module.scratchpad:new { 
+local term_scratch = bling.module.scratchpad:new {
     command = "wezterm start --class spad",           -- How to spawn the scratchpad
     rule = { instance = "spad" },                     -- The rule that the scratchpad will be searched by
     sticky = true,                                    -- Whether the scratchpad should be sticky

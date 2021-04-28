@@ -4,7 +4,7 @@
 
 - Modules
     - [Flash Focus](module/flash.md)
-    - [Tabbed](module/tabbed.md) 
+    - [Tabbed](module/tabbed.md)
     - [Tiled Wallpaper](module/twall.md)
     - [Wallpaper Easy Setup](module/wall.md)
     - [Window Swallowing](module/swal.md)

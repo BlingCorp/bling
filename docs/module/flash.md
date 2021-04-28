@@ -14,7 +14,7 @@ This connects to the focus signal of a client, which means that the flash focus 
 The other way is to call the function itself like this: `bling.module.flash_focus.flashfocus(someclient)`. This allows you to activate on certain keybinds like so:
 ```lua
 awful.key({modkey}, "Up",
-    function() 
+    function()
         awful.client.focus.bydirection("up")
         bling.module.flash_focus.flashfocus(client.focus)
      end, {description = "focus up", group = "client"})

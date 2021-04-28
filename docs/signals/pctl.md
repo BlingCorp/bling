@@ -143,7 +143,7 @@ theme.playerctl_backend = "playerctl_lib"
 theme.playerctl_ignore = "firefox"
 theme.playerctl_player = {"ncspot", "%any"}
 
--- Prioritize vlc over all other players and deprioritize spotify 
+-- Prioritize vlc over all other players and deprioritize spotify
 theme.playerctl_backend = "playerctl_lib"
 theme.playerctl_player = {"vlc", "%any", "spotify"}
 

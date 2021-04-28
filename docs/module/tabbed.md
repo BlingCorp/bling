@@ -16,7 +16,7 @@ bling.module.tabbed.pick_with_dmenu() -- picks a client with a dmenu application
 
 ```lua
 -- For tabbed only
-theme.tabbed_spawn_in_tab = false           -- whether a new client should spawn into the focused tabbing container 
+theme.tabbed_spawn_in_tab = false           -- whether a new client should spawn into the focused tabbing container
 
 -- For tabbar in general
 theme.tabbar_ontop  = false
@@ -30,13 +30,13 @@ theme.tabbar_fg_normal = "#ffffff"          -- foreground color of the focused c
 theme.tabbar_bg_focus  = "#1A2026"          -- background color of unfocused clients on the tabbar
 theme.tabbar_fg_focus  = "#ff0000"          -- foreground color of unfocused clients on the tabbar
 
--- the following variables are currently only for the "modern" tabbar style 
+-- the following variables are currently only for the "modern" tabbar style
 theme.tabbar_color_close = "#f9929b"        -- chnges the color of the close button
 theme.tabbar_color_min   = "#fbdf90"        -- chnges the color of the minimize button
 theme.tabbar_color_float = "#ccaced"        -- chnges the color of the float button
 ```
 
-### Preview 
+### Preview
 
 Modern theme:
 

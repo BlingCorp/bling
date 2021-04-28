@@ -8,7 +8,7 @@ You might just want to copy that whole part into your theme.lua and start adjust
 
 -- window swallowing
 theme.dont_swallow_classname_list    = {"firefox", "Gimp"}      -- list of class names that should not be swallowed
-theme.dont_swallow_filter_activated  = true                     -- whether the filter above should be active 
+theme.dont_swallow_filter_activated  = true                     -- whether the filter above should be active
 
 -- flash focus
 theme.flash_focus_start_opacity = 0.6       -- the starting opacity
@@ -22,7 +22,7 @@ theme.playerctl_update_on_activity = true     -- whether to prioritize the most 
 theme.playerctl_position_update_interval = 1  -- the update interval for fetching the position from playerctl
 
 -- tabbed
-theme.tabbed_spawn_in_tab = false           -- whether a new client should spawn into the focused tabbing container 
+theme.tabbed_spawn_in_tab = false           -- whether a new client should spawn into the focused tabbing container
 
 -- tabbar general
 theme.tabbar_ontop  = false
@@ -42,7 +42,7 @@ theme.mstab_dont_resize_slaves = false      -- whether the tabbed stack windows 
                                             -- currently focused stack window (set it to true if you use
                                             -- transparent terminals. False if you use shadows on solid ones
 theme.mstab_bar_padding = "default"         -- how much padding there should be between clients and your tabbar
-                                            -- by default it will adjust based on your useless gaps. 
+                                            -- by default it will adjust based on your useless gaps.
                                             -- If you want a custom value. Set it to the number of pixels (int)
 theme.mstab_border_radius = 0               -- border radius of the tabbar
 theme.mstab_bar_height = 40                 -- height of the tabbar
@@ -51,7 +51,7 @@ theme.mstab_tabbar_style = "default"        -- style of the tabbar ("default", "
                                             -- defaults to the tabbar_style so only change if you want a
                                             -- different style for mstab and tabbed
 
--- the following variables are currently only for the "modern" tabbar style 
+-- the following variables are currently only for the "modern" tabbar style
 theme.tabbar_color_close = "#f9929b"        -- chnges the color of the close button
 theme.tabbar_color_min   = "#fbdf90"        -- chnges the color of the minimize button
 theme.tabbar_color_float = "#ccaced"        -- chnges the color of the float button

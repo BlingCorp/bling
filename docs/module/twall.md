@@ -4,7 +4,7 @@
 
 The function to set an automatically created tiled wallpaper can be called the following way (you don't need to set every option in the table):
 ```lua
-awful.screen.connect_for_each_screen(function(s)  -- that way the wallpaper is applied to every screen 
+awful.screen.connect_for_each_screen(function(s)  -- that way the wallpaper is applied to every screen
     bling.module.tiled_wallpaper("x", s, {        -- call the actual function ("x" is the string that will be tiled)
         fg = "#ff0000",  -- define the foreground color
         bg = "#00ffff",  -- define the background color
