@@ -69,10 +69,10 @@ tabbed.pick = function()
     -- this function uses xprop to grab a client pid which is then 
     -- compared to all other client process ids
 
-    local xprop_cmd = [[ xprop _NET_WM_PID | cut -d' ' -f3 ]]
-    awful.spawn.easy_async_with_shell(xprop_cmd, function(output)
+    local xwininfo_cmd = [[ xwininfo | grep 'xwininfo: Window id:' | cut -d " " -f 4 ]]
+    awful.spawn.easy_async_with_shell(xwininfo_cmd, function(output)
         for _, c in ipairs(client.get()) do
-            if tonumber(c.pid) == tonumber(output) then
+            if tonumber(c.window) == tonumber(output) then
                 tabbed.add(c, tabobj)
             end
         end
