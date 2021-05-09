@@ -25,7 +25,10 @@ All documentation, instructions, and previews are [here](https://blingcorp.githu
 - Widgets
     - Tag Preview
 
-All naming credit goes to javacafe.
+All naming credit goes to [JavaCafe01](https://github.com/JavaCafe01).
+
+### Dependencies
+in order to use `mstab` layout and `tabbed` module install `xwininfo` package.
 
 ## Contributing
 
