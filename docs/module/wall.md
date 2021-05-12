@@ -16,7 +16,7 @@ bling.module.wallpaper.setup {
 
 -- A random wallpaper with images from multiple folders
 bling.module.wallpaper.setup {
-    set_function = bling.module.wallpaper.setters.random
+    set_function = bling.module.wallpaper.setters.random,
     wallpaper = {"/path/to/a/folder", "/path/to/another/folder"},
     change_timer = 631,  -- prime numbers are better for timers
     position = "fit",
