@@ -2,7 +2,6 @@ local awful = require("awful")
 local gears = require("gears")
 local wibox = require("wibox")
 local gcolor = require("gears.color")
-
 local beautiful = require("beautiful")
 
 local bg_normal    = beautiful.tabbar_bg_normal or beautiful.bg_normal or "#ffffff"
@@ -13,30 +12,27 @@ local font         = beautiful.tabbar_font      or beautiful.font      or "Hack 
 local size         = beautiful.tabbar_size      or 20
 local position     = beautiful.tabbar_position  or "top"
 
-local pop_icon_raw = gears.filesystem.get_configuration_dir() ..
-    tostring(...):match("^.*bling"):gsub("%.", "/") .. "/icons/remove-tab.png"
+local function get_title(c, fg)
+    local name = c.name or c.class or "-"
+    return "<span foreground='" .. fg .. "'>" .. name .. "</span>"
+end
 
 local function create(c, focused_bool, buttons)
-    -- local flexlist = wibox.layout.flex.horizontal()
-    local title_temp = c.name or c.class or "-"
-    local bg_temp = bg_normal
-    local fg_temp = fg_normal
-    if focused_bool then
-        bg_temp = bg_focus
-        fg_temp = fg_focus
-    end
+    local bg_temp = focused_bool and bg_focus or bg_normal
+    local fg_temp = focused_bool and fg_focus or fg_normal
 
     local text_temp  = wibox.widget.textbox()
     text_temp.align  = "center"
     text_temp.valign = "center"
     text_temp.font   = font
-    text_temp.markup = "<span foreground='" .. fg_temp .. "'>" .. title_temp ..
-        "</span>"
+    text_temp.markup = get_title(c, fg_temp)
 
     c:connect_signal("property::name", function(cl)
-        local title_temp = cl.name or cl.class or "-"
-        text_temp.markup = "<span foreground='" .. fg_temp .. "'>" ..
-            title_temp .. "</span>"
+        text_temp.markup = get_title(cl, fg_temp)
+    end)
+
+    c:connect_signal("unfocus", function(cl)
+        text_temp.markup = get_title(cl, fg_temp)
     end)
 
     local wid_temp = wibox.widget({
@@ -48,6 +44,7 @@ local function create(c, focused_bool, buttons)
             },
             { -- Middle
                 { -- Title
+                    id = "tab_name",
                     text_temp,
                     align  = "center",
                     widget = wibox.container.background(),
@@ -64,6 +61,13 @@ local function create(c, focused_bool, buttons)
         bg = bg_temp,
         fg = fg_temp,
         widget = wibox.container.background(),
+        create_callback = function(self, c, index, objects) --luacheck: no unused args
+            self:get_children_by_id('tab_name')[1].markup = get_title(c, fg_temp)
+        end,
+        update_callback = function(self, c, index, objects) --luacheck: no unused args
+            self:get_children_by_id('tab_name')[1].markup = get_title(c, fg_temp)
+            self:emit_signal('widget::redraw_needed')
+        end,
     })
 
     return wid_temp
@@ -71,10 +75,10 @@ end
 
 
 return {
-    layout = wibox.layout.flex.horizontal,
-    create = create,
-    position = position,
-    size = size,
+    layout    = wibox.layout.flex.horizontal,
+    create    = create,
+    position  = position,
+    size      = size,
     bg_normal = bg_normal,
     bg_focus  = bg_focus
 }
