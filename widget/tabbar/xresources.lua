@@ -1,0 +1,80 @@
+local awful = require("awful")
+local gears = require("gears")
+local wibox = require("wibox")
+local gcolor = require("gears.color")
+
+local beautiful = require("beautiful")
+
+local bg_normal    = beautiful.tabbar_bg_normal or beautiful.bg_normal or "#ffffff"
+local fg_normal    = beautiful.tabbar_fg_normal or beautiful.fg_normal or "#000000"
+local bg_focus     = beautiful.tabbar_bg_focus  or beautiful.bg_focus  or "#000000"
+local fg_focus     = beautiful.tabbar_fg_focus  or beautiful.fg_focus  or "#ffffff"
+local font         = beautiful.tabbar_font      or beautiful.font      or "Hack 15"
+local size         = beautiful.tabbar_size      or 20
+local position     = beautiful.tabbar_position  or "top"
+
+local pop_icon_raw = gears.filesystem.get_configuration_dir() ..
+    tostring(...):match("^.*bling"):gsub("%.", "/") .. "/icons/remove-tab.png"
+
+local function create(c, focused_bool, buttons)
+    -- local flexlist = wibox.layout.flex.horizontal()
+    local title_temp = c.name or c.class or "-"
+    local bg_temp = bg_normal
+    local fg_temp = fg_normal
+    if focused_bool then
+        bg_temp = bg_focus
+        fg_temp = fg_focus
+    end
+
+    local text_temp  = wibox.widget.textbox()
+    text_temp.align  = "center"
+    text_temp.valign = "center"
+    text_temp.font   = font
+    text_temp.markup = "<span foreground='" .. fg_temp .. "'>" .. title_temp ..
+        "</span>"
+
+    c:connect_signal("property::name", function(cl)
+        local title_temp = cl.name or cl.class or "-"
+        text_temp.markup = "<span foreground='" .. fg_temp .. "'>" ..
+            title_temp .. "</span>"
+    end)
+
+    local wid_temp = wibox.widget({
+        {
+            { -- Left
+                wibox.widget.base.make_widget(awful.titlebar.widget.iconwidget(c)),
+                buttons = buttons,
+                layout  = wibox.layout.fixed.horizontal,
+            },
+            { -- Middle
+                { -- Title
+                    text_temp,
+                    align  = "center",
+                    widget = wibox.container.background(),
+                },
+                buttons = buttons,
+                layout  = wibox.layout.flex.horizontal,
+            },
+            { -- Right
+                wibox.widget.base.make_widget(awful.titlebar.widget.closebutton(c)),
+                layout = wibox.layout.fixed.horizontal,
+            },
+            layout = wibox.layout.align.horizontal,
+        },
+        bg = bg_temp,
+        fg = fg_temp,
+        widget = wibox.container.background(),
+    })
+
+    return wid_temp
+end
+
+
+return {
+    layout = wibox.layout.flex.horizontal,
+    create = create,
+    position = position,
+    size = size,
+    bg_normal = bg_normal,
+    bg_focus  = bg_focus
+}
