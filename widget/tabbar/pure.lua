@@ -54,5 +54,5 @@ return {
     position  = position,
     size      = size,
     bg_normal = bg_normal,
-    bg_focus  = bg_focus
+    bg_focus  = bg_focus,
 }
