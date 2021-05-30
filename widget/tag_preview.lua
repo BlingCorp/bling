@@ -157,6 +157,7 @@ local enable = function(opts)
     end
 
     local tag_preview_box = wibox({
+        type = "dropdown_menu",
         visible = false,
         ontop = true,
         input_passthrough = true,
