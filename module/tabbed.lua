@@ -91,8 +91,6 @@ end
 -- use dmenu to select a client and make it tab in the currently focused tab 
 tabbed.pick_with_dmenu = function(dmenu_command)
     if not client.focus then return end
-    if not client.focus.bling_tabbed then tabbed.init(client.focus) end
-    local tabobj = client.focus.bling_tabbed
 
     if not dmenu_command then dmenu_command = "rofi -dmenu -i" end
 
@@ -118,6 +116,8 @@ tabbed.pick_with_dmenu = function(dmenu_command)
     awful.spawn.easy_async_with_shell(xprop_cmd, function(output)
         for _, c in ipairs(list_clients) do
             if tonumber(c.window) == tonumber(output) then
+                if not client.focus.bling_tabbed then tabbed.init(client.focus) end
+                local tabobj = client.focus.bling_tabbed
                 tabbed.add(c, tabobj)
             end
         end
