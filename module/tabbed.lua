@@ -65,11 +65,11 @@ end
 
 -- use xwininfo to select one client and make it tab in the currently focused tab
 tabbed.pick = function()
-  if not client.focus then return end
-  -- this function uses xwininfo to grab a client window id which is then
-  -- compared to all other clients window ids
+    if not client.focus then return end
+    -- this function uses xwininfo to grab a client window id which is then
+    -- compared to all other clients window ids
 
-  local xwininfo_cmd = [[ xwininfo | grep 'xwininfo: Window id:' | cut -d " " -f 4 ]]
+    local xwininfo_cmd = [[ xwininfo | grep 'xwininfo: Window id:' | cut -d " " -f 4 ]]
     awful.spawn.easy_async_with_shell(xwininfo_cmd, function(output)
         for _, c in ipairs(client.get()) do
             if tonumber(c.window) == tonumber(output) then
@@ -90,7 +90,7 @@ tabbed.pick = function()
     end)
 end
 
--- use dmenu to select a client and make it tab in the currently focused tab
+-- use dmenu to select a client and make it tab in the currently focused tab 
 tabbed.pick_with_dmenu = function(dmenu_command)
     if not client.focus then return end
 
