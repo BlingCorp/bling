@@ -1,7 +1,7 @@
 --[[
 
 This module currently works by adding a new property to each client that is tabbed.
-That new property is called bling_tabbed.
+That new property is called bling_tabbed. 
 So each client in a tabbed state has the property "bling_tabbed" which is a table.
 Each client that is not tabbed doesn't have that property.
 In the function themselves, the same object is refered to as "tabobj" which is why
@@ -22,7 +22,7 @@ local bar = require(tostring(...):match(".*bling") .. ".widget.tabbar." ..
 
 tabbed = {}
 
--- used to change focused tab relative to the currently focused one
+-- used to change focused tab relative to the currently focused one 
 tabbed.iter = function(idx)
     if not idx then idx = 1 end
     if not client.focus or not client.focus.bling_tabbed then return end
@@ -57,7 +57,7 @@ tabbed.add = function(c, tabobj)
     tabobj.clients[#tabobj.clients + 1] = c
     tabobj.focused_idx = #tabobj.clients
     -- calls update even though switch_to calls update again
-    -- but the new client needs to have the tabobj property
+    -- but the new client needs to have the tabobj property 
     -- before a clean switch can happen
     tabbed.update(tabobj)
     tabbed.switch_to(tabobj, #tabobj.clients)
@@ -65,11 +65,11 @@ end
 
 -- use xwininfo to select one client and make it tab in the currently focused tab
 tabbed.pick = function()
-if not client.focus then return end
--- this function uses xwininfo to grab a client window id which is then
--- compared to all other clients window ids
+  if not client.focus then return end
+  -- this function uses xwininfo to grab a client window id which is then
+  -- compared to all other clients window ids
 
-local xwininfo_cmd = [[ xwininfo | grep 'xwininfo: Window id:' | cut -d " " -f 4 ]]
+  local xwininfo_cmd = [[ xwininfo | grep 'xwininfo: Window id:' | cut -d " " -f 4 ]]
     awful.spawn.easy_async_with_shell(xwininfo_cmd, function(output)
         for _, c in ipairs(client.get()) do
             if tonumber(c.window) == tonumber(output) then
@@ -110,7 +110,6 @@ tabbed.pick_with_dmenu = function(dmenu_command)
     end
 
     if #list_clients == 0 then return end
-
     -- calls the actual dmenu
     local xprop_cmd = [[ echo -e "]] .. list_clients_string .. [[" | ]] .. dmenu_command .. [[ | awk '{ print $1 }' ]]
     awful.spawn.easy_async_with_shell(xprop_cmd, function(output)
