@@ -100,14 +100,12 @@ tabbed.pick_with_dmenu = function(dmenu_command)
     local list_clients = {}
     local list_clients_string = ""
     for idx, c in ipairs(t:clients()) do
-        if not c.bling_tabbed then 
             list_clients[#list_clients + 1] = c
             if #list_clients ~= 1 then
                 list_clients_string = list_clients_string .. "\\n"
             end
             list_clients_string = list_clients_string .. tostring(c.window) .. " " .. c.name
         end
-    end
 
     if #list_clients == 0 then return end
     
