@@ -165,8 +165,16 @@ function Scratchpad:toggle()
     local is_turn_off = false
     local matches = self:find()
     if self.dont_focus_before_close then
-        if matches[1] and matches[1].first_tag then
-            is_turn_off = matches[1].first_tag.selected
+        if matches[1] then
+            local current_tag = matches[1].screen.selected_tag
+            for k, tag in pairs(matches[1]:tags()) do
+                if tag == current_tag then
+                    is_turn_off = true
+                    break
+                else
+                    is_turn_off = false
+                end
+            end
         end
     else
         is_turn_off = client.focus and
