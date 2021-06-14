@@ -18,7 +18,7 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
                            screen_radius, client_radius, client_opacity,
                            client_bg, client_border_color, client_border_width,
                            widget_bg, widget_border_color, widget_border_width,
-                           geo, margin, placement_fn)
+                           geo, margin)
 
     local client_list = wibox.layout.manual()
     client_list.forced_height = geo.height
