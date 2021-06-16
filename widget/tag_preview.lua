@@ -154,6 +154,7 @@ local enable = function(opts)
         scale = opts.scale or scale
         work_area = opts.honor_workarea or work_area
         padding = opts.honor_padding or padding
+        placement_fn = opts.placement_fn or nil
     end
 
     local tag_preview_box = wibox({
@@ -187,8 +188,13 @@ local enable = function(opts)
     end)
 
     awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
-        tag_preview_box.x = s.geometry.x + widget_x
-        tag_preview_box.y = s.geometry.y + widget_y
+        if placement_fn then
+           placement_fn(tag_preview_box)
+        else
+           tag_preview_box.x = s.geometry.x + widget_x
+           tag_preview_box.y = s.geometry.y + widget_y
+        end
+        
         tag_preview_box.visible = v
     end)
 end
