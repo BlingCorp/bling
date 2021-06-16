@@ -188,7 +188,6 @@ local enable = function(opts)
     end)
 
     awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
-
         if placement_fn then
            placement_fn(tag_preview_box)
         else
