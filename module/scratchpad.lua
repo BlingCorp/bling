@@ -7,7 +7,7 @@ local in_anim = false
 
 --- Creates a new scratchpad object based on the argument
 --
--- @param info A table of possible arguments 
+-- @param info A table of possible arguments
 -- @return The new scratchpad object
 function Scratchpad:new(info)
     info = info or {}
@@ -24,7 +24,7 @@ function Scratchpad:find() return helpers.client.find(self.rule) end
 
 --- Applies the objects scratchpad properties to a given client
 --
--- @param c A client to which to apply the properties 
+-- @param c A client to which to apply the properties
 function Scratchpad:apply(c)
     if not c or not c.valid then return end
     c.floating = self.floating
@@ -163,10 +163,18 @@ end
 --- Turns the scratchpad off if it is focused otherwise it raises the scratchpad
 function Scratchpad:toggle()
     local is_turn_off = false
+    local matches = self:find()
     if self.dont_focus_before_close then
-        local matches = self:find()
-        if matches[1] and matches[1].first_tag then
-            is_turn_off = matches[1].first_tag.selected
+        if matches[1] then
+            local current_tag = matches[1].screen.selected_tag
+            for k, tag in pairs(matches[1]:tags()) do
+                if tag == current_tag then
+                    is_turn_off = true
+                    break
+                else
+                    is_turn_off = false
+                end
+            end
         end
     else
         is_turn_off = client.focus and
@@ -174,6 +182,9 @@ function Scratchpad:toggle()
     end
 
     if is_turn_off then
+        if self.disable_floating_on_close and matches[1].floating == true then
+            matches[1].floating = false
+        end
         self:turn_off()
     else
         self:turn_on()
