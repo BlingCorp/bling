@@ -28,7 +28,8 @@ All documentation, instructions, and previews are [here](https://blingcorp.githu
 All naming credit goes to [JavaCafe01](https://github.com/JavaCafe01).
 
 ### Dependencies
-in order to use `mstab` layout and `tabbed` module install `xwininfo` package.
+
+In order to use the `tabbed` modules `pick` function, you need to install `xwininfo`.
 
 ## Contributing
 
