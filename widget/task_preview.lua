@@ -1,35 +1,66 @@
 --
 -- Provides:
--- bling::task_preview::update   -- first line is the signal
---      t   (task)               -- indented lines are function parameters
 -- bling::task_preview::visibility
 --      s   (screen)
 --      v   (boolean)
+--      c   (client)
 --
 local wibox = require("wibox")
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 local gears = require("gears")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
+local cairo = require("lgi").cairo
 
-local function draw_widget(c, task_preview_box, screen_radius, client_radius,
-                           client_opacity, client_bg, client_border_color,
-                           client_border_width, widget_bg, widget_border_color,
-                           widget_border_width, margin)
+local function draw_widget(c, task_preview_box, screen_radius, widget_bg,
+                           widget_border_color, widget_border_width, margin)
+
+    local content = gears.surface(c.content)
+    local cr = cairo.Context(content)
+    local x, y, w, h = cr:clip_extents()
+    local img = cairo.ImageSurface.create(cairo.Format.ARGB32, w - x, h - y)
+    cr = cairo.Context(img)
+    cr:set_source_surface(content, 0, 0)
+    cr.operator = cairo.Operator.SOURCE
+    cr:paint()
 
     task_preview_box:setup{
         {
             {
                 {
-                    {markup = c.name, widget = wibox.widget.textbox},
+                    {
+                        image = gears.surface.load(c.icon),
+                        resize = true,
+                        forced_height = dpi(20),
+                        forced_width = dpi(20),
+                        widget = wibox.widget.imagebox
+                    },
+                    {
+                        markup = c.name,
+                        align = "center",
+                        widget = wibox.widget.textbox
+                    },
                     layout = wibox.layout.align.horizontal
                 },
-                layout = wibox.layout.align.vertical
-
+                {
+                    {
+                        {
+                            image = gears.surface.load(img),
+                            resize = true,
+                            widget = wibox.widget.imagebox
+                        },
+                        valign = "center",
+                        halign = "center",
+                        widget = wibox.container.place
+                    },
+                    top = margin * 0.25,
+                    widget = wibox.container.margin
+                },
+                fill_space = true,
+                layout = wibox.layout.fixed.vertical
             },
             margins = margin,
             widget = wibox.container.margin
-
         },
         bg = widget_bg,
         border_width = widget_border_width,
@@ -42,15 +73,10 @@ end
 local enable = function(opts)
     local widget_x = dpi(20)
     local widget_y = dpi(20)
+    local widget_height = dpi(200)
+    local widget_width = dpi(200)
     local margin = beautiful.task_preview_widget_margin or dpi(0)
     local screen_radius = beautiful.task_preview_widget_border_radius or dpi(0)
-    local client_radius = beautiful.task_preview_client_border_radius or dpi(0)
-    local client_opacity = beautiful.task_preview_client_opacity or 0.5
-    local client_bg = beautiful.task_preview_client_bg or "#000000"
-    local client_border_color = beautiful.task_preview_client_border_color or
-                                    "#ffffff"
-    local client_border_width = beautiful.task_preview_client_border_width or
-                                    dpi(3)
     local widget_bg = beautiful.task_preview_widget_bg or "#000000"
     local widget_border_color = beautiful.task_preview_widget_border_color or
                                     "#ffffff"
@@ -61,6 +87,8 @@ local enable = function(opts)
     if opts then
         widget_x = opts.x or widget_x
         widget_y = opts.y or widget_y
+        widget_height = opts.height or widget_height
+        widget_width = opts.width or widget_width
         placement_fn = opts.placement_fn or nil
     end
 
@@ -69,17 +97,14 @@ local enable = function(opts)
         visible = false,
         ontop = true,
         input_passthrough = true,
-        width = 200,
-        height = 200,
+        width = widget_width,
+        height = widget_height,
         bg = "#00000000"
     })
 
     awesome.connect_signal("bling::task_preview::visibility", function(s, v, c)
-
-        draw_widget(c, task_preview_box, screen_radius, client_radius,
-                    client_opacity, client_bg, client_border_color,
-                    client_border_width, widget_bg, widget_border_color,
-                    widget_border_width, margin)
+        draw_widget(c, task_preview_box, screen_radius, widget_bg,
+                    widget_border_color, widget_border_width, margin)
 
         if placement_fn then
             placement_fn(task_preview_box)
