@@ -81,8 +81,8 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
                 forced_height = math.floor(c.height * scale),
                 forced_width = math.floor(c.width * scale),
                 bg = client_bg,
-                border_color = client_border_color,
-                border_width = client_border_width,
+                shape_border_color = client_border_color,
+                shape_border_width = client_border_width,
                 shape = helpers.shape.rrect(client_radius),
                 widget = wibox.container.background
             }
@@ -125,9 +125,16 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
 end
 
 local enable = function(opts)
-    local tag_preview_image = false
-    local widget_x = dpi(20)
-    local widget_y = dpi(20)
+    local opts = opts or {}
+  
+    local tag_preview_image = opts.show_client_content or false
+    local widget_x = opts.x or dpi(20)
+    local widget_y = opts.y or dpi(20)
+    local scale = opts.scale or 0.2
+    local work_area = opts.honor_workarea or false
+    local padding = opts.honor_padding or false
+    local placement_fn = opts.placement_fn or nil
+  
     local margin = beautiful.tag_preview_widget_margin or dpi(0)
     local screen_radius = beautiful.tag_preview_widget_border_radius or dpi(0)
     local client_radius = beautiful.tag_preview_client_border_radius or dpi(0)
@@ -142,20 +149,6 @@ local enable = function(opts)
                                     "#ffffff"
     local widget_border_width = beautiful.tag_preview_widget_border_width or
                                     dpi(3)
-
-    local scale = 0.2
-    local work_area = false
-    local padding = false
-
-    if opts then
-        tag_preview_image = opts.show_client_content or tag_preview_image
-        widget_x = opts.x or widget_x
-        widget_y = opts.y or widget_y
-        scale = opts.scale or scale
-        work_area = opts.honor_workarea or work_area
-        padding = opts.honor_padding or padding
-        placement_fn = opts.placement_fn or nil
-    end
 
     local tag_preview_box = wibox({
         type = "dropdown_menu",
