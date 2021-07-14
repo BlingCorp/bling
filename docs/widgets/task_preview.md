@@ -1,4 +1,4 @@
-## 🔍 Tag Preview <!-- {docsify-ignore} -->
+## 🔍 Task Preview <!-- {docsify-ignore} -->
 
 This is a popup widget that will show a preview of the specified client. It is supposed to mimic the small popup that Windows has when hovering over the application icon.
 
