@@ -36,9 +36,14 @@ local function draw_widget(c, task_preview_box, screen_radius, widget_bg,
                         widget = wibox.widget.imagebox
                     },
                     {
-                        markup = c.name,
-                        align = "center",
-                        widget = wibox.widget.textbox
+                        {
+                            markup = c.name,
+                            align = "center",
+                            widget = wibox.widget.textbox
+                        },
+                        left = dpi(4),
+                        right = dpi(4),
+                        widget = wibox.container.margin
                     },
                     layout = wibox.layout.align.horizontal
                 },
@@ -63,18 +68,23 @@ local function draw_widget(c, task_preview_box, screen_radius, widget_bg,
             widget = wibox.container.margin
         },
         bg = widget_bg,
-        border_width = widget_border_width,
-        border_color = widget_border_color,
+        shape_border_width = widget_border_width,
+        shape_border_color = widget_border_color,
         shape = helpers.shape.rrect(screen_radius),
         widget = wibox.container.background
     }
 end
 
 local enable = function(opts)
-    local widget_x = dpi(20)
-    local widget_y = dpi(20)
-    local widget_height = dpi(200)
-    local widget_width = dpi(200)
+
+    local opts = opts or {}
+
+    local widget_x = opts.x or dpi(20)
+    local widget_y = opts.y or dpi(20)
+    local widget_height = opts.height or dpi(200)
+    local widget_width = opts.width or dpi(200)
+    local placement_fn = opts.placement_fn or nil
+
     local margin = beautiful.task_preview_widget_margin or dpi(0)
     local screen_radius = beautiful.task_preview_widget_border_radius or dpi(0)
     local widget_bg = beautiful.task_preview_widget_bg or "#000000"
@@ -82,15 +92,6 @@ local enable = function(opts)
                                     "#ffffff"
     local widget_border_width = beautiful.task_preview_widget_border_width or
                                     dpi(3)
-    local placement_fn = nil
-
-    if opts then
-        widget_x = opts.x or widget_x
-        widget_y = opts.y or widget_y
-        widget_height = opts.height or widget_height
-        widget_width = opts.width or widget_width
-        placement_fn = opts.placement_fn or nil
-    end
 
     local task_preview_box = wibox({
         type = "dropdown_menu",
