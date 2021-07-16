@@ -63,28 +63,19 @@ tabbed.add = function(c, tabobj)
     tabbed.switch_to(tabobj, #tabobj.clients)
 end
 
--- use xwininfo to select one client and make it tab in the currently focused tab
+-- use xprop to select one client and make it tab in the currently focused tab
 tabbed.pick = function()
-    if not client.focus then return end
-    -- this function uses xwininfo to grab a client window id which is then
-    -- compared to all other clients window ids
+    if not client.focus then return end 
+    if not client.focus.bling_tabbed then tabbed.init(client.focus) end
+    local tabobj = client.focus.bling_tabbed
+    -- this function uses xprop to grab a client pid which is then 
+    -- compared to all other client process ids
 
-    local xwininfo_cmd = [[ xwininfo | grep 'xwininfo: Window id:' | cut -d " " -f 4 ]]
-    awful.spawn.easy_async_with_shell(xwininfo_cmd, function(output)
+    local xprop_cmd = [[ xprop _NET_WM_PID | cut -d' ' -f3 ]]
+    awful.spawn.easy_async_with_shell(xprop_cmd, function(output)
         for _, c in ipairs(client.get()) do
-            if tonumber(c.window) == tonumber(output) then
-                if not client.focus.bling_tabbed and not c.bling_tabbed then
-                    tabbed.init(client.focus)
-                    tabbed.add(c, client.focus.bling_tabbed)
-                end
-                if not client.focus.bling_tabbed and c.bling_tabbed then
-                    tabbed.add(client.focus, c.bling_tabbed)
-                end
-                if client.focus.bling_tabbed and not c.bling_tabbed then
-                    tabbed.add(c, client.focus.bling_tabbed)
-                end
-                -- TODO: Should also merge tabs when focus and picked
-                -- both are tab groups
+            if tonumber(c.pid) == tonumber(output) then
+                tabbed.add(c, tabobj)
             end
         end
     end)
