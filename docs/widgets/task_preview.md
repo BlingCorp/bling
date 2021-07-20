@@ -11,7 +11,7 @@ This is a popup widget that will show a preview of the specified client. It is s
 To enable:
 
 ```lua
-bling.widget.tag_preview.enable {
+bling.widget.task_preview.enable {
     x = 20,                       -- The x-coord of the popup
     y = 20,                       -- The y-coord of the popup
     height = 200,                 -- The height of the popup
