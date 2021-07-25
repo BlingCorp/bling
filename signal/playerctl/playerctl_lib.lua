@@ -98,15 +98,21 @@ local function metadata_cb(player, metadata)
         if player ~= last_player or title ~= last_title or
            artist ~= last_artist or artUrl ~= last_artUrl
         then
-            awful.spawn.with_line_callback(get_album_art(artUrl), {
-                stdout = function(line)
-                    awesome.emit_signal("bling::playerctl::title_artist_album",
-                                        title,
-                                        artist,
-                                        line,
-                                        player.player_name)
-                end
-            })
+            if artUrl ~= "" then
+                awful.spawn.with_line_callback(get_album_art(artUrl), {
+                    stdout = function(line)
+                        awesome.emit_signal("bling::playerctl::title_artist_album",
+                                            title,
+                                            artist,
+                                            line,
+                                            player.player_name)
+                    end
+                })
+            else
+                awesome.emit_signal(
+                        "bling::playerctl::title_artist_album", title,
+                        artist, player.player_name)
+            end
             -- Re-sync with position timer when track changes
             position_timer:again()
             last_player = player
