@@ -74,6 +74,7 @@ local last_player = nil
 local last_title = ""
 local last_artist = ""
 local last_artUrl = ""
+local index = 0
 local function metadata_cb(player, metadata)
     if update_on_activity then
         manager:move_player_to_top(player)
@@ -95,8 +96,9 @@ local function metadata_cb(player, metadata)
     if player == manager.players[1] then
         -- Callback can be called even though values we care about haven't
         -- changed, so check to see if they have
-        if player ~= last_player or title ~= last_title or
-           artist ~= last_artist or artUrl ~= last_artUrl
+        index = index + 1
+        if (player ~= last_player or title ~= last_title or
+           artist ~= last_artist) and (artUrl ~= "" or index == 2)
         then
             if artUrl ~= "" then
                 awful.spawn.with_line_callback(get_album_art(artUrl), {
@@ -120,6 +122,7 @@ local function metadata_cb(player, metadata)
             last_artist = artist
             last_artUrl = artUrl
         end
+        if index == 2 then index = 0 end
     end
 end
 
