@@ -59,6 +59,10 @@ fi
 
 tmp_cover_path="${tmp_dir}cover.png"
 
+if [ -f ${tmp_dir}cover.png ]; then
+    rm ${tmp_dir}cover.png
+fi
+
 if [ ! -d "$tmp_dir" ]; then
     mkdir -p $tmp_dir
 fi
