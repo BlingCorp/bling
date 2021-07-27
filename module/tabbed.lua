@@ -37,8 +37,10 @@ tabbed.remove = function(c)
     if not c or not c.bling_tabbed then return end
     local tabobj = c.bling_tabbed
     table.remove(tabobj.clients, tabobj.focused_idx)
-    awful.titlebar.hide(c, bar.position)
-    c.bling_tabbed = nil
+    if not beautiful.tabbar_disable then
+		awful.titlebar.hide(c, bar.position)
+	end
+	c.bling_tabbed = nil
     tabbed.switch_to(tabobj, 1)
 end
 
@@ -60,6 +62,7 @@ tabbed.add = function(c, tabobj)
     -- but the new client needs to have the tabobj property 
     -- before a clean switch can happen
     tabbed.update(tabobj)
+	awesome.emit_signal("bling::tabbed::client_added", tabobj)
     tabbed.switch_to(tabobj, #tabobj.clients)
 end
 
@@ -138,10 +141,13 @@ tabbed.update = function(tabobj)
         end
     end
 
-    tabbed.update_tabbar(tabobj)
+	awesome.emit_signal("bling::tabbed::update", tabobj)
+    if not beautiful.tabbar_disable then 
+		tabbed.update_tabbar(tabobj)
+	end
 end
 
--- change docused tab by absolute index
+-- change focused tab by absolute index
 tabbed.switch_to = function(tabobj, new_idx)
     local old_focused_c = tabobj.clients[tabobj.focused_idx]
     tabobj.focused_idx = new_idx
