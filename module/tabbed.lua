@@ -93,6 +93,16 @@ tabbed.pick = function()
     end)
 end
 
+-- select a client by direction and make it tab in the currently focused tab
+tabbed.pick_by_direction = function(direction) 
+    local sel = client.focus
+    if not sel then return end
+    if not sel.bling_tabbed then tabbed.init(sel) end
+    local c = helpers.client.get_by_direction(direction)
+    if not c then return end
+    tabbed.add(c, sel.bling_tabbed)
+end
+
 -- use dmenu to select a client and make it tab in the currently focused tab 
 tabbed.pick_with_dmenu = function(dmenu_command)
     if not client.focus then return end
