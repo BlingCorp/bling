@@ -117,8 +117,8 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
 
         },
         bg = widget_bg,
-        border_width = widget_border_width,
-        border_color = widget_border_color,
+        shape_border_width = widget_border_width,
+        shape_border_color = widget_border_color,
         shape = helpers.shape.rrect(screen_radius),
         widget = wibox.container.background
     }
