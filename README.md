@@ -24,6 +24,7 @@ All documentation, instructions, and previews are [here](https://blingcorp.githu
     - Playerctl
 - Widgets
     - Tag Preview
+    - Task Preview
 
 All naming credit goes to [JavaCafe01](https://github.com/JavaCafe01).
 
