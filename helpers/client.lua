@@ -67,6 +67,7 @@ end
 --- Finds all clients that satisfy the passed rule
 --
 -- @param rule The rule to be searched for
+-- @retrun A list of clients that match the given rule
 function _client.find(rule)
     local function matcher(c) return awful.rules.match(c, rule) end
     local clients = client.get()
@@ -80,5 +81,23 @@ function _client.find(rule)
 
     return matches
 end
+
+
+--- Gets the next client by direction from the focused one
+-- 
+-- @param direction it the direction as a string ("up", "down", "left" or "right")
+-- @retrun the client in the given direction starting at the currently focused one, nil otherwise
+function _client.get_by_direction(direction)
+    local sel = client.focus
+    if not sel then return nil end
+    local cltbl = sel.screen:get_clients()
+    local geomtbl = {}
+    for i, cl in ipairs(cltbl) do
+        geomtbl[i] = cl:geometry()
+    end
+    local target = gears.geometry.rectangle.get_in_direction(direction, geomtbl, sel:geometry())
+    return cltbl[target]
+end
+
 
 return _client
