@@ -29,6 +29,7 @@ theme.tabbar_bg_normal = "#000000"          -- background color of the focused c
 theme.tabbar_fg_normal = "#ffffff"          -- foreground color of the focused client on the tabbar
 theme.tabbar_bg_focus  = "#1A2026"          -- background color of unfocused clients on the tabbar
 theme.tabbar_fg_focus  = "#ff0000"          -- foreground color of unfocused clients on the tabbar
+theme.tabbar_disable = false                -- disable the tab bar entirely
 
 -- the following variables are currently only for the "modern" tabbar style
 theme.tabbar_color_close = "#f9929b"        -- chnges the color of the close button
@@ -43,3 +44,10 @@ Modern theme:
 <img src="https://imgur.com/omowmIQ.png" width="600"/>
 
 *screenshot by [javacafe](https://github.com/JavaCafe01)*
+
+### Signals
+The tabbed module emits 1 signals for the purpose of integrating with your rice,
+```lua
+-- bling::tabbed::update -- triggered whenever a tabbed object is updated
+--                tabobj -- the object that caused the update
+```
