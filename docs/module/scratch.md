@@ -34,7 +34,7 @@ local anim_x = awestore.tweened(1920, {
     easing = awestore.easing.cubic_in_out
 })
 
-local term_scratch = bling.module.scratchpad:new {
+local term_scratch = bling.module.scratchpad {
     command = "wezterm start --class spad",           -- How to spawn the scratchpad
     rule = { instance = "spad" },                     -- The rule that the scratchpad will be searched by
     sticky = true,                                    -- Whether the scratchpad should be sticky
@@ -54,3 +54,10 @@ term_scratch:toggle()   -- toggles the scratchpads visibility
 term_scratch:turn_on()  -- turns the scratchpads visibility on
 term_scratch:turn_off() -- turns the scratchpads visibility off
 ```
+
+A initalized scratchpad also provides a couple of signals to allow for further customization, namely the following:
+
+- `turn_on` which is fired when the scratchpad is turned on
+- `turn_off` which is fired when the scratchpad is turned off
+- `launch` which is fired when the correponding application is launched
+
