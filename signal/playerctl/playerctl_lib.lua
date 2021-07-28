@@ -98,10 +98,10 @@ local function metadata_cb(player, metadata)
         -- changed, so check to see if they have
         index = index + 1
         if (player ~= last_player or title ~= last_title or
-           artist ~= last_artist) and (artUrl ~= "" or index == 2)
+           artist ~= last_artist) and (artUrl ~= "" or index >= 2)
         then
-
             if (title == "" and artist == "" and artUrl == "") then return end
+            index = 0
             if artUrl ~= "" then
                 awful.spawn.with_line_callback(get_album_art(artUrl), {
                     stdout = function(line)
@@ -130,7 +130,6 @@ local function metadata_cb(player, metadata)
             last_artist = artist
             last_artUrl = artUrl
         end
-        if index == 2 then index = 0 end
     end
 end
 
