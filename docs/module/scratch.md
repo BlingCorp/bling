@@ -34,7 +34,7 @@ local anim_x = awestore.tweened(1920, {
     easing = awestore.easing.cubic_in_out
 })
 
-local term_scratch = bling.module.scratchpad:new {
+local term_scratch = bling.module.scratchpad {
     command = "wezterm start --class spad",           -- How to spawn the scratchpad
     rule = { instance = "spad" },                     -- The rule that the scratchpad will be searched by
     sticky = true,                                    -- Whether the scratchpad should be sticky
@@ -54,3 +54,16 @@ term_scratch:toggle()   -- toggles the scratchpads visibility
 term_scratch:turn_on()  -- turns the scratchpads visibility on
 term_scratch:turn_off() -- turns the scratchpads visibility off
 ```
+
+You can also connect to signals as you are used to for further customization. For example like that:
+
+```lua
+term_scratch:connect_signal("turn_on", function(c) naughty.notify({title = tostring(c.name)}) end)
+```
+
+The following signals are currently available. Each of them passes the client on which it operated as an argument:
+
+- `turn_on` fires when the scratchpad is turned on on a tag that it wasn't present on before
+- `turn_off` fires when the scratchpad is turned off on a tag
+- `launch` fires when the scratchpad is launched with the given command and when it found the correponding client with the given rule
+

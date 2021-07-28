@@ -7,7 +7,7 @@ local Scratchpad = { mt = {} }
 
 --- Creates a new scratchpad object based on the argument
 --
--- @param info A table of possible arguments
+-- @param args A table of possible arguments
 -- @return The new scratchpad object
 function Scratchpad:new(args)
     args = args or {}
@@ -48,9 +48,14 @@ end
 --- Turns the scratchpad on
 function Scratchpad:turn_on()
     local matches = self:find()
-    if matches[1] and not self.in_anim then
+    local c = matches[1]
+    if c and not self.in_anim and c.first_tag and c.first_tag.selected then
+        c:raise()
+        client.focus = c
+        return
+    end
+    if c and not self.in_anim then
         -- if a client was found, turn it on
-        c = matches[1]
         if self.reapply then self:apply(c) end
         -- c.sticky was set to false in turn_off so it has to be reapplied anyway
         c.sticky = self.sticky
@@ -96,18 +101,22 @@ function Scratchpad:turn_on()
                     unsub_y()
                 end)
         end
-        self:emit_signal("turn_on")
+        self:emit_signal("turn_on", c)
         return
-    else
+    end
+    if not c then
         -- if no client was found, spawn one, find the corresponding window,
         --  apply the properties only once (until the next closing)
         local pid = awful.spawn.with_shell(self.command)
         local function inital_apply(c)
-            if helpers.client.is_child_of(c, pid) then self:apply(c) end
+            if helpers.client.is_child_of(c, pid) then
+                self:apply(c)
+                self:emit_signal("launch", c)
+            end
             client.disconnect_signal("manage", inital_apply)
         end
         client.connect_signal("manage", inital_apply)
-        self:emit_signal("launch")
+        -- self:emit_signal("launch", nil)
         return
     end
 end
@@ -161,7 +170,7 @@ function Scratchpad:turn_off()
         end
 
         if not anim_x and not anim_y then helpers.client.turn_off(c) end
-        self:emit_signal("turn_off")
+        self:emit_signal("turn_off", c)
     end
 end
 
@@ -197,6 +206,9 @@ function Scratchpad:toggle()
 end
 
 --- Make the module callable without putting a `:new` at the end of it
+--
+-- @param args A table of possible arguments
+-- @return The new scratchpad object
 function Scratchpad.mt:__call(...)
     return Scratchpad:new(...)
 end
