@@ -74,6 +74,7 @@ local last_player = nil
 local last_title = ""
 local last_artist = ""
 local last_artUrl = ""
+local index = 0
 local function metadata_cb(player, metadata)
     if update_on_activity then
         manager:move_player_to_top(player)
@@ -95,18 +96,33 @@ local function metadata_cb(player, metadata)
     if player == manager.players[1] then
         -- Callback can be called even though values we care about haven't
         -- changed, so check to see if they have
-        if player ~= last_player or title ~= last_title or
-           artist ~= last_artist or artUrl ~= last_artUrl
+        index = index + 1
+        if (player ~= last_player or title ~= last_title or
+           artist ~= last_artist) and (artUrl ~= "" or index >= 2)
         then
-            awful.spawn.with_line_callback(get_album_art(artUrl), {
-                stdout = function(line)
-                    awesome.emit_signal("bling::playerctl::title_artist_album",
-                                        title,
-                                        artist,
-                                        line,
-                                        player.player_name)
-                end
-            })
+            if (title == "" and artist == "" and artUrl == "") then return end
+            index = 0
+            if artUrl ~= "" then
+                awful.spawn.with_line_callback(get_album_art(artUrl), {
+                    stdout = function(line)
+                        awesome.emit_signal(
+                            "bling::playerctl::title_artist_album",
+                            title,
+                            artist,
+                            line,
+                            player.player_name
+                        )
+                    end
+                })
+            else
+                awesome.emit_signal(
+                    "bling::playerctl::title_artist_album",
+                    title,
+                    artist,
+                    "",
+                    player.player_name
+                )
+            end
             -- Re-sync with position timer when track changes
             position_timer:again()
             last_player = player
