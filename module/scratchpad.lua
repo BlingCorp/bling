@@ -1,4 +1,5 @@
 local awful = require("awful")
+local gears = require("gears")
 
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
@@ -100,7 +101,9 @@ function Scratchpad:turn_on()
         --  apply the properties only once (until the next closing)
         local pid = awful.spawn.with_shell(self.command)
         local function inital_apply(c)
-            if helpers.client.is_child_of(c, pid) then self:apply(c) end
+            if helpers.client.is_child_of(c, pid) then
+                gears.timer.delayed_call(function() self:apply(c) end)
+            end
             client.disconnect_signal("manage", inital_apply)
         end
         client.connect_signal("manage", inital_apply)
