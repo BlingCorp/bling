@@ -52,6 +52,7 @@ local function draw_widget(c, task_preview_box, screen_radius, widget_bg,
                         {
                             image = gears.surface.load(img),
                             resize = true,
+                            clip_shape = helpers.shape.rrect(screen_radius),
                             widget = wibox.widget.imagebox
                         },
                         valign = "center",
