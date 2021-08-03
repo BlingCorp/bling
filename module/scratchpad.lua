@@ -118,9 +118,11 @@ function Scratchpad:turn_on()
             callback = function(c)
                 -- For a reason I can't quite get the gemotery rules will fail to apply unless we use this timer
                 gears.timer{timeout = 0.15, autostart = true, single_shot = true, callback = function()
+                    self:apply(c)
                     c.hidden = false
                     c.minimized = false
-                    self:apply(c)
+                    -- Some clients fail to gain focus
+                    c.active = true
 
                     -- Discord spawns 2 windows, so keep the rule until the 2nd window shows
                     if c.name ~= "Discord Updater" then ruled.client.remove_rule("scratchpad") end
