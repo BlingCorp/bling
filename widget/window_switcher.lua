@@ -5,6 +5,8 @@ local wibox = require("wibox")
 local beautiful = require("beautiful")
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
+local dpi = beautiful.xresources.apply_dpi
+
 local window_switcher_first_client -- The client that was focused when the window_switcher was activated
 local window_switcher_minimized_clients = {} -- The clients that were minimized when the window switcher was activated
 local window_switcher_grabber
