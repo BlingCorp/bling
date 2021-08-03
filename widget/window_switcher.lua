@@ -51,7 +51,7 @@ local window_switcher_hide = function()
     s.window_switcher_box.visible = false
 end
 
-local function draw_widget(s, type, client_width, client_height, client_margin, background, border_radius, text_font, font_icons, mouse_keys)
+local function draw_widget(s, type, client_width, client_height, client_margin, background, border_radius, text_font, font_icons, font_icons_font, mouse_keys)
     local set_icon = function(item, c)
         local i = font_icons[c.class] or font_icons['_']
         item:get_children_by_id('text_icon')[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
@@ -74,7 +74,7 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
             return {
                 widget = wibox.widget.textbox,
                 id     = 'text_icon',
-                font   = beautiful.secondary_icon_font_name .. 25,
+                font   = font_icons_font,
                 forced_width = dpi(50),
                 align  = "center",
                 valign = "center",
@@ -267,6 +267,7 @@ local enable = function(opts)
     local border_radius = opts.border_radius or dpi(0)
     local text_font = opts.text_font or beautiful.font
     local font_icons = opts.font_icons or nil
+    local font_icons_font = opts.font_icons_font or beautiful.font
 
     local hide_window_switcher_key = opts.hide_window_switcher_key or 'Escape'
 
@@ -383,7 +384,7 @@ local enable = function(opts)
         gears.timer.delayed_call(function()
             -- Finally make the window switcher wibox visible after
             -- a small delay, to allow the popup size to update
-            draw_widget(s, type, client_width, client_height, client_margin, background, border_radius, text_font, font_icons, mouse_keys)
+            draw_widget(s, type, client_width, client_height, client_margin, background, border_radius, text_font, font_icons, font_icons_font, mouse_keys)
             s.window_switcher_box.visible = true
         end)
     end)
