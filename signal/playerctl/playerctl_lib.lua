@@ -32,7 +32,7 @@ local interval = 1
 -- Track position callback
 local last_position = -1
 local last_length = -1
-function position_cb()
+local function position_cb()
     local player = manager.players[1]
     if player then
         local position = player:get_position() / 1000000
@@ -74,7 +74,8 @@ local last_player = nil
 local last_title = ""
 local last_artist = ""
 local last_artUrl = ""
-function metadata_cb(player, metadata)
+local index = 0
+local function metadata_cb(player, metadata)
     if update_on_activity then
         manager:move_player_to_top(player)
     end
@@ -95,18 +96,33 @@ function metadata_cb(player, metadata)
     if player == manager.players[1] then
         -- Callback can be called even though values we care about haven't
         -- changed, so check to see if they have
-        if player ~= last_player or title ~= last_title or
-           artist ~= last_artist or artUrl ~= last_artUrl
+        index = index + 1
+        if (player ~= last_player or title ~= last_title or
+           artist ~= last_artist) and (artUrl ~= "" or index >= 2)
         then
-            awful.spawn.with_line_callback(get_album_art(artUrl), {
-                stdout = function(line)
-                    awesome.emit_signal("bling::playerctl::title_artist_album",
-                                        title,
-                                        artist,
-                                        line,
-                                        player.player_name)
-                end
-            })
+            if (title == "" and artist == "" and artUrl == "") then return end
+            index = 0
+            if artUrl ~= "" then
+                awful.spawn.with_line_callback(get_album_art(artUrl), {
+                    stdout = function(line)
+                        awesome.emit_signal(
+                            "bling::playerctl::title_artist_album",
+                            title,
+                            artist,
+                            line,
+                            player.player_name
+                        )
+                    end
+                })
+            else
+                awesome.emit_signal(
+                    "bling::playerctl::title_artist_album",
+                    title,
+                    artist,
+                    "",
+                    player.player_name
+                )
+            end
             -- Re-sync with position timer when track changes
             position_timer:again()
             last_player = player
@@ -119,7 +135,7 @@ end
 
 -- Playback status callback
 -- Reported as PLAYING, PAUSED, or STOPPED
-function playback_status_cb(player, status)
+local function playback_status_cb(player, status)
     if update_on_activity then
         manager:move_player_to_top(player)
     end
@@ -134,7 +150,7 @@ function playback_status_cb(player, status)
 end
 
 -- Determine if player should be managed
-function name_is_selected(name)
+local function name_is_selected(name)
     if ignore[name.name] then
         return false
     end
@@ -170,8 +186,8 @@ end
 -- priority order
 local function player_compare_name(name_a, name_b)
     local any_index = math.huge
-    local a_match_index = nil 
-    local b_match_index = nil 
+    local a_match_index = nil
+    local b_match_index = nil
 
     if name_a == name_b then
         return 0
@@ -273,7 +289,7 @@ local function playerctl_enable(args)
     -- Grab playerctl library
     Playerctl = require("lgi").Playerctl
 
-    -- Ensure main event loop has started before starting player manager 
+    -- Ensure main event loop has started before starting player manager
     gears.timer.delayed_call(start_manager)
 end
 

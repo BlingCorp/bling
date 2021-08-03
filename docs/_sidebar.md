@@ -15,6 +15,7 @@
 
 - Widgets
     - [Tag Preview](widgets/tag_preview.md)
+    - [Task Preview](widgets/task_preview.md)
 
 - Extra
     - [Theme Variable Template](theme.md)

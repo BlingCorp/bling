@@ -83,18 +83,13 @@ end
 
 -- removes a given client from its tab object
 tabbed.remove = function(c)
-    if not c or not c.tab_obj then return end
-    local tabobj = c.tab_obj
-    table.remove(tabobj.clients, c.tab_idx)
-    helpers.client.turn_on(c)
-    c:emit_signal("request::titlebars", "bling.tabbed", {})
-    c.tab_obj = nil
-    c.tab_idx = nil
-    if #tabobj.clients == 1 then
-        tabbed.remove(tabobj.clients[1])
-        return
+    if not c or not c.bling_tabbed then return end
+    local tabobj = c.bling_tabbed
+    table.remove(tabobj.clients, tabobj.focused_idx)
+    if not beautiful.tabbar_disable then
+        awful.titlebar.hide(c, bar.position)
     end
-    if #tabobj.clients == 0 then return end
+    c.bling_tabbed = nil
     tabbed.switch_to(tabobj, 1)
 end
 
@@ -106,7 +101,9 @@ end
 
 -- adds a client to a given tabobj
 tabbed.add = function(c, tabobj)
-    if c.tab_obj then return end
+    if c.bling_tabbed then
+        tabbed.remove(c)
+    end
     helpers.client.sync(c, tabobj.clients[tabobj.focused_idx])
     local index = #tabobj.clients + 1
     c.tab_idx = index
@@ -116,7 +113,8 @@ tabbed.add = function(c, tabobj)
     -- but the new client needs to have the tabobj property
     -- before a clean switch can happen
     tabbed.update(tabobj)
-    tabbed.switch_to(tabobj, c.tab_idx)
+    awesome.emit_signal("bling::tabbed::client_added", tabobj)
+    tabbed.switch_to(tabobj, #tabobj.clients)
 end
 
 -- use xwininfo to select one client and make it tab in the currently focused tab
@@ -145,11 +143,19 @@ tabbed.pick = function()
     end)
 end
 
--- use dmenu to select a client and make it tab in the currently focused tab
+-- select a client by direction and make it tab in the currently focused tab
+tabbed.pick_by_direction = function(direction) 
+    local sel = client.focus
+    if not sel then return end
+    if not sel.bling_tabbed then tabbed.init(sel) end
+    local c = helpers.client.get_by_direction(direction)
+    if not c then return end
+    tabbed.add(c, sel.bling_tabbed)
+end
+
+-- use dmenu to select a client and make it tab in the currently focused tab 
 tabbed.pick_with_dmenu = function(dmenu_command)
     if not client.focus then return end
-    if not client.focus.tab_obj then tabbed.init(client.focus) end
-    local tabobj = client.focus.tab_obj
 
     if not dmenu_command then dmenu_command = "rofi -dmenu -i" end
 
@@ -159,7 +165,7 @@ tabbed.pick_with_dmenu = function(dmenu_command)
     local list_clients = {}
     local list_clients_string = ""
     for idx, c in ipairs(t:clients()) do
-        if not c.tab_obj then
+        if c.window ~= client.focus.window then
             list_clients[#list_clients + 1] = c
             if #list_clients ~= 1 then
                 list_clients_string = list_clients_string .. "\\n"
@@ -170,13 +176,14 @@ tabbed.pick_with_dmenu = function(dmenu_command)
     end
 
     if #list_clients == 0 then return end
-
     -- calls the actual dmenu
     local xprop_cmd = [[ echo -e "]] .. list_clients_string .. [[" | ]] ..
         dmenu_command .. [[ | awk '{ print $1 }' ]]
     awful.spawn.easy_async_with_shell(xprop_cmd, function(output)
         for _, c in ipairs(list_clients) do
             if tonumber(c.window) == tonumber(output) then
+                if not client.focus.bling_tabbed then tabbed.init(client.focus) end
+                local tabobj = client.focus.bling_tabbed
                 tabbed.add(c, tabobj)
             end
         end
@@ -197,10 +204,13 @@ tabbed.update = function(tabobj)
         end
     end
 
-    tabbed.update_tabbar(tabobj)
+    awesome.emit_signal("bling::tabbed::update", tabobj)
+    if not beautiful.tabbar_disable then 
+        tabbed.update_tabbar(tabobj)
+    end
 end
 
--- change docused tab by absolute index
+-- change focused tab by absolute index
 tabbed.switch_to = function(tabobj, new_idx)
     local old_focused_c = tabobj.clients[tabobj.focused_idx]
     tabobj.focused_idx = new_idx
