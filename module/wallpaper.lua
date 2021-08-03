@@ -24,6 +24,7 @@
 ---------------------------------------------------------------------------
 
 
+local awful = require("awful")
 local beautiful = require("beautiful")
 local gears = require("gears")
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
@@ -278,8 +279,11 @@ function setup(args)
             callback = function() set_wallpaper() end
         }
     end
-
-    screen.connect_signal("request::wallpaper", set_wallpaper)
+    if awesome.version == "v4.3" then  
+        awful.screen.connect_for_each_screen(set_wallpaper)
+    else
+        screen.connect_signal("request::wallpaper", set_wallpaper)
+    end
 end
 
 
