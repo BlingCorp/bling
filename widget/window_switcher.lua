@@ -262,7 +262,12 @@ local enable = function(opts)
     local opts = opts or {}
 
     local type = opts.type or "thumbnail"
-    local client_width = opts.client_width or (150)
+    local client_width
+    if type == "thumbnail" then
+        client_width = opts.client_width or dpi(150)
+    else
+        client_width = opts.client_width or dpi(500)
+    end
     local client_height = opts.client_height or dpi(250)
     local client_margin = opts.client_margin or dpi(10)
     local background = opts.background or "#00000000"
