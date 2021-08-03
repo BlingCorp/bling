@@ -104,8 +104,7 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
                         client_list,
                         forced_height = geo.height,
                         forced_width = geo.width,
-                        bg = widget_bg,
-                        widget = wibox.container.background
+                        widget = wibox.container.place
                     },
                     layout = wibox.layout.align.horizontal
                 },
@@ -126,7 +125,7 @@ end
 
 local enable = function(opts)
     local opts = opts or {}
-  
+
     local tag_preview_image = opts.show_client_content or false
     local widget_x = opts.x or dpi(20)
     local widget_y = opts.y or dpi(20)
@@ -134,7 +133,7 @@ local enable = function(opts)
     local work_area = opts.honor_workarea or false
     local padding = opts.honor_padding or false
     local placement_fn = opts.placement_fn or nil
-  
+
     local margin = beautiful.tag_preview_widget_margin or dpi(0)
     local screen_radius = beautiful.tag_preview_widget_border_radius or dpi(0)
     local client_radius = beautiful.tag_preview_client_border_radius or dpi(0)
@@ -182,12 +181,12 @@ local enable = function(opts)
 
     awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
         if placement_fn then
-           placement_fn(tag_preview_box)
+            placement_fn(tag_preview_box)
         else
-           tag_preview_box.x = s.geometry.x + widget_x
-           tag_preview_box.y = s.geometry.y + widget_y
+            tag_preview_box.x = s.geometry.x + widget_x
+            tag_preview_box.y = s.geometry.y + widget_y
         end
-        
+
         tag_preview_box.visible = v
     end)
 end
