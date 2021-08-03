@@ -24,6 +24,7 @@ theme.playerctl_position_update_interval = 1 -- the update interval for fetching
 theme.tabbed_spawn_in_tab = false -- whether a new client should spawn into the focused tabbing container 
 
 -- tabbar general
+theme.tabbar_disable = false -- disable the tab bar entirely
 theme.tabbar_ontop = false
 theme.tabbar_radius = 0 -- border radius of the tabbar
 theme.tabbar_style = "default" -- style of the tabbar ("default", "boxes" or "modern")
@@ -51,9 +52,9 @@ theme.mstab_tabbar_style = "default" -- style of the tabbar ("default", "boxes" 
 -- different style for mstab and tabbed
 
 -- the following variables are currently only for the "modern" tabbar style 
-theme.tabbar_color_close = "#f9929b" -- chnges the color of the close button
-theme.tabbar_color_min = "#fbdf90" -- chnges the color of the minimize button
-theme.tabbar_color_float = "#ccaced" -- chnges the color of the float button
+theme.tabbar_color_close = "#f9929b" -- changes the color of the close button
+theme.tabbar_color_min = "#fbdf90" -- changes the color of the minimize button
+theme.tabbar_color_float = "#ccaced" -- changes the color of the float button
 
 -- tag preview widget
 theme.tag_preview_widget_border_radius = 0 -- Border radius of the widget (With AA)
