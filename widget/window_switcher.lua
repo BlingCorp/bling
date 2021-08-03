@@ -270,7 +270,7 @@ local enable = function(opts)
     end
     local client_height = opts.client_height or dpi(250)
     local client_margin = opts.client_margin or dpi(10)
-    local background = opts.background or "#00000000"
+    local background = beautiful.window_switcher_widget_bg or "#000000"
     local border_radius = beautiful.window_switcher_widget_border_radius or dpi(0)
     local text_font = opts.text_font or beautiful.font
     local font_icons = opts.font_icons or nil
