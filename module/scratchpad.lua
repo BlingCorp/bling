@@ -1,20 +1,22 @@
 local awful = require("awful")
+local gears = require("gears")
 
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
-local Scratchpad = {}
-local in_anim = false
+local Scratchpad = { mt = {} }
 
 --- Creates a new scratchpad object based on the argument
 --
--- @param info A table of possible arguments
+-- @param args A table of possible arguments
 -- @return The new scratchpad object
-function Scratchpad:new(info)
-    info = info or {}
-    info.awestore = info.awestore or {}
-    setmetatable(info, self)
-    self.__index = self
-    return info
+function Scratchpad:new(args)
+    args = args or {}
+    args.awestore = args.awestore or {}
+    args.in_anim = false
+    local ret = gears.object {}
+    gears.table.crush(ret, Scratchpad)
+    gears.table.crush(ret, args)
+    return ret
 end
 
 --- Find all clients that satisfy the the rule
@@ -36,9 +38,9 @@ function Scratchpad:apply(c)
         height = self.geometry.height
     })
     if self.autoclose then
-        c:connect_signal("unfocus", function(c)
-            c.sticky = false -- client won't turn off if sticky
-            helpers.client.turn_off(c)
+        c:connect_signal("unfocus", function(c1)
+            c1.sticky = false -- client won't turn off if sticky
+            helpers.client.turn_off(c1)
         end)
     end
 end
@@ -46,9 +48,14 @@ end
 --- Turns the scratchpad on
 function Scratchpad:turn_on()
     local matches = self:find()
-    if matches[1] and not in_anim then
+    local c = matches[1]
+    if c and not self.in_anim and c.first_tag and c.first_tag.selected then
+        c:raise()
+        client.focus = c
+        return
+    end
+    if c and not self.in_anim then
         -- if a client was found, turn it on
-        c = matches[1]
         if self.reapply then self:apply(c) end
         -- c.sticky was set to false in turn_off so it has to be reapplied anyway
         c.sticky = self.sticky
@@ -63,17 +70,18 @@ function Scratchpad:turn_on()
         if anim_x then
             anim_x:subscribe(function(x)
                 if c and c.valid then c.x = x end
-                in_anim = true
+                self.in_anim = true
             end)
         end
         if anim_y then
             anim_y:subscribe(function(y)
                 if c and c.valid then c.y = y end
-                in_anim = true
+                self.in_anim = true
             end)
         end
 
         helpers.client.turn_on(c)
+        self:emit_signal("turn_on", c)
 
         -- Unsubscribe
         if anim_x then
@@ -81,7 +89,7 @@ function Scratchpad:turn_on()
             local unsub_x
             unsub_x = anim_x.ended:subscribe(
                           function()
-                    in_anim = false
+                    self.in_anim = false
                     unsub_x()
                 end)
         end
@@ -90,18 +98,23 @@ function Scratchpad:turn_on()
             local unsub_y
             unsub_y = anim_y.ended:subscribe(
                           function()
-                    in_anim = false
+                    self.in_anim = false
                     unsub_y()
                 end)
         end
         return
-    else
+    end
+    if not c then
         -- if no client was found, spawn one, find the corresponding window,
         --  apply the properties only once (until the next closing)
         local pid = awful.spawn.with_shell(self.command)
-        local function inital_apply(c)
-            if helpers.client.is_child_of(c, pid) then self:apply(c) end
+        self:emit_signal("spawn")
+        local function inital_apply(c1)
+            if helpers.client.is_child_of(c1, pid) then
+                self:apply(c1)
+                self:emit_signal("inital_apply", c1)
             client.disconnect_signal("manage", inital_apply)
+            end
         end
         client.connect_signal("manage", inital_apply)
         return
@@ -112,7 +125,7 @@ end
 function Scratchpad:turn_off()
     local matches = self:find()
     local c = matches[1]
-    if c and not in_anim then
+    if c and not self.in_anim then
         c.sticky = false
 
         -- Get the tweens
@@ -123,13 +136,13 @@ function Scratchpad:turn_off()
         if anim_x then
             anim_x:subscribe(function(x)
                 if c and c.valid then c.x = x end
-                in_anim = true
+                self.in_anim = true
             end)
         end
         if anim_y then
             anim_y:subscribe(function(y)
                 if c and c.valid then c.y = y end
-                in_anim = true
+                self.in_anim = true
             end)
         end
 
@@ -139,8 +152,9 @@ function Scratchpad:turn_off()
             local unsub
             unsub = anim_x.ended:subscribe(
                         function()
-                    in_anim = false
+                    self.in_anim = false
                     helpers.client.turn_off(c)
+                    self:emit_signal("turn_off", c)
                     unsub()
                 end)
         end
@@ -150,13 +164,17 @@ function Scratchpad:turn_off()
             local unsub
             unsub = anim_y.ended:subscribe(
                         function()
-                    in_anim = false
+                    self.in_anim = false
                     helpers.client.turn_off(c)
+                    self:emit_signal("turn_off", c)
                     unsub()
                 end)
         end
 
-        if not anim_x and not anim_y then helpers.client.turn_off(c) end
+        if not anim_x and not anim_y then
+            helpers.client.turn_off(c)
+            self:emit_signal("turn_off", c)
+        end
     end
 end
 
@@ -191,4 +209,13 @@ function Scratchpad:toggle()
     end
 end
 
-return Scratchpad
+--- Make the module callable without putting a `:new` at the end of it
+--
+-- @param args A table of possible arguments
+-- @return The new scratchpad object
+function Scratchpad.mt:__call(...)
+    return Scratchpad:new(...)
+end
+
+return setmetatable(Scratchpad, Scratchpad.mt)
+
