@@ -38,9 +38,9 @@ function Scratchpad:apply(c)
         height = self.geometry.height
     })
     if self.autoclose then
-        c:connect_signal("unfocus", function(c)
-            c.sticky = false -- client won't turn off if sticky
-            helpers.client.turn_off(c)
+        c:connect_signal("unfocus", function(c1)
+            c1.sticky = false -- client won't turn off if sticky
+            helpers.client.turn_off(c1)
         end)
     end
 end
@@ -81,6 +81,7 @@ function Scratchpad:turn_on()
         end
 
         helpers.client.turn_on(c)
+        self:emit_signal("turn_on", c)
 
         -- Unsubscribe
         if anim_x then
@@ -101,22 +102,21 @@ function Scratchpad:turn_on()
                     unsub_y()
                 end)
         end
-        self:emit_signal("turn_on", c)
         return
     end
     if not c then
         -- if no client was found, spawn one, find the corresponding window,
         --  apply the properties only once (until the next closing)
         local pid = awful.spawn.with_shell(self.command)
-        local function inital_apply(c)
-            if helpers.client.is_child_of(c, pid) then
-                self:apply(c)
-                self:emit_signal("launch", c)
-            end
+        self:emit_signal("spawn")
+        local function inital_apply(c1)
+            if helpers.client.is_child_of(c1, pid) then
+                self:apply(c1)
+                self:emit_signal("inital_apply", c1)
             client.disconnect_signal("manage", inital_apply)
+            end
         end
         client.connect_signal("manage", inital_apply)
-        -- self:emit_signal("launch", nil)
         return
     end
 end
@@ -154,6 +154,7 @@ function Scratchpad:turn_off()
                         function()
                     self.in_anim = false
                     helpers.client.turn_off(c)
+                    self:emit_signal("turn_off", c)
                     unsub()
                 end)
         end
@@ -165,12 +166,15 @@ function Scratchpad:turn_off()
                         function()
                     self.in_anim = false
                     helpers.client.turn_off(c)
+                    self:emit_signal("turn_off", c)
                     unsub()
                 end)
         end
 
-        if not anim_x and not anim_y then helpers.client.turn_off(c) end
-        self:emit_signal("turn_off", c)
+        if not anim_x and not anim_y then
+            helpers.client.turn_off(c)
+            self:emit_signal("turn_off", c)
+        end
     end
 end
 
