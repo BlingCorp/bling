@@ -22,7 +22,57 @@ bling.widget.task_preview.enable {
                 bottom = 30
             }
         }) 
-    end           
+    end,
+    widget_structure = {
+            {
+            {
+                {
+                    {
+                        id = 'icon_role',
+                        resize = true,
+                        forced_height = dpi(20),
+                        forced_width = dpi(20),
+                        widget = wibox.widget.imagebox
+                    },
+                    {
+                        {
+                            id = 'name_role',
+                            align = "center",
+                            widget = wibox.widget.textbox
+                        },
+                        left = dpi(4),
+                        right = dpi(4),
+                        widget = wibox.container.margin
+                    },
+                    layout = wibox.layout.align.horizontal
+                },
+                {
+                    {
+                        {
+                            id = 'image_role',
+                            resize = true,
+                            clip_shape = helpers.shape.rrect(screen_radius),
+                            widget = wibox.widget.imagebox
+                        },
+                        valign = "center",
+                        halign = "center",
+                        widget = wibox.container.place
+                    },
+                    top = margin * 0.25,
+                    widget = wibox.container.margin
+                },
+                fill_space = true,
+                layout = wibox.layout.fixed.vertical
+            },
+            margins = margin,
+            widget = wibox.container.margin
+        },
+        bg = widget_bg,
+        shape_border_width = widget_border_width,
+        shape_border_color = widget_border_color,
+        shape = helpers.shape.rrect(screen_radius),
+        widget = wibox.container.background
+    }
 }   
 ```
 
