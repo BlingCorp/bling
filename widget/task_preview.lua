@@ -15,6 +15,7 @@ local cairo = require("lgi").cairo
 local function draw_widget(c, task_preview_box, screen_radius, widget_bg,
                            widget_border_color, widget_border_width, margin)
 
+    if not pcall(function () return type(c.content) end) then return end
     local content = gears.surface(c.content)
     local cr = cairo.Context(content)
     local x, y, w, h = cr:clip_extents()
