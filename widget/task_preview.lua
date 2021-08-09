@@ -6,6 +6,7 @@
 --      c   (client)
 --
 
+local awful = require("awful")
 local wibox = require("wibox")
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 local gears = require("gears")
