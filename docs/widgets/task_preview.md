@@ -27,7 +27,7 @@ bling.widget.task_preview.enable {
 ```
 
 To allow for more customization there is also a widget_structure property (as seen in some default awesome widgets), an example is as follows
-```
+```lua
 bling.widget.task_preview.enable {
     x = 20,                       -- The x-coord of the popup
     y = 20,                       -- The y-coord of the popup
