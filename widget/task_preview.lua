@@ -78,6 +78,7 @@ local function draw_widget(c, widget_template, screen_radius, widget_bg,
             shape = helpers.shape.rrect(screen_radius),
             widget = wibox.container.background
         }
+    }
 
         -- todo: have something like a create callback here?
 
