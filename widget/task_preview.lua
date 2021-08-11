@@ -28,7 +28,7 @@ local function draw_widget(c, widget_template, screen_radius, widget_bg,
     cr:paint()
 
     local widget = wibox.widget{
-        widget_template or {
+        (widget_template or {
             {
                 {
                     {
@@ -77,7 +77,10 @@ local function draw_widget(c, widget_template, screen_radius, widget_bg,
             shape_border_color = widget_border_color,
             shape = helpers.shape.rrect(screen_radius),
             widget = wibox.container.background
-        }
+        }),
+        widget = wibox.container.constraint,
+        width = widget_width,
+        height = widget_height
     }
 
         -- todo: have something like a create callback here?
