@@ -131,8 +131,8 @@ local function draw_widget(c, widget_template, screen_radius, widget_bg,
         awesome.connect_signal("bling::task_preview::visibility", function(s, v, c)
             if v then 
                 -- Update task preview contents
-                task_preview_box:setup(draw_widget(c, opts.structure, screen_radius, widget_bg,
-                        widget_border_color, widget_border_width, margin, widget_width, widget_height))
+                task_preview_box.widget = draw_widget(c, opts.structure, screen_radius, widget_bg,
+                        widget_border_color, widget_border_width, margin, widget_width, widget_height)
             end
 
             if not placement_fn then
