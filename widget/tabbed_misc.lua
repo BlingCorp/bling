@@ -18,7 +18,7 @@ end
 -- Needs to be run, every time a new titlbear is created
 function module.titlebar_indicator(c)
 
-    opts = beautiful.bling_tabbed_misc.titlebar_indicator
+    opts = beautiful.bling_tabbed_misc and beautiful.bling_tabbed_misc.titlebar_indicator or {}
 
     -- Container to store icons
     local tabbed_icons = wibox.widget({
@@ -47,7 +47,7 @@ function module.titlebar_indicator(c)
                             widget = wibox.container.margin,
                         },
                         bg = _c == focused and (opts.bg_color_focus or "#ff0000") or (opts.bg_color or "#00000000"),
-                        shape = function(cr,w,h) gears.shape.rounded_rect(cr,w,h,5) end,
+                        shape = function(cr,w,h) gears.shape.rounded_rect(cr,w,h,opts.radius or dpi(5)) end,
                         id = 'click_role',
                         widget = wibox.container.background,
                     },
@@ -132,19 +132,20 @@ local function full_update_list(s, list, opts)
 
     -- Loop over groups
     for _, group in ipairs(groups) do
+    
+        -- Remove the focused window from the titlebar: prevent duplication
+        for index, child in ipairs(list.children) do
+            local x = child:get_children_by_id("client_icon")
+            if #x > 0 and x[1].client and tbl_contains(group.clients, x[1].client) then
+                list:remove(index)
+            end
+        end
+        -- Seems to work uptil here
 
         -- Generate and add wrapper widget if > 1 children
         if #group.clients > 1 then
 
-            -- Remove the focused window from the titlebar: prevent duplication
-            for index, child in ipairs(list.children) do
-                local x = child:get_children_by_id("client_icon")
-                if #x > 0 and x[1].client and tbl_contains(group.clients, x[1].client) then
-                    list:remove(index)
-                end
-            end
-
-            local wrapper = wibox.widget(opts.group_widget_template or {
+            local wrapper = wibox.widget(--[[opts.group_widget_template or ]]{
                 {
                     {
                         -- This is so dumb... but it works so meh
@@ -155,13 +156,13 @@ local function full_update_list(s, list, opts)
                         {
                             id = "row2",
                             layout = wibox.layout.flex.horizontal,
-                        }
+                        },
                         spacing = opts.group_row_spacing or 2,
                         layout = wibox.layout.fixed.vertical,
                     },
                     halign = "center",
                     valign = "center",
-                    id = 'click_role'
+                    id = 'click_role',
                     widget = wibox.container.place,
                 },
                 widget = wibox.container.margin,
@@ -171,10 +172,10 @@ local function full_update_list(s, list, opts)
                 right = opts.group_margins.right or dpi(2),
             })
 
-            for _, w in wrapper:get_children_by_id('click_role') do
+            for _, w in ipairs(wrapper:get_children_by_id('click_role')) do
                 w:add_button(awful.button({}, 1, function()
-                    group.clients[group.focused_idx]:activate()
-                end))
+                        group.clients[group.focused_idx]:activate()
+                    end))
             end
 
             for idx, c in ipairs(group.clients) do
@@ -189,22 +190,28 @@ local function full_update_list(s, list, opts)
             end
 
             list:add(wrapper)
+        else
+            update_list(group.clients[group.focused_idx], s, list)
         end
     end
 end
 
 -- Sorry about the pcalls but it only fails rarely... I think...
-module.custom_tasklist = function(s, opts)
+function module.custom_tasklist(s, opts)
+    opts = opts or {
+        group_margins = {}
+    }
     local list = wibox.widget({
-        layout = wibox.layout.fixed.vertical,
+        layout = opts.tasklist_layout or wibox.layout.fixed.vertical,
     })
 
-    local update = function(c)
+    local update = function()
         pcall(function()
             full_update_list(s, list, opts)
         end)
     end 
 
+    -- TODO: Be a bit more mindful of multiple screen systems
     -- Update on new
     client.connect_signal("request::manage", update)
 
@@ -216,6 +223,8 @@ module.custom_tasklist = function(s, opts)
 
     -- Update on bling
     awesome.connect_signal("bling::tabbed::update", update)
+
+    update()
 
     return list
 end
