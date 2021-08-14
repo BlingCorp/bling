@@ -3,7 +3,7 @@ local awful = require('awful')
 local gears = require('gears')
 local beautiful = require('beautiful')
 local dpi = require("beautiful.xresources").apply_dpi
-local tabbed_module = require(tostring(...):match(".*bling") .. ".module.tabbed"
+local tabbed_module = require(tostring(...):match(".*bling") .. ".module.tabbed")
 local module = {}
 
 -- Just check if a table contains a value.
@@ -28,10 +28,16 @@ function module.titlebar_indicator(c)
 	})
 
 	awesome.connect_signal("bling::tabbed::client_removed", function(removed_c)
+		-- Remove from list
 		for idx, icon in ipairs(tabbed_icons.children) do
 			if icon:get_children_by_id("icon_role")[1].client == removed_c then
 				tabbed_icons:remove(idx)
 			end
+		end
+
+		-- Empty list 
+		if removed_c == c then
+			tabbed_icons:reset()
 		end
 	end)
 
