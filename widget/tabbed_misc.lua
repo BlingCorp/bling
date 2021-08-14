@@ -3,6 +3,7 @@ local awful = require('awful')
 local gears = require('gears')
 local beautiful = require('beautiful')
 local dpi = require("beautiful.xresources").apply_dpi
+local tabbed_module = require(tostring(...):match(".*bling") .. ".module.tabbed"
 local module = {}
 
 -- Just check if a table contains a value.
@@ -75,7 +76,7 @@ function module.titlebar_indicator(c)
 
 				for _, w in ipairs(widget:get_children_by_id("click_role")) do
 					w:add_button(awful.button({}, 1, function()
-						require('bling.module.tabbed').switch_to(group,idx)
+						tabbed_module.switch_to(group,idx)
 					end))
 				end
 
