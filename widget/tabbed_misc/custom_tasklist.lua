@@ -1,100 +1,18 @@
+
 local wibox = require('wibox')
 local awful = require('awful')
 local gears = require('gears')
 local beautiful = require('beautiful')
 local dpi = require("beautiful.xresources").apply_dpi
-local tabbed_module = require(tostring(...):match(".*bling") .. ".module.tabbed")
-local module = {}
 
--- Just check if a table contains a value.
-local function tbl_contains(tbl, item)
-	for _, v in ipairs(tbl) do
-		if v == item then
-			return true
+-- Handle arguments and fallback: does gears.table.override do the same thing?
+local function tbl_fallback(original, fallback)
+	for key, value in pairs(fallback) do
+		if original[key] == nil then
+			orginial[key] = value
 		end
 	end
-	return false
-end
-
--- Needs to be run, every time a new titlbear is created
-function module.titlebar_indicator(c)
-
-	opts = (beautiful.bling_tabbed_misc and beautiful.bling_tabbed_misc.titlebar_indicator) or {}
-
-	-- Container to store icons
-	local tabbed_icons = wibox.widget({
-		layout = wibox.layout.fixed.horizontal,
-		spacing = opts.layout_spacing or dpi(4),
-	})
-
-	awesome.connect_signal("bling::tabbed::client_removed", function(removed_c)
-		-- Remove from list
-		for idx, icon in ipairs(tabbed_icons.children) do
-			if icon:get_children_by_id("icon_role")[1].client == removed_c then
-				tabbed_icons:remove(idx)
-			end
-		end
-
-		-- Empty list 
-		if removed_c == c then
-			tabbed_icons:reset()
-		end
-	end)
-
-	local function recreate(group)
-		if tbl_contains(group.clients, c) then
-			tabbed_icons:reset()
-			local focused = group.clients[group.focused_idx]
-		
-			-- Autohide?
-			if #group.clients == 1 then
-				return
-			end
-
-			for idx, client in ipairs(group.clients) do
-				local widget = wibox.widget(opts.widget_template or {
-					{
-						{
-							{
-								id = 'icon_role',
-								forced_width = opts.icon_size or dpi(20),
-								forced_height = opts.icon_size or dpi(20),
-								widget = awful.widget.clienticon,
-							},
-							margins = opts.icon_margin or dpi(4),
-							widget = wibox.container.margin,
-						},
-						bg = (client == focused and (opts.bg_color_focus or "#ff0000")) or (opts.bg_color or "#00000000"),
-						shape = function(cr,w,h) gears.shape.rounded_rect(cr,w,h,5) end,
-						id = 'click_role',
-						widget = wibox.container.background,
-					},
-					halign = "center",
-					valign = "center",
-					widget = wibox.container.place,
-				})
-
-				-- Add icons & etc
-				for _, w in ipairs(widget:get_children_by_id("icon_role")) do
-					w.image = client.icon
-					w.client = client
-				end
-
-				for _, w in ipairs(widget:get_children_by_id("click_role")) do
-					w:add_button(awful.button({}, 1, function()
-						tabbed_module.switch_to(group,idx)
-					end))
-				end
-
-				tabbed_icons:add(widget)
-			end
-		end
-	end
-
-	awesome.connect_signal("bling::tabbed::client_added", recreate)
-	awesome.connect_signal("bling::tabbed::changed_focus", recreate)
-	
-	return tabbed_icons
+	return original
 end
 
 local function update_list(c, s, list, opts)
@@ -106,7 +24,7 @@ local function update_list(c, s, list, opts)
 					{
 						widget = awful.widget.clienticon,
 						id = "client_icon",
-						buttons = awful.button({}, 1, function()
+						buttons = awful.button({}, 1, function() -- Definatley Cheating Here
 							c:activate({ action = "toggle_minimization", context = "tasklist" })
 						end),
 					},
@@ -114,8 +32,8 @@ local function update_list(c, s, list, opts)
 					expand = "none",
 					layout = wibox.layout.align.horizontal,
 				},
-				forced_width = opts.icon_size or dpi(24),
-				forced_height = opts.icon_size or dpi(24),
+				forced_width = opts.icon_size,
+				forced_height = opts.icon_size,
 				widget = wibox.container.margin,
 			},
 			top = dpi(8),
@@ -162,12 +80,11 @@ local function full_update_list(s, list, opts)
 				list:remove(index)
 			end
 		end
-		-- Seems to work uptil here
 
 		-- Generate and add wrapper widget if > 1 children
 		if #group.clients > 1 then
 
-			local wrapper = wibox.widget(--[[opts.group_widget_template or ]]{
+			local wrapper = wibox.widget({
 				{
 					{
 						-- This is so dumb... but it works so meh
@@ -179,7 +96,7 @@ local function full_update_list(s, list, opts)
 							id = "row2",
 							layout = wibox.layout.flex.horizontal,
 						},
-						spacing = opts.group_row_spacing or 2,
+						spacing = opts.group_row_spacing,
 						layout = wibox.layout.fixed.vertical,
 					},
 					halign = "center",
@@ -188,10 +105,7 @@ local function full_update_list(s, list, opts)
 					widget = wibox.container.place,
 				},
 				widget = wibox.container.margin,
-				top = opts.group_margins.top or dpi(8),
-				bottom = opts.group_margins.bottom or dpi(8),
-				left = opts.group_margins.left or dpi(2),
-				right = opts.group_margins.right or dpi(2),
+				margins = opts.group_margin
 			})
 
 			for _, w in ipairs(wrapper:get_children_by_id('click_role')) do
@@ -202,11 +116,11 @@ local function full_update_list(s, list, opts)
 
 			for idx, c in ipairs(group.clients) do
 				if c and c.icon then
-					-- TODO: Don't do this in a 1iq way
+					-- TODO: Don't do this in a -1iq way
 					if idx <= 2 then
-						wrapper:get_children_by_id("row1")[1]:add(opts.group_icon_fn and opts.group_icon_fn(c) or awful.widget.clienticon(c))
+						wrapper:get_children_by_id("row1")[1]:add(opts.group_icon_fn(c))
 					else
-						wrapper:get_children_by_id("row2")[1]:add(opts.group_icon_fn and opts.group_icon_fn(c) or awful.widget.clienticon(c))
+						wrapper:get_children_by_id("row2")[1]:add(opts.group_icon_fn(c))
 					end
 				end
 			end
@@ -219,10 +133,14 @@ local function full_update_list(s, list, opts)
 end
 
 -- Sorry about the pcalls but it only fails rarely... I think...
-function module.custom_tasklist(s, opts)
-	opts = opts or {
-		group_margins = {}
-	}
+return function(s, opts)
+	opts = tbl_fallback(gears.table.join(opts, beautiful.bling_tabbed_misc_tasklist), {
+		group_margin = dpi(8),
+		group_row_spacing = dpi(2),
+		icon_size = dpi(24),
+		group_icon_fn = awful.widget.clienticon
+	})
+
 	local list = wibox.widget({
 		layout = opts.tasklist_layout or wibox.layout.fixed.vertical,
 	})
@@ -251,4 +169,3 @@ function module.custom_tasklist(s, opts)
 	return list
 end
 
-return module
