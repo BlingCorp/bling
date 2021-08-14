@@ -75,7 +75,7 @@ function module.titlebar_indicator(c)
 
 				for _, w in ipairs(widget:get_children_by_id("click_role")) do
 					w:add_button(awful.button({}, 1, function()
-						bling.module.tabbed.switch_to(group,idx)
+						require('bling.module.tabbed').switch_to(group,idx)
 					end))
 				end
 
