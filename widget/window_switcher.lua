@@ -112,8 +112,10 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                     forced_width = client_width,
                     forced_height = client_height,
                     create_callback = function(self, c, _, __)
-                        set_icon(self, c)
-                        c:connect_signal("property::class", function() set_icon(self, c) end)
+                        if (font_icons) ~= nil then
+                            set_icon(self, c)
+                            c:connect_signal("property::class", function() set_icon(self, c) end)
+                        end
                     end,
                     {
                         layout  = wibox.layout.fixed.horizontal,
