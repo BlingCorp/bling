@@ -52,7 +52,7 @@ local window_switcher_hide = function()
     s.window_switcher_box.visible = false
 end
 
-local function draw_widget(s, type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_scroll_step_function, name_scroll_speed, name_valign, name_forced_width, name_font, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
+local function draw_widget(s, type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_scroll_step_function, name_scroll_speed, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
     local set_font_icon = function(self, c)
         local i = font_icons[c.class] or font_icons["_"]
         self:get_children_by_id("text_icon")[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
@@ -110,7 +110,7 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
                 screen = s,
                 filter = awful.widget.tasklist.filter.currenttags,
                 buttons = mouse_keys,
-                style = { font = name_font },
+                style = { font = name_font, fg_normal = name_normal_color, fg_focus = name_focus_color },
                 layout = { layout  = wibox.layout.flex.horizontal, spacing = clients_spacing },
                 widget_template =
                 {
@@ -259,6 +259,8 @@ local enable = function(opts)
     local name_valign = beautiful.window_switcher_name_valign or "center"
     local name_forced_width = beautiful.window_switcher_name_forced_width or dpi(type == "thumbnail" and 200 or 550)
     local name_font = beautiful.window_switcher_name_font or beautiful.font
+    local name_normal_color = beautiful.window_switcher_name_normal_color or "#FFFFFF"
+    local name_focus_color = beautiful.window_switcher_name_focus_color or "#FF0000"
     local icon_valign = beautiful.window_switcher_icon_valign  or "center"
     local icon_width = beautiful.window_switcher_icon_width or dpi(40)
     local custom_icons = beautiful.window_switcher_custom_icons or nil
@@ -380,7 +382,7 @@ local enable = function(opts)
         gears.timer.delayed_call(function()
             -- Finally make the window switcher wibox visible after
             -- a small delay, to allow the popup size to update
-            draw_widget(s, type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_scroll_step_function, name_scroll_speed, name_valign, name_forced_width, name_font, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
+            draw_widget(s, type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_scroll_step_function, name_scroll_speed, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
             s.window_switcher_box.visible = true
         end)
     end)
