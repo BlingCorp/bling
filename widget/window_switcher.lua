@@ -236,26 +236,19 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
     })
 
     -- Center window switcher whenever its height changes
-    s.window_switcher_box:connect_signal
-    (
-        "property::width",
-        function()
-            awful.placement.centered(s.window_switcher_box, { honor_workarea = true, honor_padding = true })
-            if s.window_switcher_box.visible and get_num_clients(s) == 0 then
-                window_switcher_hide()
-            end
+    s.window_switcher_box:connect_signal("property::width", function()
+        awful.placement.centered(s.window_switcher_box, { honor_workarea = true, honor_padding = true })
+        if s.window_switcher_box.visible and get_num_clients(s) == 0 then
+            window_switcher_hide()
         end
-    )
-    s.window_switcher_box:connect_signal
-    (
-        "property::height",
-        function()
-            awful.placement.centered(s.window_switcher_box, { honor_workarea = true, honor_padding = true })
-            if s.window_switcher_box.visible and get_num_clients(s) == 0 then
-                window_switcher_hide()
-            end
+    end)
+
+    s.window_switcher_box:connect_signal("property::height", function()
+        awful.placement.centered(s.window_switcher_box, { honor_workarea = true, honor_padding = true })
+        if s.window_switcher_box.visible and get_num_clients(s) == 0 then
+            window_switcher_hide()
         end
-    )
+    end)
 end
 
 local enable = function(opts)
