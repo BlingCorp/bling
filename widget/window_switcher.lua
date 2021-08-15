@@ -52,7 +52,7 @@ local window_switcher_hide = function()
     s.window_switcher_box.visible = false
 end
 
-local function draw_widget(s, type, client_width, client_height, client_margin, background, border_width, border_radius, border_color, text_font, custom_icons, font_icons, font_icons_font, mouse_keys)
+local function draw_widget(s, type, client_width, client_height, client_margin, background, border_width, border_radius, border_color, icon_width, text_font, custom_icons, font_icons, font_icons_font, mouse_keys)
     local set_font_icon = function(self, c)
         local i = font_icons[c.class] or font_icons["_"]
         self:get_children_by_id("text_icon")[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
@@ -79,7 +79,7 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
         if (font_icons) ~= nil then
             return {
                 font   = font_icons_font,
-                forced_width = dpi(50),
+                forced_width = icon_width,
                 align  = "center",
                 valign = "center",
                 id     = "text_icon",
@@ -87,7 +87,7 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
             }
         elseif (custom_icons) ~= nil then
             return {
-                forced_width = dpi(50),
+                forced_width = icon_width,
                 align  = "center",
                 valign = "center",
                 id     = 'custom_icon',
@@ -98,7 +98,7 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
         return {
             awful.widget.clienticon,
             margins = 5,
-            forced_width = dpi(50),
+            forced_width = icon_width,
             widget  = wibox.container.margin
         }
     end
@@ -278,6 +278,7 @@ local enable = function(opts)
     local client_width = opts.client_width or dpi(type == "thumbnail" and 150 or 500)
     local client_height = opts.client_height or dpi(250)
     local client_margin = opts.client_margin or dpi(10)
+    local icon_width = beautiful.window_switcher_icon_width or dpi(40)
     local custom_icons = opts.custom_icons or nil
     local font_icons = opts.font_icons or nil
     local font_icons_font = opts.font_icons_font or beautiful.font
@@ -397,7 +398,7 @@ local enable = function(opts)
         gears.timer.delayed_call(function()
             -- Finally make the window switcher wibox visible after
             -- a small delay, to allow the popup size to update
-            draw_widget(s, type, client_width, client_height, client_margin, background, border_width, border_radius, border_color, text_font, custom_icons, font_icons, font_icons_font, mouse_keys)
+            draw_widget(s, type, client_width, client_height, client_margin, background, border_width, border_radius, border_color, icon_width, text_font, custom_icons, font_icons, font_icons_font, mouse_keys)
             s.window_switcher_box.visible = true
         end)
     end)
