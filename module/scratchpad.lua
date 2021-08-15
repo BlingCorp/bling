@@ -107,7 +107,8 @@ function Scratchpad:turn_on()
             rule = self.rule,
             properties =
             {
-                -- If I open a scratchpad I'll want it to spawn at my current tag
+                -- If a scratchpad is opened it should spawn at the current tag
+                -- the same way it will behave if the client was already open
                 -- can be an option though
                 tag = awful.screen.focused().selected_tag,
                 switch_to_tags = false,
