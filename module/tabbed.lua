@@ -41,7 +41,7 @@ tabbed.remove = function(c)
         awful.titlebar.hide(c, bar.position)
     end
     c.bling_tabbed = nil
-	awesome.emit_signal("bling::tabbed::client_removed", c)
+	awesome.emit_signal("bling::tabbed::client_removed", tabobj, c)
     tabbed.switch_to(tabobj, 1)
 end
 
@@ -63,7 +63,7 @@ tabbed.add = function(c, tabobj)
     -- but the new client needs to have the tabobj property 
     -- before a clean switch can happen
     tabbed.update(tabobj)
-    awesome.emit_signal("bling::tabbed::client_added", tabobj)
+    awesome.emit_signal("bling::tabbed::client_added", tabobj, c)
     tabbed.switch_to(tabobj, #tabobj.clients)
 end
 

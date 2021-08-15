@@ -15,28 +15,18 @@ local function tbl_contains(tbl, item)
 	return false
 end
 
--- Handle arguments and fallback
-local function tbl_fallback(original, fallback)
-	for key, value in pairs(fallback) do
-		if original[key] == nil then
-			original[key] = value
-		end
-	end
-	return original
-end
-
 -- Needs to be run, every time a new titlbear is created
 return function(c, opts)
 
 	-- Args & Fallback -- Widget templates are in their original loactions
-	opts = tbl_fallback(gears.table.join(opts, beautiful.bling_tabbed_misc_titlebar_indicator), {
+	opts = gears.table.crush({
 		layout_spacing = dpi(4),
 		icon_size = dpi(20),
 		icon_margin = dpi(4),
 		bg_color_focus = "#ff0000",
 		bg_color = "#00000000",
 		icon_shape = function(cr,w,h) gears.shape.rounded_rect(cr,w,h,0) end
-	})
+	}, gears.table.join(opts, beautiful.bling_tabbed_misc_titlebar_indicator)) 
 
 	-- Container to store icons
 	local tabbed_icons = wibox.widget({
@@ -44,7 +34,7 @@ return function(c, opts)
 		spacing = opts.layout_spacing,
 	})
 
-	awesome.connect_signal("bling::tabbed::client_removed", function(removed_c)
+	awesome.connect_signal("bling::tabbed::client_removed", function(_, removed_c)
 		-- Remove from list
 		for idx, icon in ipairs(tabbed_icons.children) do
 			if icon:get_children_by_id("icon_role")[1].client == removed_c then
