@@ -36,7 +36,7 @@ local function position_cb()
     local player = manager.players[1]
     if player then
         local position = player:get_position() / 1000000
-        local length = player.metadata.value["mpris:length"] / 1000000
+        local length = (player.metadata.value["mpris:length"] or 0) / 1000000
         if position ~= last_position or length ~= last_length then
             awesome.emit_signal("bling::playerctl::position",
                                 position,
