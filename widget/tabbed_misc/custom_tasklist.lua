@@ -138,11 +138,12 @@ return function(s, opts)
 		group_margin = dpi(8),
 		group_row_spacing = dpi(2),
 		icon_size = dpi(24),
-		filter = awful.widget.tasklist.filter.currenttags
+		filter = awful.widget.tasklist.filter.currenttags,
+		layout = wibox.layout.fixed.horizontal,
 	})
 
 	local list = wibox.widget({
-		layout = opts.tasklist_layout or wibox.layout.fixed.vertical,
+		layout = opts.tasklist_layout
 	})
 
 	local update = function()
