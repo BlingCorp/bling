@@ -52,7 +52,7 @@ local window_switcher_hide = function()
     s.window_switcher_box.visible = false
 end
 
-local function draw_widget(s, type, background, border_width, border_radius, border_color, client_width, client_height, client_margin, name_font, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
+local function draw_widget(s, type, background, border_width, border_radius, border_color, client_width, client_height, client_margin, name_font, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
     local set_font_icon = function(self, c)
         local i = font_icons[c.class] or font_icons["_"]
         self:get_children_by_id("text_icon")[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
@@ -80,16 +80,14 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
             return {
                 font   = font_icons_font,
                 forced_width = icon_width,
-                align  = "center",
-                valign = "center",
+                valign = icon_valign,
                 id     = "text_icon",
                 widget = wibox.widget.textbox
             }
         elseif (custom_icons) ~= nil then
             return {
                 forced_width = icon_width,
-                align  = "center",
-                valign = "center",
+                valign = icon_valign,
                 id     = 'custom_icon',
                 widget = wibox.widget.imagebox
             }
@@ -97,9 +95,9 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
 
         return {
             awful.widget.clienticon,
-            margins = 5,
             forced_width = icon_width,
-            widget  = wibox.container.margin
+            valign = icon_valign,
+            widget  = wibox.container.place
         }
     end
 
@@ -112,7 +110,7 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
                 buttons  = mouse_keys,
                 style    =
                 {
-                    font = name_font,
+                    font = name_font
                 },
                 layout =
                 {
@@ -278,6 +276,7 @@ local enable = function(opts)
     local client_height = opts.client_height or dpi(250)
     local client_margin = opts.client_margin or dpi(10)
     local name_font = beautiful.window_switcher_name_font or beautiful.font
+    local icon_valign = beautiful.window_switcher_icon_valign  or "center"
     local icon_width = beautiful.window_switcher_icon_width or dpi(40)
     local custom_icons = opts.custom_icons or nil
     local font_icons = opts.font_icons or nil
@@ -398,7 +397,7 @@ local enable = function(opts)
         gears.timer.delayed_call(function()
             -- Finally make the window switcher wibox visible after
             -- a small delay, to allow the popup size to update
-            draw_widget(s, type, background, border_width, border_radius, border_color, client_width, client_height, client_margin, name_font, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
+            draw_widget(s, type, background, border_width, border_radius, border_color, client_width, client_height, client_margin, name_font, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
             s.window_switcher_box.visible = true
         end)
     end)
