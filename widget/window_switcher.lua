@@ -225,7 +225,7 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
         screen = s,
         widget =
         {
-            border_width = 0,
+            border_width = border_width,
             border_color = border_color,
             bg = background,
             shape = helpers.shape.rrect(border_radius),
