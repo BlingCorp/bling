@@ -100,11 +100,11 @@ function Scratchpad:turn_on()
     else
         -- if no client was found, spawn one, find the corresponding window,
         --  apply the properties only once (until the next closing)
-        local pid = awful.spawn.with_shell(self.command)
+        awful.spawn.with_shell(self.command)
         ruled.client.append_rule
         {
             id = "scratchpad",
-            rule = { pid = pid },
+            rule = self.rule,
             properties =
             {
                 -- If I open a scratchpad I'll want it to spawn at my current tag
