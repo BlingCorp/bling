@@ -254,7 +254,7 @@ local enable = function(opts)
     local thumbnail_margins = beautiful.window_switcher_thumbnail_margins or dpi(5)
     local name_margins = beautiful.window_switcher_name_margins or (type == "thumbnail"
         and { left = dpi(5), right = dpi(0), top = dpi(0), bottom = dpi(0) }
-        or { left = dpi(6), right = dpi(14), top = dpi(14), bottom = dpi(14) } )
+        or { left = dpi(5), right = dpi(14), top = dpi(14), bottom = dpi(14) } )
     local name_valign = beautiful.window_switcher_name_valign or "center"
     local name_forced_width = beautiful.window_switcher_name_forced_width or dpi(type == "thumbnail" and 200 or 550)
     local name_font = beautiful.window_switcher_name_font or beautiful.font
