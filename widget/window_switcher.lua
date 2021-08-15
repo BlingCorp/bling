@@ -102,19 +102,19 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
     end
 
     local tasklist_widget = function()
-        if type == "text" then
-            return  awful.widget.tasklist
+        if type == "thumbnail" then
+            return awful.widget.tasklist
             {
                 screen   = s,
                 filter   = awful.widget.tasklist.filter.currenttags,
                 buttons  = mouse_keys,
                 style    =
                 {
-                    font = name_font
+                    font = name_font,
                 },
                 layout =
                 {
-                    layout  = wibox.layout.fixed.vertical
+                    layout  = wibox.layout.flex.horizontal
                 },
                 widget_template =
                 {
@@ -130,17 +130,14 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
                             set_custom_icon(self, c)
                             c:connect_signal("property::class", function() set_custom_icon(self, c) end)
                         end
+                        update_thumbnail(self, c)
+                    end,
+                    update_callback = function(self, c, _, __)
+                        update_thumbnail(self, c)
                     end,
                     {
-                        layout  = wibox.layout.fixed.horizontal,
-                        spacing = client_icon_horizontal_spacing,
-                        icon_widget(),
+                        layout  = wibox.layout.flex.vertical,
                         {
-                            {
-                                widget = wibox.widget.textbox,
-                                id     = "text_role",
-                                valign = name_valign
-                            },
                             widget = wibox.container.margin,
                             left = dpi(6),
                             right = dpi(14),
@@ -149,24 +146,51 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
                             -- to adjust them according to font size.
                             top  = dpi(14),
                             bottom = dpi(14),
+                            {
+                                widget = wibox.widget.imagebox,
+                                id = "thumbnail",
+                                resize = true,
+                                horizontal_fit_policy = "fit",
+                                vertical_fit_policy = "fit"
+                            }
                         },
+                        {
+                            layout  = wibox.layout.fixed.horizontal,
+                            spacing = client_icon_horizontal_spacing,
+                            icon_widget(),
+                            {
+                                widget = wibox.container.margin,
+                                left = dpi(6),
+                                right = dpi(14),
+                                -- Add margins to top and bottom in order to force the
+                                -- text to be on a single line, if needed. Might need
+                                -- to adjust them according to font size.
+                                top  = dpi(14),
+                                bottom = dpi(14),
+                                {
+                                    widget = wibox.widget.textbox,
+                                    id     = "text_role",
+                                    valign  = name_valign,
+                                },
+                            },
+                        }
                     },
-                },
+                }
             }
         end
 
-        return awful.widget.tasklist
+        return  awful.widget.tasklist
         {
             screen   = s,
             filter   = awful.widget.tasklist.filter.currenttags,
             buttons  = mouse_keys,
             style    =
             {
-                font = name_font,
+                font = name_font
             },
             layout =
             {
-                layout  = wibox.layout.flex.horizontal
+                layout  = wibox.layout.fixed.vertical
             },
             widget_template =
             {
@@ -182,14 +206,17 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
                         set_custom_icon(self, c)
                         c:connect_signal("property::class", function() set_custom_icon(self, c) end)
                     end
-                    update_thumbnail(self, c)
-                end,
-                update_callback = function(self, c, _, __)
-                    update_thumbnail(self, c)
                 end,
                 {
-                    layout  = wibox.layout.flex.vertical,
+                    layout  = wibox.layout.fixed.horizontal,
+                    spacing = client_icon_horizontal_spacing,
+                    icon_widget(),
                     {
+                        {
+                            widget = wibox.widget.textbox,
+                            id     = "text_role",
+                            valign = name_valign
+                        },
                         widget = wibox.container.margin,
                         left = dpi(6),
                         right = dpi(14),
@@ -198,36 +225,9 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
                         -- to adjust them according to font size.
                         top  = dpi(14),
                         bottom = dpi(14),
-                        {
-                            widget = wibox.widget.imagebox,
-                            id = "thumbnail",
-                            resize = true,
-                            horizontal_fit_policy = "fit",
-                            vertical_fit_policy = "fit"
-                        }
                     },
-                    {
-                        layout  = wibox.layout.fixed.horizontal,
-                        spacing = client_icon_horizontal_spacing,
-                        icon_widget(),
-                        {
-                            widget = wibox.container.margin,
-                            left = dpi(6),
-                            right = dpi(14),
-                            -- Add margins to top and bottom in order to force the
-                            -- text to be on a single line, if needed. Might need
-                            -- to adjust them according to font size.
-                            top  = dpi(14),
-                            bottom = dpi(14),
-                            {
-                                widget = wibox.widget.textbox,
-                                id     = "text_role",
-                                valign  = name_valign,
-                            },
-                        },
-                    }
                 },
-            }
+            },
         }
     end
 
