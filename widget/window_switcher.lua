@@ -214,8 +214,6 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
         }
     end
 
-    s.window_switcher_tasklist = tasklist_widget()
-
     s.window_switcher_box = awful.popup
     ({
         visible = false,
@@ -225,7 +223,7 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
         widget =
         {
             {
-                s.window_switcher_tasklist,
+                tasklist_widget(),
                 margins = client_margin,
                 widget = wibox.container.margin
             },
