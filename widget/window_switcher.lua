@@ -216,13 +216,13 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
 
     s.window_switcher_box = awful.popup
     ({
+        bg = "#00000000",
         visible = false,
         ontop = true,
         screen = s,
-        bg = "#00000000",
         widget =
         {
-            border_width = 0    ,
+            border_width = 0,
             border_color = border_color,
             bg = background,
             shape = helpers.shape.rrect(border_radius),
