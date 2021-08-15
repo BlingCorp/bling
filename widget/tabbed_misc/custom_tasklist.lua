@@ -16,7 +16,7 @@ local function tbl_fallback(original, fallback)
 end
 
 local function update_list(c, s, list, opts)
-	if awful.widget.tasklist.filter.currenttags(c, s) and c ~= nil and c.icon ~= nil then -- Im not paranoid...
+	if opts.filter (c, s) and c ~= nil and c.icon ~= nil then -- Im not paranoid...
 		widget = wibox.widget(opts.widget_template or {
 			{
 				{
@@ -118,9 +118,9 @@ local function full_update_list(s, list, opts)
 				if c and c.icon then
 					-- TODO: Don't do this in a -1iq way
 					if idx <= 2 then
-						wrapper:get_children_by_id("row1")[1]:add(opts.group_icon_fn(c))
+						wrapper:get_children_by_id("row1")[1]:add(awful.widget.clienticon(c))
 					else
-						wrapper:get_children_by_id("row2")[1]:add(opts.group_icon_fn(c))
+						wrapper:get_children_by_id("row2")[1]:add(awful.widget.clienticon(c))
 					end
 				end
 			end
@@ -138,7 +138,7 @@ return function(s, opts)
 		group_margin = dpi(8),
 		group_row_spacing = dpi(2),
 		icon_size = dpi(24),
-		group_icon_fn = awful.widget.clienticon
+		filter = awful.widget.tasklist.filter.currenttags
 	})
 
 	local list = wibox.widget({
