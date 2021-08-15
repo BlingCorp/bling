@@ -37,7 +37,6 @@ local window_switcher_hide = function()
 
     -- Minimize originally minimized clients
     local s = awful.screen.focused()
-    local clients = s.selected_tag:clients()
     for _, c in pairs(window_switcher_minimized_clients) do
         if c and c.valid and not (client.focus and client.focus == c) then
             c.minimized = true
