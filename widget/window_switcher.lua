@@ -167,10 +167,6 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                     update_thumbnail(self, c)
                 end,
                 update_callback = function(self, c, _, __)
-                    if (font_icons) ~= nil then
-                        set_icon(self, c)
-                        c:connect_signal("property::class", function() set_icon(self, c) end)
-                    end
                     update_thumbnail(self, c)
                 end,
                 {
