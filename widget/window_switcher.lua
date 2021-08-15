@@ -53,9 +53,9 @@ local window_switcher_hide = function()
 end
 
 local function draw_widget(s, type, client_width, client_height, client_margin, background, border_width, border_radius, border_color, text_font, font_icons, font_icons_font, mouse_keys)
-    local set_icon = function(item, c)
+    local set_icon = function(self, c)
         local i = font_icons[c.class] or font_icons["_"]
-        item:get_children_by_id("text_icon")[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
+        self:get_children_by_id("text_icon")[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
     end
 
     local update_thumbnail = function(self, c)
