@@ -168,7 +168,7 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
             screen = s,
             filter = awful.widget.tasklist.filter.currenttags,
             buttons = mouse_keys,
-            style =  { font = name_font },
+            style = { font = name_font, fg_normal = name_normal_color, fg_focus = name_focus_color },
             layout = { layout  = wibox.layout.fixed.vertical, spacing = clients_spacing },
             widget_template =
             {
