@@ -54,8 +54,8 @@ end
 
 local function draw_widget(s, type, client_width, client_height, client_margin, background, border_radius, text_font, font_icons, font_icons_font, mouse_keys)
     local set_icon = function(item, c)
-        local i = font_icons[c.class] or font_icons['_']
-        item:get_children_by_id('text_icon')[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
+        local i = font_icons[c.class] or font_icons["_"]
+        item:get_children_by_id("text_icon")[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
     end
 
     local update_thumbnail = function(self, c)
@@ -67,27 +67,27 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
         cr:set_source_surface(content, 0, 0)
         cr.operator = cairo.Operator.SOURCE
         cr:paint()
-        self:get_children_by_id('thumbnail')[1].image = gears.surface.load(img)
+        self:get_children_by_id("thumbnail")[1].image = gears.surface.load(img)
     end
 
     local icon_widget = function()
         if (font_icons) ~= nil then
             return {
                 widget = wibox.widget.textbox,
-                id     = 'text_icon',
+                id     = "text_icon",
                 font   = font_icons_font,
                 forced_width = dpi(50),
                 align  = "center",
                 valign = "center",
             }
-        else
-            return {
-                awful.widget.clienticon,
-                margins = 5,
-                forced_width = dpi(50),
-                widget  = wibox.container.margin
-            }
         end
+
+        return {
+            awful.widget.clienticon,
+            margins = 5,
+            forced_width = dpi(50),
+            widget  = wibox.container.margin
+        }
     end
 
     local tasklist_widget = function()
@@ -121,7 +121,7 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                         {
                             {
                                 widget = wibox.widget.textbox,
-                                id     = 'text_role',
+                                id     = "text_role",
                                 align  = "center",
                             },
                             widget = wibox.container.margin,
@@ -183,7 +183,7 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                             bottom = dpi(14),
                             {
                                 widget = wibox.widget.imagebox,
-                                id = 'thumbnail',
+                                id = "thumbnail",
                                 resize = true,
                                 horizontal_fit_policy = "fit",
                                 vertical_fit_policy = "fit"
@@ -203,7 +203,7 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                                 bottom = dpi(14),
                                 {
                                     widget = wibox.widget.textbox,
-                                    id     = 'text_role',
+                                    id     = "text_role",
                                     align  = "center",
                                 },
                             },
@@ -272,20 +272,20 @@ local enable = function(opts)
     local font_icons = opts.font_icons or nil
     local font_icons_font = opts.font_icons_font or beautiful.font
 
-    local hide_window_switcher_key = opts.hide_window_switcher_key or 'Escape'
+    local hide_window_switcher_key = opts.hide_window_switcher_key or "Escape"
 
     local select_client_key = opts.select_client_key or 1
-    local minimize_key = opts.minimize_key or 'n'
-    local unminimize_key = opts.unminimize_key or 'N'
-    local kill_client_key = opts.kill_client_key or 'q'
+    local minimize_key = opts.minimize_key or "n"
+    local unminimize_key = opts.unminimize_key or "N"
+    local kill_client_key = opts.kill_client_key or "q"
 
-    local cycle_key = opts.cycle_key or 'Tab'
+    local cycle_key = opts.cycle_key or "Tab"
 
-    local previous_key = opts.previous_key or 'Left'
-    local next_key = opts.next_key or 'Right'
+    local previous_key = opts.previous_key or "Left"
+    local next_key = opts.next_key or "Right"
 
-    local vim_previous_key = opts.vim_previous_key or 'h'
-    local vim_next_key = opts.vim_next_key or 'l'
+    local vim_previous_key = opts.vim_previous_key or "h"
+    local vim_next_key = opts.vim_next_key or "l"
 
     local scroll_previous_key = opts.scroll_previous_key or 4
     local scroll_next_key = opts.scroll_next_key or 5
