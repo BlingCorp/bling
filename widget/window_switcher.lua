@@ -136,42 +136,63 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                     },
                 },
             }
-        else
-            return awful.widget.tasklist
+        end
+
+        return awful.widget.tasklist
+        {
+            screen   = s,
+            filter   = awful.widget.tasklist.filter.currenttags,
+            buttons  = mouse_keys,
+            style    =
             {
-                screen   = s,
-                filter   = awful.widget.tasklist.filter.currenttags,
-                buttons  = mouse_keys,
-                style    =
+                font = text_font,
+            },
+            layout =
+            {
+                layout  = wibox.layout.flex.horizontal
+            },
+            widget_template =
+            {
+                widget = wibox.container.background,
+                id = "bg_role",
+                forced_width = client_width,
+                forced_height = client_height,
+                create_callback = function(self, c, _, __)
+                    if (font_icons) ~= nil then
+                        set_icon(self, c)
+                        c:connect_signal("property::class", function() set_icon(self, c) end)
+                    end
+                    update_thumbnail(self, c)
+                end,
+                update_callback = function(self, c, _, __)
+                    if (font_icons) ~= nil then
+                        set_icon(self, c)
+                        c:connect_signal("property::class", function() set_icon(self, c) end)
+                    end
+                    update_thumbnail(self, c)
+                end,
                 {
-                    font = text_font,
-                },
-                layout =
-                {
-                    layout  = wibox.layout.flex.horizontal
-                },
-                widget_template =
-                {
-                    widget = wibox.container.background,
-                    id = "bg_role",
-                    forced_width = client_width,
-                    forced_height = client_height,
-                    create_callback = function(self, c, _, __)
-                        if (font_icons) ~= nil then
-                            set_icon(self, c)
-                            c:connect_signal("property::class", function() set_icon(self, c) end)
-                        end
-                        update_thumbnail(self, c)
-                    end,
-                    update_callback = function(self, c, _, __)
-                        if (font_icons) ~= nil then
-                            set_icon(self, c)
-                            c:connect_signal("property::class", function() set_icon(self, c) end)
-                        end
-                        update_thumbnail(self, c)
-                    end,
+                    layout  = wibox.layout.flex.vertical,
                     {
-                        layout  = wibox.layout.flex.vertical,
+                        widget = wibox.container.margin,
+                        left = dpi(6),
+                        right = dpi(14),
+                        -- Add margins to top and bottom in order to force the
+                        -- text to be on a single line, if needed. Might need
+                        -- to adjust them according to font size.
+                        top  = dpi(14),
+                        bottom = dpi(14),
+                        {
+                            widget = wibox.widget.imagebox,
+                            id = "thumbnail",
+                            resize = true,
+                            horizontal_fit_policy = "fit",
+                            vertical_fit_policy = "fit"
+                        }
+                    },
+                    {
+                        layout  = wibox.layout.fixed.horizontal,
+                        icon_widget(),
                         {
                             widget = wibox.container.margin,
                             left = dpi(6),
@@ -182,36 +203,15 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                             top  = dpi(14),
                             bottom = dpi(14),
                             {
-                                widget = wibox.widget.imagebox,
-                                id = "thumbnail",
-                                resize = true,
-                                horizontal_fit_policy = "fit",
-                                vertical_fit_policy = "fit"
-                            }
-                        },
-                        {
-                            layout  = wibox.layout.fixed.horizontal,
-                            icon_widget(),
-                            {
-                                widget = wibox.container.margin,
-                                left = dpi(6),
-                                right = dpi(14),
-                                -- Add margins to top and bottom in order to force the
-                                -- text to be on a single line, if needed. Might need
-                                -- to adjust them according to font size.
-                                top  = dpi(14),
-                                bottom = dpi(14),
-                                {
-                                    widget = wibox.widget.textbox,
-                                    id     = "text_role",
-                                    align  = "center",
-                                },
+                                widget = wibox.widget.textbox,
+                                id     = "text_role",
+                                align  = "center",
                             },
-                        }
-                    },
-                }
+                        },
+                    }
+                },
             }
-        end
+        }
     end
 
     s.window_switcher_tasklist = tasklist_widget()
