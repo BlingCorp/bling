@@ -52,7 +52,7 @@ local window_switcher_hide = function()
     s.window_switcher_box.visible = false
 end
 
-local function draw_widget(s, type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_scroll_step_function, name_scroll_speed, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
+local function draw_widget(s, type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
     local set_font_icon = function(self, c)
         local i = font_icons[c.class] or font_icons["_"]
         self:get_children_by_id("text_icon")[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
@@ -151,9 +151,8 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
                                     id = "text_role",
                                     widget = wibox.widget.textbox
                                 },
-                                speed = name_scroll_speed,
-                                step_function = name_scroll_step_function,
-                                widget = wibox.container.scroll.horizontal
+                                margins = name_margins,
+                                widget = wibox.container.margin
                             },
                             spacing = client_icon_horizontal_spacing,
                             layout = wibox.layout.fixed.horizontal
@@ -194,9 +193,8 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
                             id = "text_role",
                             widget = wibox.widget.textbox
                         },
-                        speed = name_scroll_speed,
-                        step_function = name_scroll_step_function,
-                        widget = wibox.container.scroll.horizontal
+                        margins = name_margins,
+                        widget = wibox.container.margin
                     },
                     spacing = client_icon_horizontal_spacing,
                     layout = wibox.layout.fixed.horizontal
@@ -254,8 +252,9 @@ local enable = function(opts)
     local client_height = beautiful.window_switcher_client_height or dpi(type == "thumbnail" and 250 or 50)
     local client_margins = beautiful.window_switcher_client_margins or dpi(10)
     local thumbnail_margins = beautiful.window_switcher_thumbnail_margins or dpi(5)
-    local name_scroll_step_function = beautiful.name_scroll_step_function or wibox.container.scroll.step_functions.waiting_nonlinear_back_and_forth
-    local name_scroll_speed = beautiful.name_scroll_speed or 20
+    local name_margins = beautiful.window_switcher_name_margins or (type == "thumbnail"
+        and { left = dpi(5), right = dpi(0), top = dpi(0), bottom = dpi(0) }
+        or { left = dpi(6), right = dpi(14), top = dpi(14), bottom = dpi(14) } )
     local name_valign = beautiful.window_switcher_name_valign or "center"
     local name_forced_width = beautiful.window_switcher_name_forced_width or dpi(type == "thumbnail" and 200 or 550)
     local name_font = beautiful.window_switcher_name_font or beautiful.font
@@ -382,7 +381,7 @@ local enable = function(opts)
         gears.timer.delayed_call(function()
             -- Finally make the window switcher wibox visible after
             -- a small delay, to allow the popup size to update
-            draw_widget(s, type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_scroll_step_function, name_scroll_speed, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
+            draw_widget(s, type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
             s.window_switcher_box.visible = true
         end)
     end)
