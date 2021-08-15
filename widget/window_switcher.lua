@@ -274,7 +274,7 @@ local enable = function(opts)
     local border_width = beautiful.window_switcher_widget_border_width or dpi(3)
     local border_radius = beautiful.window_switcher_widget_border_radius or dpi(0)
     local border_color = beautiful.window_switcher_widget_border_color or "#ffffff"
-    local text_font = opts.text_font or beautiful.font
+    local text_font = beautiful.window_switcher_client_name_font or beautiful.font
     local client_width = opts.client_width or dpi(type == "thumbnail" and 150 or 500)
     local client_height = opts.client_height or dpi(250)
     local client_margin = opts.client_margin or dpi(10)
