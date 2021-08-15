@@ -262,11 +262,7 @@ local enable = function(opts)
 
     local type = opts.type or "thumbnail"
     local client_width
-    if type == "thumbnail" then
-        client_width = opts.client_width or dpi(150)
-    else
-        client_width = opts.client_width or dpi(500)
-    end
+    local client_width = opts.client_width or dpi(type == "thumbnail" and 150 or 500)
     local client_height = opts.client_height or dpi(250)
     local client_margin = opts.client_margin or dpi(10)
     local background = beautiful.window_switcher_widget_bg or "#000000"
