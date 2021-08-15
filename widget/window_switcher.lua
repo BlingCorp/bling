@@ -268,17 +268,17 @@ local enable = function(opts)
     local border_radius = beautiful.window_switcher_widget_border_radius or dpi(0)
     local border_color = beautiful.window_switcher_widget_border_color or "#ffffff"
     local client_icon_horizontal_spacing = beautiful.window_switcher_client_icon_horizontal_spacing or dpi(5)
-    local client_width = opts.client_width or dpi(type == "thumbnail" and 150 or 500)
-    local client_height = opts.client_height or dpi(250)
-    local client_margins = opts.client_margins or dpi(10)
-    local thumbnail_margins = opts.thumbnail_margins or dpi(5)
+    local client_width = beautiful.window_switcher_client_width or dpi(type == "thumbnail" and 150 or 500)
+    local client_height = beautiful.window_switcher_client_height or dpi(250)
+    local client_margins = beautiful.window_switcher_client_margins or dpi(10)
+    local thumbnail_margins = beautiful.window_switcher_thumbnail_margins or dpi(5)
     local name_valign = beautiful.window_switcher_name_valign or "center"
     local name_font = beautiful.window_switcher_name_font or beautiful.font
     local icon_valign = beautiful.window_switcher_icon_valign  or "center"
     local icon_width = beautiful.window_switcher_icon_width or dpi(40)
-    local custom_icons = opts.custom_icons or nil
-    local font_icons = opts.font_icons or nil
-    local font_icons_font = opts.font_icons_font or beautiful.font
+    local custom_icons = beautiful.window_switcher_custom_icons or nil
+    local font_icons = beautiful.window_switcher_font_icons or nil
+    local font_icons_font = beautiful.window_switcher_font_icons_font or beautiful.font
 
     local hide_window_switcher_key = opts.hide_window_switcher_key or "Escape"
 
