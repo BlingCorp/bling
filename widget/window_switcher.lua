@@ -52,10 +52,15 @@ local window_switcher_hide = function()
     s.window_switcher_box.visible = false
 end
 
-local function draw_widget(s, type, client_width, client_height, client_margin, background, border_width, border_radius, border_color, text_font, font_icons, font_icons_font, mouse_keys)
-    local set_icon = function(self, c)
+local function draw_widget(s, type, client_width, client_height, client_margin, background, border_width, border_radius, border_color, text_font, custom_icons, font_icons, font_icons_font, mouse_keys)
+    local set_font_icon = function(self, c)
         local i = font_icons[c.class] or font_icons["_"]
         self:get_children_by_id("text_icon")[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
+    end
+
+    local set_custom_icon = function(self, c)
+        local i = custom_icons[c.class] or custom_icons["_"]
+        self:get_children_by_id("custom_icon")[1].image = i.icon
     end
 
     local update_thumbnail = function(self, c)
@@ -79,6 +84,14 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                 forced_width = dpi(50),
                 align  = "center",
                 valign = "center",
+            }
+        elseif (custom_icons) ~= nil then
+            return {
+                forced_width = dpi(50),
+                align  = "center",
+                valign = "center",
+                id     = 'custom_icon',
+                widget = wibox.widget.imagebox,
             }
         end
 
@@ -113,8 +126,11 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                     forced_height = client_height,
                     create_callback = function(self, c, _, __)
                         if (font_icons) ~= nil then
-                            set_icon(self, c)
-                            c:connect_signal("property::class", function() set_icon(self, c) end)
+                            set_font_icon(self, c)
+                            c:connect_signal("property::class", function() set_font_icon(self, c) end)
+                        elseif (custom_icons) ~= nil then
+                            set_custom_icon(self, c)
+                            c:connect_signal("property::class", function() set_custom_icon(self, c) end)
                         end
                     end,
                     {
@@ -161,8 +177,11 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                 forced_height = client_height,
                 create_callback = function(self, c, _, __)
                     if (font_icons) ~= nil then
-                        set_icon(self, c)
-                        c:connect_signal("property::class", function() set_icon(self, c) end)
+                        set_font_icon(self, c)
+                        c:connect_signal("property::class", function() set_font_icon(self, c) end)
+                    elseif (custom_icons) ~= nil then
+                        set_custom_icon(self, c)
+                        c:connect_signal("property::class", function() set_custom_icon(self, c) end)
                     end
                     update_thumbnail(self, c)
                 end,
@@ -260,6 +279,7 @@ local enable = function(opts)
     local border_radius = beautiful.window_switcher_widget_border_radius or dpi(0)
     local border_color = beautiful.window_switcher_widget_border_color or "#ffffff"
     local text_font = opts.text_font or beautiful.font
+    local custom_icons = opts.custom_icons or nil
     local font_icons = opts.font_icons or nil
     local font_icons_font = opts.font_icons_font or beautiful.font
 
@@ -378,7 +398,7 @@ local enable = function(opts)
         gears.timer.delayed_call(function()
             -- Finally make the window switcher wibox visible after
             -- a small delay, to allow the popup size to update
-            draw_widget(s, type, client_width, client_height, client_margin, background, border_width, border_radius, border_color, text_font, font_icons, font_icons_font, mouse_keys)
+            draw_widget(s, type, client_width, client_height, client_margin, background, border_width, border_radius, border_color, text_font, custom_icons, font_icons, font_icons_font, mouse_keys)
             s.window_switcher_box.visible = true
         end)
     end)
