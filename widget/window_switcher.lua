@@ -88,14 +88,14 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
             return {
                 forced_width = icon_width,
                 valign = icon_valign,
-                id = 'custom_icon',
+                id = "custom_icon",
                 widget = wibox.widget.imagebox
             }
         end
 
         return {
             {
-                id     = 'icon_role',
+                id     = "icon_role",
                 widget = wibox.widget.imagebox
             },
             forced_width = icon_width,
