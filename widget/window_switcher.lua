@@ -186,18 +186,14 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
                     icon_widget(),
                     {
                         {
-                            valign = name_valign,
+                            forced_width = name_forced_width,
+                            valign  = name_valign,
                             id = "text_role",
                             widget = wibox.widget.textbox
                         },
-                        left = dpi(6),
-                        right = dpi(14),
-                        -- Add margins to top and bottom in order to force the
-                        -- text to be on a single line, if needed. Might need
-                        -- to adjust them according to font size.
-                        top = dpi(14),
-                        bottom = dpi(14),
-                        widget = wibox.container.margin
+                        speed = name_scroll_speed,
+                        step_function = name_scroll_step_function,
+                        widget = wibox.container.scroll.horizontal
                     },
                     spacing = client_icon_horizontal_spacing,
                     layout = wibox.layout.fixed.horizontal
@@ -255,10 +251,10 @@ local enable = function(opts)
     local client_height = beautiful.window_switcher_client_height or dpi(type == "thumbnail" and 250 or 50)
     local client_margins = beautiful.window_switcher_client_margins or dpi(10)
     local thumbnail_margins = beautiful.window_switcher_thumbnail_margins or dpi(5)
-    local name_scroll_step_function =  beautiful.name_scroll_step_function or wibox.container.scroll.step_functions.waiting_nonlinear_back_and_forth
+    local name_scroll_step_function = beautiful.name_scroll_step_function or wibox.container.scroll.step_functions.waiting_nonlinear_back_and_forth
     local name_scroll_speed = beautiful.name_scroll_speed or 20
     local name_valign = beautiful.window_switcher_name_valign or "center"
-    local name_forced_width = beautiful.window_switcher_name_forced_width or dpi(200)
+    local name_forced_width = beautiful.window_switcher_name_forced_width or dpi(type == "thumbnail" and 200 or 550)
     local name_font = beautiful.window_switcher_name_font or beautiful.font
     local icon_valign = beautiful.window_switcher_icon_valign  or "center"
     local icon_width = beautiful.window_switcher_icon_width or dpi(40)
