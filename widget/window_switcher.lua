@@ -109,7 +109,8 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                 {
                     widget = wibox.container.background,
                     id = "bg_role",
-                    forced_height = item_height,
+                    forced_width = client_width,
+                    forced_height = client_height,
                     create_callback = function(self, c, _, __)
                         set_icon(self, c)
                         c:connect_signal("property::class", function() set_icon(self, c) end)
