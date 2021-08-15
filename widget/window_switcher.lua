@@ -219,15 +219,19 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
         visible = false,
         ontop = true,
         screen = s,
-        bg = background,
-        shape = helpers.shape.rrect(border_radius),
-        border_width = border_width,
-        border_color = border_color,
+        bg = "#00000000",
         widget =
         {
-            tasklist_widget(),
-            margins = client_margin,
-            widget = wibox.container.margin
+            border_width = 0    ,
+            border_color = border_color,
+            bg = background,
+            shape = helpers.shape.rrect(border_radius),
+            widget = wibox.container.background,
+            {
+                tasklist_widget(),
+                margins = client_margin,
+                widget = wibox.container.margin
+            }
         }
     })
 
