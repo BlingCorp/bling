@@ -277,7 +277,7 @@ local enable = function(opts)
     local client_width = opts.client_width or dpi(type == "thumbnail" and 150 or 500)
     local client_height = opts.client_height or dpi(250)
     local client_margin = opts.client_margin or dpi(10)
-    local name_font = beautiful.window_switcher_client_name_font or beautiful.font
+    local name_font = beautiful.window_switcher_name_font or beautiful.font
     local icon_width = beautiful.window_switcher_icon_width or dpi(40)
     local custom_icons = opts.custom_icons or nil
     local font_icons = opts.font_icons or nil
