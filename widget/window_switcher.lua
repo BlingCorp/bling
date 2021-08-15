@@ -251,7 +251,7 @@ local enable = function(opts)
     local border_color = beautiful.window_switcher_widget_border_color or "#ffffff"
     local client_icon_horizontal_spacing = beautiful.window_switcher_client_icon_horizontal_spacing or dpi(5)
     local client_width = beautiful.window_switcher_client_width or dpi(type == "thumbnail" and 150 or 500)
-    local client_height = beautiful.window_switcher_client_height or dpi(250)
+    local client_height = beautiful.window_switcher_client_height or dpi(type == "thumbnail" and 250 or 50)
     local client_margins = beautiful.window_switcher_client_margins or dpi(10)
     local thumbnail_margins = beautiful.window_switcher_thumbnail_margins or dpi(5)
     local name_scroll_step_function =  beautiful.name_scroll_step_function or wibox.container.scroll.step_functions.waiting_nonlinear_back_and_forth
