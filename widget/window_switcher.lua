@@ -78,12 +78,12 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
     local icon_widget = function()
         if (font_icons) ~= nil then
             return {
-                widget = wibox.widget.textbox,
-                id     = "text_icon",
                 font   = font_icons_font,
                 forced_width = dpi(50),
                 align  = "center",
                 valign = "center",
+                id     = "text_icon",
+                widget = wibox.widget.textbox
             }
         elseif (custom_icons) ~= nil then
             return {
@@ -91,7 +91,7 @@ local function draw_widget(s, type, client_width, client_height, client_margin, 
                 align  = "center",
                 valign = "center",
                 id     = 'custom_icon',
-                widget = wibox.widget.imagebox,
+                widget = wibox.widget.imagebox
             }
         end
 
@@ -270,14 +270,14 @@ local enable = function(opts)
     local opts = opts or {}
 
     local type = opts.type or "thumbnail"
-    local client_width = opts.client_width or dpi(type == "thumbnail" and 150 or 500)
-    local client_height = opts.client_height or dpi(250)
-    local client_margin = opts.client_margin or dpi(10)
     local background = beautiful.window_switcher_widget_bg or "#000000"
     local border_width = beautiful.window_switcher_widget_border_width or dpi(3)
     local border_radius = beautiful.window_switcher_widget_border_radius or dpi(0)
     local border_color = beautiful.window_switcher_widget_border_color or "#ffffff"
     local text_font = opts.text_font or beautiful.font
+    local client_width = opts.client_width or dpi(type == "thumbnail" and 150 or 500)
+    local client_height = opts.client_height or dpi(250)
+    local client_margin = opts.client_margin or dpi(10)
     local custom_icons = opts.custom_icons or nil
     local font_icons = opts.font_icons or nil
     local font_icons_font = opts.font_icons_font or beautiful.font
