@@ -122,7 +122,7 @@ function Scratchpad:turn_on()
                     c.hidden = false
                     c.minimized = false
                     -- Some clients fail to gain focus
-                    c.active = true
+                    c:activate{}
 
                     -- Discord spawns 2 windows, so keep the rule until the 2nd window shows
                     if c.name ~= "Discord Updater" then ruled.client.remove_rule("scratchpad") end
