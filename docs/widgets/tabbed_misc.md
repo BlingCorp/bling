@@ -16,27 +16,27 @@ To use the task list indicator:
 
 ```lua
 bling.widget.tabbed_misc.titlebar_indicator(client, {
-	layout_spacing = dpi(5), -- Set spacing in between items
-	icon_size = dpi(24),
-	icon_margin = 0,
-	bg_color_focus = "#282828", -- Color for the focused items
-	bg_color = "#1d2021", -- Color for normal / unfocused items
-	icon_shape = gears.shape.circle -- Set icon shape,
+    layout_spacing = dpi(5), -- Set spacing in between items
+    icon_size = dpi(24),
+    icon_margin = 0,
+    bg_color_focus = "#282828", -- Color for the focused items
+    bg_color = "#1d2021", -- Color for normal / unfocused items
+    icon_shape = gears.shape.circle -- Set icon shape,
 })
 ```
 
 a widget_template option is also available:
 ```lua
 bling.widget.tabbed_misc.titlebar_indicator(client, {
-	widget_template = {
-		{
-			widget = awful.widget.clienticon,
-			id = 'icon_role'
-		},
-		widget = wibox.container.margin,
-		margins = 2,
-		id = 'click_role'
-	}
+    widget_template = {
+        {
+            widget = awful.widget.clienticon,
+            id = 'icon_role'
+        },
+        widget = wibox.container.margin,
+        margins = 2,
+        id = 'click_role'
+    }
 })
 ```
 
@@ -45,62 +45,65 @@ bling.widget.tabbed_misc.titlebar_indicator(client, {
 You normally embed the widget in your titlebar...
 ```lua
 awful.titlebar(c).widget = {
-		{ -- Left
-			bling.widget.tabbed_misc.titlebar_indicator(c),
-			layout	= wibox.layout.fixed.horizontal
-		},
-		{ -- Middle
-			{ -- Title
-				align  = "center",
-				widget = awful.titlebar.widget.titlewidget(c)
-			},
-			buttons = buttons,
-			layout	= wibox.layout.flex.horizontal
-		},
-		{ -- Right
-			awful.titlebar.widget.maximizedbutton(c),
-			awful.titlebar.widget.closebutton	 (c),
-			layout = wibox.layout.fixed.horizontal
-		},
-		layout = wibox.layout.align.horizontal
-	}
+        { -- Left
+            bling.widget.tabbed_misc.titlebar_indicator(c),
+            layout  = wibox.layout.fixed.horizontal
+        },
+        { -- Middle
+            { -- Title
+                align  = "center",
+                widget = awful.titlebar.widget.titlewidget(c)
+            },
+            buttons = buttons,
+            layout  = wibox.layout.flex.horizontal
+        },
+        { -- Right
+            awful.titlebar.widget.maximizedbutton(c),
+            awful.titlebar.widget.closebutton    (c),
+            layout = wibox.layout.fixed.horizontal
+        },
+        layout = wibox.layout.align.horizontal
+    }
 ```
 
 ## Tasklist
+The module exports a function that can be added to your tasklist as a `update_callback`
 
 ### Usage
-Similar to the titlebar indicator, it can be used like so:
-**NOTE:** Similar to above, options can also be used under as theme vars under the table 
-
 ```lua
-require('bling.widget.tabbed').custom_tasklist(s, {
-	icon_margin = dpi(0), -- Item Margin
-	icon_size = dpi(24), -- Does not apply to tabbed groups
-	group_row_spacing = dpi(2), -- Spacing between rows in a group indicator
-	filter = awful.widget.tasklist.filter.currenttags, -- Set awful.widget.titlbar like filter
-	layout = wibox.layout.fixed.vertical, -- Tasklist layout
-	-- widget_template = {...} -- Identical to above widget template, used for regular clients, has click & icon roles
-})
+awful.widget.tasklist({
+            screen = s,
+            filter = awful.widget.tasklist.filter.currenttags,
+            layout = {
+                spacing = dpi(10),
+                layout = wibox.layout.fixed.vertical,
+            },
+            style = {
+                bg_normal = "#00000000",
+            },
+            widget_template = {
+                {
+                    {
+                        widget = wibox.widget.imagebox,
+                        id = "icon_role",
+                        align = "center",
+                        valign = "center",
+                    },
+                    width = dpi(24),
+                    height = dpi(24),
+                    widget = wibox.container.constraint,
+                },
+                widget = wibox.container.background, -- IT MUST BE A CONTAINER WIDGET AS THAT IS WHAT THE FUNCTION EXPECTS
+                update_callback = require("bling.widget.tabbed_misc").custom_tasklist,
+                id = "background_role",
+            },
+        })
 ```
 
-### Implementation
-It can be used as follows:
+If you need to do something else, it can be used like so
 ```lua
-s.mywibox:setup {
-        layout = wibox.layout.align.horizontal,
-        { -- Left widgets
-            layout = wibox.layout.fixed.horizontal,
-            mylauncher,
-            s.mytaglist,
-            s.mypromptbox,
-        },
-        require('bling.widget.tabbed_misc').custom_tasklist(s),
-		{ -- Right widgets
-            layout = wibox.layout.fixed.horizontal,
-            mykeyboardlayout,
-            wibox.widget.systray(),
-            mytextclock,
-            s.mylayoutbox,
-        },
-    }
+update_callback = function(self, client, index, clients)
+    require("bling.widget.tabbed_misc").custom_tasklist(self, client, index, clients)
+    require("naughty").notify({ text = "Tasklist was updated" })
+end
 ```
