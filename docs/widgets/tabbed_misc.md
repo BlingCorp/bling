@@ -5,8 +5,7 @@ The widgets currently included are:
 - Titlebar Indicator
 - Tasklist
 
-
-<!-- TODO: Take a screenshot -->
+![Preview Image](https://i.imgur.com/ZeYSrxY.png)
 
 ## Titlebar Indicator
 
