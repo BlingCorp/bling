@@ -14,26 +14,32 @@ local window_swallowing_activated = false
 local dont_swallow_classname_list = beautiful.dont_swallow_classname_list or {"firefox", "Gimp", "Google-chrome"} 
 local activate_dont_swallow_filter = beautiful.dont_swallow_filter_activated or true
 
+
 -- checks if client classname matches with any entry of the dont-swallow-list
-local function check_if_swallow(c) 
-    if not activate_dont_swallow_filter then 
-        return true 
-    end 
-    for _, classname in ipairs(dont_swallow_classname_list) do 
-        if classname == c.class then 
+local function check_if_swallow(c)
+    if not activate_dont_swallow_filter then
+        return true
+    end
+    for _, classname in ipairs(dont_swallow_classname_list) do
+        if classname == c.class then
             return false
-        end 
-    end 
+        end
+    end
     return true
-end 
+end
 
 -- the function that will be connected to / disconnected from the spawn client signal
 local function manage_clientspawn(c)
     -- get the last focused window to check if it is a parent window
     local parent_client=awful.client.focus.history.get(c.screen, 1)
-    if not parent_client or not parent_client.valid then return end 
-    
-    if helpers.client.is_child_of(c, parent_client.pid) and check_if_swallow(c) then 
+    if not parent_client then return end
+
+    -- io.popen is normally discouraged. Should probably be changed
+    local handle = io.popen([[pstree -T -p -a -s ]] .. tostring(c.pid) ..  [[ | sed '2q;d' | grep -o '[0-9]*$' | tr -d '\n']])
+    local parent_pid = handle:read("*a")
+    handle:close()
+
+    if (tostring(parent_pid) == tostring(parent_client.pid)) and check_if_swallow(c) then
 
         c:connect_signal("unmanage", function()
             helpers.client.turn_on(parent_client)
@@ -46,7 +52,7 @@ local function manage_clientspawn(c)
     end
 end
 
--- without the following functions that module would be autoloaded by require("bling") 
+-- without the following functions that module would be autoloaded by require("bling")
 -- a toggle window swallowing hotkey is also possible that way
 
 local function start()
@@ -60,12 +66,12 @@ local function stop()
 end 
 
 local function toggle()
-    if window_swallowing_activated then 
+    if window_swallowing_activated then
         stop()
-    else 
+    else
         start()
-    end 
-end 
+    end
+end
 
 return {
     start = start,
