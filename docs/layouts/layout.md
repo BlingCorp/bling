@@ -12,6 +12,7 @@ bling.layout.centered
 bling.layout.vertical
 bling.layout.horizontal
 bling.layout.equalarea
+bling.layout.deck
 ```
 
 ### Theme Variables
@@ -48,3 +49,11 @@ theme.mstab_tabbar_style = "default"        -- style of the tabbar ("default", "
 ![](https://imgur.com/JCFFywv.png)
 
 *screenshot by [bysmutheye](https://github.com/bysmutheye)*
+
+#### Deck
+
+The left area shows the deck layout in action. In this screenshot it is used together with [layout machi](https://github.com/xinhaoyuan/layout-machi) and its sublayout support.
+
+![](https://cdn.discordapp.com/attachments/635625954219261982/877957824225894430/unknown.png)
+
+*screenshot by [javacafe](https://github.com/JavaCafe01)*
