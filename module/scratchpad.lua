@@ -164,6 +164,7 @@ function Scratchpad:turn_off()
 
         -- Subscribe
         if anim_x then
+            local init_x = c.x
             -- can't animate not floating windows
             c.floating = true
             anim_x:subscribe(function(x, time)
@@ -174,6 +175,10 @@ function Scratchpad:turn_off()
                     self.in_anim = false
                     helpers.client.turn_off(c)
                     self:emit_signal("turn_off", c)
+                    -- When toggling off a scratchpad that's present on multiple tags
+                    -- depsite still being unminizmied on the other tags it will become invisible
+                    -- as it's position could be outside the screen
+                    c.x = init_x
                     anim_x:unsubscribe()
                     anim_x:reset()
                 end
@@ -181,6 +186,7 @@ function Scratchpad:turn_off()
             anim_x:set(anim_x:initial())
         end
         if anim_y then
+            local init_y = c.y
             -- can't animate not floating windows
             c.floating = true
             anim_y:subscribe(function(y, time)
@@ -191,6 +197,10 @@ function Scratchpad:turn_off()
                     self.in_anim = false
                     helpers.client.turn_off(c)
                     self:emit_signal("turn_off", c)
+                    -- When toggling off a scratchpad that's present on multiple tags
+                    -- depsite still being unminizmied on the other tags it will become invisible
+                    -- as it's position could be outside the screen
+                    c.y = init_y
                     anim_y:unsubscribe()
                     anim_y:reset()
                 end
