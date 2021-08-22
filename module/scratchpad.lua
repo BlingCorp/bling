@@ -71,40 +71,36 @@ function Scratchpad:turn_on()
 
         -- Subscribe
         if anim_x then
-            anim_x:subscribe(function(x)
+            anim_x:subscribe(function(x, time)
                 if c and c.valid then c.x = x end
                 self.in_anim = true
+
+                if time == anim_x.duration then
+                    self.in_anim = false
+                    anim_x:unsubscribe()
+                    anim_x:reset()
+                end
             end)
+            anim_x:set(new_x)
         end
         if anim_y then
-            anim_y:subscribe(function(y)
+            anim_y:subscribe(function(y, time)
                 if c and c.valid then c.y = y end
                 self.in_anim = true
+
+                if time == anim_y.duration then
+                    self.in_anim = false
+                    anim_y:unsubscribe()
+                    anim_y:reset()
+                end
+                print(tostring(time) ..  "  " .. tostring(anim_y.duration) .. "  " .. tostring(self.in_anim))
             end)
+            anim_y:set(new_y)
         end
 
         helpers.client.turn_on(c)
         self:emit_signal("turn_on", c)
 
-        -- Unsubscribe
-        if anim_x then
-            anim_x:set(new_x)
-            local unsub_x
-            unsub_x = anim_x.ended:subscribe(
-                          function()
-                    self.in_anim = false
-                    unsub_x()
-                end)
-        end
-        if anim_y then
-            anim_y:set(new_y)
-            local unsub_y
-            unsub_y = anim_y.ended:subscribe(
-                          function()
-                    self.in_anim = false
-                    unsub_y()
-                end)
-        end
         return
     end
     if not c then
@@ -168,41 +164,35 @@ function Scratchpad:turn_off()
 
         -- Subscribe
         if anim_x then
-            anim_x:subscribe(function(x)
+            anim_x:subscribe(function(x, time)
                 if c and c.valid then c.x = x end
                 self.in_anim = true
+
+                if time == anim_x.duration then
+                    self.in_anim = false
+                    helpers.client.turn_off(c)
+                    self:emit_signal("turn_off", c)
+                    anim_x:unsubscribe()
+                    anim_x:reset()
+                end
             end)
+            anim_x:set(anim_x:initial())
         end
         if anim_y then
-            anim_y:subscribe(function(y)
+            anim_y:subscribe(function(y, time)
                 if c and c.valid then c.y = y end
                 self.in_anim = true
+
+                if time == anim_y.duration then
+                    self.in_anim = false
+                    helpers.client.turn_off(c)
+                    self:emit_signal("turn_off", c)
+                    anim_y:unsubscribe()
+                    anim_y:reset()
+                end
+                print(tostring(time) ..  "  " .. tostring(anim_y.duration) .. "  " .. tostring(self.in_anim))
             end)
-        end
-
-        -- Unsubscribe
-        if anim_x then
-            anim_x:set(anim_x:initial())
-            local unsub
-            unsub = anim_x.ended:subscribe(
-                        function()
-                    self.in_anim = false
-                    helpers.client.turn_off(c)
-                    self:emit_signal("turn_off", c)
-                    unsub()
-                end)
-        end
-        if anim_y then
             anim_y:set(anim_y:initial())
-
-            local unsub
-            unsub = anim_y.ended:subscribe(
-                        function()
-                    self.in_anim = false
-                    helpers.client.turn_off(c)
-                    self:emit_signal("turn_off", c)
-                    unsub()
-                end)
         end
 
         if not anim_x and not anim_y then
@@ -252,4 +242,3 @@ function Scratchpad.mt:__call(...)
 end
 
 return setmetatable(Scratchpad, Scratchpad.mt)
-
