@@ -47,8 +47,16 @@ Modern theme:
 *screenshot by [javacafe](https://github.com/JavaCafe01)*
 
 ### Signals
-The tabbed module emits 1 signals for the purpose of integrating with your rice,
+The tabbed module emits a few signals for the purpose of integration,
 ```lua
 -- bling::tabbed::update -- triggered whenever a tabbed object is updated
 --                tabobj -- the object that caused the update
+-- bling::tabbed::client_added -- triggered whenever a new client is added to a tab group
+--				  tabobj -- the object that the client was added to
+--				  client -- the client that added
+-- bling::tabbed::client_removed -- triggered whenever a client is removed from a tab group
+--				  tabobj -- the object that the client was removed from
+--				  client -- the client that was removed
+-- bling::tabbed::changed_focus -- triggered whenever a tab group's focus is changed
+--				  tabobj -- the modified tab group
 ```

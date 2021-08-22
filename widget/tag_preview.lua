@@ -14,11 +14,10 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local cairo = require("lgi").cairo
 
-local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
-                           screen_radius, client_radius, client_opacity,
-                           client_bg, client_border_color, client_border_width,
-                           widget_bg, widget_border_color, widget_border_width,
-                           geo, margin)
+local function draw_widget(t, tag_preview_image, scale, screen_radius,
+                           client_radius, client_opacity, client_bg,
+                           client_border_color, client_border_width, widget_bg,
+                           widget_border_color, widget_border_width, geo, margin)
 
     local client_list = wibox.layout.manual()
     client_list.forced_height = geo.height
@@ -96,7 +95,7 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
         end
     end
 
-    tag_preview_box:setup{
+    return {
         {
             {
                 {
@@ -104,8 +103,7 @@ local function draw_widget(tag_preview_box, t, tag_preview_image, scale,
                         client_list,
                         forced_height = geo.height,
                         forced_width = geo.width,
-                        bg = widget_bg,
-                        widget = wibox.container.background
+                        widget = wibox.container.place
                     },
                     layout = wibox.layout.align.horizontal
                 },
@@ -126,7 +124,7 @@ end
 
 local enable = function(opts)
     local opts = opts or {}
-  
+
     local tag_preview_image = opts.show_client_content or false
     local widget_x = opts.x or dpi(20)
     local widget_y = opts.y or dpi(20)
@@ -134,7 +132,7 @@ local enable = function(opts)
     local work_area = opts.honor_workarea or false
     local padding = opts.honor_padding or false
     local placement_fn = opts.placement_fn or nil
-  
+
     local margin = beautiful.tag_preview_widget_margin or dpi(0)
     local screen_radius = beautiful.tag_preview_widget_border_radius or dpi(0)
     local client_radius = beautiful.tag_preview_client_border_radius or dpi(0)
@@ -150,10 +148,12 @@ local enable = function(opts)
     local widget_border_width = beautiful.tag_preview_widget_border_width or
                                     dpi(3)
 
-    local tag_preview_box = wibox({
+    local tag_preview_box = awful.popup({
         type = "dropdown_menu",
         visible = false,
         ontop = true,
+        placement = placement_fn,
+        widget = wibox.container.background,
         input_passthrough = true,
         bg = "#00000000"
     })
@@ -165,29 +165,28 @@ local enable = function(opts)
     end)
 
     awesome.connect_signal("bling::tag_preview::update", function(t)
-
         local geo = t.screen:get_bounding_geometry{
             honor_padding = padding,
             honor_workarea = work_area
         }
 
-        tag_preview_box.width = scale * geo.width + margin * 2
-        tag_preview_box.height = scale * geo.height + margin * 2
-
-        draw_widget(tag_preview_box, t, tag_preview_image, scale, screen_radius,
-                    client_radius, client_opacity, client_bg,
-                    client_border_color, client_border_width, widget_bg,
-                    widget_border_color, widget_border_width, geo, margin)
+        tag_preview_box.maximum_width = scale * geo.width + margin * 2
+        tag_preview_box.maximum_height = scale * geo.height + margin * 2
+        tag_preview_box:setup(draw_widget(t, tag_preview_image, scale,
+                                          screen_radius, client_radius,
+                                          client_opacity, client_bg,
+                                          client_border_color,
+                                          client_border_width, widget_bg,
+                                          widget_border_color,
+                                          widget_border_width, geo, margin))
     end)
 
     awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
-        if placement_fn then
-           placement_fn(tag_preview_box)
-        else
-           tag_preview_box.x = s.geometry.x + widget_x
-           tag_preview_box.y = s.geometry.y + widget_y
+        if not placement_fn then
+            tag_preview_box.x = s.geometry.x + widget_x
+            tag_preview_box.y = s.geometry.y + widget_y
         end
-        
+
         tag_preview_box.visible = v
     end)
 end
