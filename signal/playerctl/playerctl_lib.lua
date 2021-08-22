@@ -22,6 +22,7 @@ local beautiful = require("beautiful")
 local Playerctl = nil
 
 local manager = nil
+local metadata_timer = nil
 local position_timer = nil
 
 local ignore = {}
@@ -74,7 +75,6 @@ local last_player = nil
 local last_title = ""
 local last_artist = ""
 local last_artUrl = ""
-local index = 0
 local function metadata_cb(player, metadata)
     if update_on_activity then
         manager:move_player_to_top(player)
@@ -96,33 +96,46 @@ local function metadata_cb(player, metadata)
     if player == manager.players[1] then
         -- Callback can be called even though values we care about haven't
         -- changed, so check to see if they have
-        index = index + 1
-        if (player ~= last_player or title ~= last_title or
-           artist ~= last_artist) and (artUrl ~= "" or index >= 2)
+        if player ~= last_player or title ~= last_title or
+            artist ~= last_artist or artUrl ~= last_artUrl
         then
             if (title == "" and artist == "" and artUrl == "") then return end
-            index = 0
-            if artUrl ~= "" then
-                awful.spawn.with_line_callback(get_album_art(artUrl), {
-                    stdout = function(line)
+
+            if metadata_timer ~= nil then
+                if metadata_timer.started then
+                    metadata_timer:stop()
+                end
+            end
+
+            metadata_timer = gears.timer {
+                timeout = 0.3,
+                autostart = true,
+                single_shot = true,
+                callback = function()
+                    if artUrl ~= "" then
+                        awful.spawn.with_line_callback(get_album_art(artUrl), {
+                            stdout = function(line)
+                                awesome.emit_signal(
+                                    "bling::playerctl::title_artist_album",
+                                    title,
+                                    artist,
+                                    line,
+                                    player_name
+                                )
+                            end
+                        })
+                    else
                         awesome.emit_signal(
                             "bling::playerctl::title_artist_album",
                             title,
                             artist,
-                            line,
-                            player.player_name
+                            "",
+                            player_name
                         )
                     end
-                })
-            else
-                awesome.emit_signal(
-                    "bling::playerctl::title_artist_album",
-                    title,
-                    artist,
-                    "",
-                    player.player_name
-                )
-            end
+                end
+            }
+
             -- Re-sync with position timer when track changes
             position_timer:again()
             last_player = player
@@ -248,6 +261,7 @@ local function start_manager()
     -- Callback to check if all players have exited
     function manager:on_name_vanished(name)
         if #manager.players == 0 then
+            metadata_timer:stop()
             position_timer:stop()
             awesome.emit_signal("bling::playerctl::no_players")
         end
@@ -296,6 +310,8 @@ end
 local function playerctl_disable()
     -- Remove manager and timer
     manager = nil
+    metadata_timer:stop()
+    metadata_timer = nil
     position_timer:stop()
     position_timer = nil
     -- Restore default settings
