@@ -120,7 +120,7 @@ local function metadata_cb(player, metadata)
                                     title,
                                     artist,
                                     line,
-                                    player_name
+                                    player.player_name
                                 )
                             end
                         })
@@ -130,7 +130,7 @@ local function metadata_cb(player, metadata)
                             title,
                             artist,
                             "",
-                            player_name
+                            player.player_name
                         )
                     end
                 end
