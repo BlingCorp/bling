@@ -164,6 +164,8 @@ function Scratchpad:turn_off()
 
         -- Subscribe
         if anim_x then
+            -- can't animate not floating windows
+            c.floating = true
             anim_x:subscribe(function(x, time)
                 if c and c.valid then c.x = x end
                 self.in_anim = true
@@ -179,6 +181,8 @@ function Scratchpad:turn_off()
             anim_x:set(anim_x:initial())
         end
         if anim_y then
+            -- can't animate not floating windows
+            c.floating = true
             anim_y:subscribe(function(y, time)
                 if c and c.valid then c.y = y end
                 self.in_anim = true
