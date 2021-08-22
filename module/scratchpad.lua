@@ -1,6 +1,9 @@
 local awful = require("awful")
 local gears = require("gears")
 
+local ruled
+if awesome.version ~= "v4.3" then ruled = require("ruled") end
+
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
 local Scratchpad = { mt = {} }
@@ -108,16 +111,47 @@ function Scratchpad:turn_on()
         -- if no client was found, spawn one, find the corresponding window,
         --  apply the properties only once (until the next closing)
         local pid = awful.spawn.with_shell(self.command)
-        self:emit_signal("spawn")
-        local function inital_apply(c1)
-            if helpers.client.is_child_of(c1, pid) then
-                self:apply(c1)
-                self:emit_signal("inital_apply", c1)
-            client.disconnect_signal("manage", inital_apply)
+        if awesome.version ~= "v4.3" then
+            ruled.client.append_rule
+            {
+                id = "scratchpad",
+                rule = self.rule,
+                properties =
+                {
+                    -- If a scratchpad is opened it should spawn at the current tag
+                    -- the same way it will behave if the client was already open
+                    tag = awful.screen.focused().selected_tag,
+                    switch_to_tags = false,
+                    -- Hide the client until the gemoetry rules are applied
+                    hidden = true,
+                    minimized = true
+                },
+                callback = function(c)
+                    -- For a reason I can't quite get the gemotery rules will fail to apply unless we use this timer
+                    gears.timer{timeout = 0.15, autostart = true, single_shot = true, callback = function()
+                        self:apply(c)
+                        c.hidden = false
+                        c.minimized = false
+                        -- Some clients fail to gain focus
+                        c:activate{}
+
+                        -- Discord spawns 2 windows, so keep the rule until the 2nd window shows
+                        if c.name ~= "Discord Updater" then ruled.client.remove_rule("scratchpad") end
+                        -- In a case Discord is killed before the second window spawns
+                        c:connect_signal("request::unmanage", function() ruled.client.remove_rule("scratchpad") end)
+                    end}
+                end
+            }
+        else
+            local function inital_apply(c1)
+                if helpers.client.is_child_of(c1, pid) then
+                    self:apply(c1)
+                    self:emit_signal("inital_apply", c1)
+                client.disconnect_signal("manage", inital_apply)
+                end
             end
+            client.connect_signal("manage", inital_apply)
         end
-        client.connect_signal("manage", inital_apply)
-        return
     end
 end
 
