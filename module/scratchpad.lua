@@ -102,7 +102,6 @@ function Scratchpad:turn_on()
                     anim_y:unsubscribe()
                     anim_y:reset()
                 end
-                print(tostring(time) ..  "  " .. tostring(anim_y.duration) .. "  " .. tostring(self.in_anim))
             end)
             -- Check for the following scenerio:
             -- Toggle on scratchpad at tag 1
@@ -233,7 +232,6 @@ function Scratchpad:turn_off()
                     anim_y:unsubscribe()
                     anim_y:reset()
                 end
-                print(tostring(time) ..  "  " .. tostring(anim_y.duration) .. "  " .. tostring(self.in_anim))
             end)
             -- Check for the following scenerio:
             -- Toggle on scratchpad at tag 1
