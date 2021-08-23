@@ -182,6 +182,7 @@ function Scratchpad:turn_off()
         -- Subscribe
         if anim_x then
             local init_x = c.x
+            local current_tag_on_toggled_scratchpad = c.screen.selected_tag
             -- can't animate not floating windows
             c.floating = true
             -- if the app wasn't opened via a scratchpad
@@ -191,6 +192,25 @@ function Scratchpad:turn_off()
             anim_x:subscribe(function(x, time)
                 if c and c.valid then c.x = x end
                 self.in_anim = true
+
+                -- Handles changing tag mid animation
+                -- Check for the following scenerio:
+                -- Toggle on scratchpad at tag 1
+                -- Toggle on scratchpad at tag 2
+                -- Toggle off scratchpad at tag 1
+                -- Switch to tag 2
+                -- The client will remain on tag 1
+                -- The client will be removed from tag 2
+                if c.screen.selected_tag ~= current_tag_on_toggled_scratchpad then
+                    helpers.client.turn_off(c, current_tag_on_toggled_scratchpad)
+                    anim_x:abort()
+                    anim_x:reset()
+                    anim_x:unsubscribe()
+                    anim_x.pos = self.geometry.x
+                    self:apply(c)
+                    self.in_anim = false
+                    self:emit_signal("turn_off", c)
+                end
 
                 if time == anim_x.duration then
                     self.in_anim = false
@@ -219,6 +239,7 @@ function Scratchpad:turn_off()
         end
         if anim_y then
             local init_y = c.y
+            local current_tag_on_toggled_scratchpad = c.screen.selected_tag
             -- can't animate not floating windows
             c.floating = true
             -- if the app wasn't opened via a scratchpad
@@ -228,6 +249,25 @@ function Scratchpad:turn_off()
             anim_y:subscribe(function(y, time)
                 if c and c.valid then c.y = y end
                 self.in_anim = true
+
+                -- Handles changing tag mid animation
+                -- Check for the following scenerio:
+                -- Toggle on scratchpad at tag 1
+                -- Toggle on scratchpad at tag 2
+                -- Toggle off scratchpad at tag 1
+                -- Switch to tag 2
+                -- The client will remain on tag 1
+                -- The client will be removed from tag 2
+                if c.screen.selected_tag ~= current_tag_on_toggled_scratchpad then
+                    helpers.client.turn_off(c, current_tag_on_toggled_scratchpad)
+                    anim_y:abort()
+                    anim_y:reset()
+                    anim_y:unsubscribe()
+                    anim_y.pos = self.geometry.y
+                    self:apply(c)
+                    self.in_anim = false
+                    self:emit_signal("turn_off", c)
+                end
 
                 if time == anim_y.duration then
                     self.in_anim = false

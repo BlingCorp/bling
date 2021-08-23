@@ -7,8 +7,8 @@ local _client = {}
 -- Remove current tag from window's tags
 --
 -- @param c A client
-function _client.turn_off(c)
-    local current_tag = c.screen.selected_tag
+function _client.turn_off(c, current_tag)
+    if current_tag == nil then current_tag = c.screen.selected_tag end
     local ctags = {}
     for k, tag in pairs(c:tags()) do
         if tag ~= current_tag then table.insert(ctags, tag) end
