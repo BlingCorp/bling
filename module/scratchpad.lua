@@ -222,6 +222,7 @@ function Scratchpad:turn_off()
                     c.x = init_x
                     anim_x:unsubscribe()
                     anim_x:reset()
+
                 end
             end)
             -- Check for the following scenerio:
@@ -279,6 +280,7 @@ function Scratchpad:turn_off()
                     c.y = init_y
                     anim_y:unsubscribe()
                     anim_y:reset()
+
                 end
             end)
             -- Check for the following scenerio:
@@ -324,9 +326,6 @@ function Scratchpad:toggle()
     end
 
     if is_turn_off then
-        if self.disable_floating_on_close and matches[1].floating == true then
-            matches[1].floating = false
-        end
         self:turn_off()
     else
         self:turn_on()
