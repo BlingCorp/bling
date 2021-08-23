@@ -184,6 +184,10 @@ function Scratchpad:turn_off()
             local init_x = c.x
             -- can't animate not floating windows
             c.floating = true
+            -- if the app wasn't opened via a scratchpad
+            -- and you toggle it off via a scratchpad
+            -- the animation will look wrong since the gemotery wasn't applied
+            self:apply(c)
             anim_x:subscribe(function(x, time)
                 if c and c.valid then c.x = x end
                 self.in_anim = true
@@ -217,6 +221,10 @@ function Scratchpad:turn_off()
             local init_y = c.y
             -- can't animate not floating windows
             c.floating = true
+            -- if the app wasn't opened via a scratchpad
+            -- and you toggle it off via a scratchpad
+            -- the animation will look wrong since the gemotery wasn't applied
+            self:apply(c)
             anim_y:subscribe(function(y, time)
                 if c and c.valid then c.y = y end
                 self.in_anim = true
