@@ -81,6 +81,15 @@ function Scratchpad:turn_on()
                     anim_x:reset()
                 end
             end)
+            -- Check for the following scenerio:
+            -- Toggle on scratchpad at tag 1
+            -- Toggle on scratchpad at tag 2
+            -- The animation will instantly end
+            -- as the timer pos is already at the on position
+            -- from toggling on the scratchpad at tag 1
+            if anim_x.pos == self.geometry.x then
+                anim_x.pos = anim_x:initial()
+            end
             anim_x:set(new_x)
         end
         if anim_y then
@@ -95,6 +104,15 @@ function Scratchpad:turn_on()
                 end
                 print(tostring(time) ..  "  " .. tostring(anim_y.duration) .. "  " .. tostring(self.in_anim))
             end)
+            -- Check for the following scenerio:
+            -- Toggle on scratchpad at tag 1
+            -- Toggle on scratchpad at tag 2
+            -- The animation will instantly end
+            -- as the timer pos is already at the on position
+            -- from toggling on the scratchpad at tag 1
+            if anim_y.pos == self.geometry.y then
+                anim_y.pos = anim_y:initial()
+            end
             anim_y:set(new_y)
         end
 
@@ -183,6 +201,17 @@ function Scratchpad:turn_off()
                     anim_x:reset()
                 end
             end)
+            -- Check for the following scenerio:
+            -- Toggle on scratchpad at tag 1
+            -- Toggle on scratchpad at tag 2
+            -- Toggle off scratchpad at tag 1
+            -- Toggle off scratchpad at tag 2
+            -- The animation will instantly end
+            -- as the timer pos is already at the off position
+            -- from toggling off the scratchpad at tag 1
+            if anim_x.pos == anim_x:initial() then
+                anim_x.pos = self.geometry.x
+            end
             anim_x:set(anim_x:initial())
         end
         if anim_y then
@@ -206,6 +235,17 @@ function Scratchpad:turn_off()
                 end
                 print(tostring(time) ..  "  " .. tostring(anim_y.duration) .. "  " .. tostring(self.in_anim))
             end)
+            -- Check for the following scenerio:
+            -- Toggle on scratchpad at tag 1
+            -- Toggle on scratchpad at tag 2
+            -- Toggle off scratchpad at tag 1
+            -- Toggle off scratchpad at tag 2
+            -- The animation will instantly end
+            -- as the timer pos is already at the off position
+            -- from toggling off the scratchpad at tag 1
+            if anim_y.pos == anim_y:initial() then
+                anim_y.pos = self.geometry.y
+            end
             anim_y:set(anim_y:initial())
         end
 
