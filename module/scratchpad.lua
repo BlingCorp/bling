@@ -74,7 +74,6 @@ function Scratchpad:turn_on()
             anim_x:subscribe(function(x, time)
                 if c and c.valid then c.x = x end
                 self.in_anim = true
-
                 if time == anim_x.duration then
                     self.in_anim = false
                     anim_x:unsubscribe()
@@ -96,7 +95,6 @@ function Scratchpad:turn_on()
             anim_y:subscribe(function(y, time)
                 if c and c.valid then c.y = y end
                 self.in_anim = true
-
                 if time == anim_y.duration then
                     self.in_anim = false
                     anim_y:unsubscribe()
@@ -202,27 +200,26 @@ function Scratchpad:turn_off()
                 -- The client will remain on tag 1
                 -- The client will be removed from tag 2
                 if c.screen.selected_tag ~= current_tag_on_toggled_scratchpad then
-                    helpers.client.turn_off(c, current_tag_on_toggled_scratchpad)
+                    self.in_anim = false
                     anim_x:abort()
                     anim_x:reset()
-                    anim_x:unsubscribe()
                     anim_x.pos = self.geometry.x
+                    anim_x:unsubscribe()
+                    helpers.client.turn_off(c, current_tag_on_toggled_scratchpad)
                     self:apply(c)
-                    self.in_anim = false
                     self:emit_signal("turn_off", c)
                 end
 
                 if time == anim_x.duration then
                     self.in_anim = false
+                    anim_x:unsubscribe()
+                    anim_x:reset()
                     helpers.client.turn_off(c)
-                    self:emit_signal("turn_off", c)
                     -- When toggling off a scratchpad that's present on multiple tags
                     -- depsite still being unminizmied on the other tags it will become invisible
                     -- as it's position could be outside the screen
                     c.x = init_x
-                    anim_x:unsubscribe()
-                    anim_x:reset()
-
+                    self:emit_signal("turn_off", c)
                 end
             end)
             -- Check for the following scenerio:
@@ -260,27 +257,26 @@ function Scratchpad:turn_off()
                 -- The client will remain on tag 1
                 -- The client will be removed from tag 2
                 if c.screen.selected_tag ~= current_tag_on_toggled_scratchpad then
-                    helpers.client.turn_off(c, current_tag_on_toggled_scratchpad)
+                    self.in_anim = false
                     anim_y:abort()
                     anim_y:reset()
-                    anim_y:unsubscribe()
                     anim_y.pos = self.geometry.y
+                    anim_y:unsubscribe()
+                    helpers.client.turn_off(c, current_tag_on_toggled_scratchpad)
                     self:apply(c)
-                    self.in_anim = false
                     self:emit_signal("turn_off", c)
                 end
 
                 if time == anim_y.duration then
                     self.in_anim = false
+                    anim_y:unsubscribe()
+                    anim_y:reset()
                     helpers.client.turn_off(c)
-                    self:emit_signal("turn_off", c)
                     -- When toggling off a scratchpad that's present on multiple tags
                     -- depsite still being unminizmied on the other tags it will become invisible
                     -- as it's position could be outside the screen
                     c.y = init_y
-                    anim_y:unsubscribe()
-                    anim_y:reset()
-
+                    self:emit_signal("turn_off", c)
                 end
             end)
             -- Check for the following scenerio:
