@@ -70,6 +70,36 @@ echo "$tmp_cover_path"
 ']]
 end
 
+local function emit_title_artist_album_signal(title, artist, artUrl, player_name)
+    if artUrl ~= "" then
+        awful.spawn.with_line_callback(get_album_art(artUrl), {
+            stdout = function(line)
+                awesome.emit_signal(
+                    "bling::playerctl::title_artist_album",
+                    title,
+                    artist,
+                    line,
+                    player_name
+                )
+            end
+        })
+        awesome.set_xproperty("playerctl_lib_art_url", artUrl)
+    else
+        awesome.emit_signal(
+            "bling::playerctl::title_artist_album",
+            title,
+            artist,
+            "",
+            player_name
+        )
+        awesome.set_xproperty("playerctl_lib_art_url", "")
+    end
+
+    awesome.set_xproperty("playerctl_lib_title", title)
+    awesome.set_xproperty("playerctl_lib_artist", artist)
+    awesome.set_xproperty("playerctl_lib_player_name", player_name)
+end
+
 -- Metadata callback for title, artist, and album art
 local last_player = nil
 local last_title = ""
@@ -111,29 +141,7 @@ local function metadata_cb(player, metadata)
                 timeout = 0.3,
                 autostart = true,
                 single_shot = true,
-                callback = function()
-                    if artUrl ~= "" then
-                        awful.spawn.with_line_callback(get_album_art(artUrl), {
-                            stdout = function(line)
-                                awesome.emit_signal(
-                                    "bling::playerctl::title_artist_album",
-                                    title,
-                                    artist,
-                                    line,
-                                    player.player_name
-                                )
-                            end
-                        })
-                    else
-                        awesome.emit_signal(
-                            "bling::playerctl::title_artist_album",
-                            title,
-                            artist,
-                            "",
-                            player.player_name
-                        )
-                    end
-                end
+                callback = function() emit_title_artist_album_signal(title, artist, artUrl, player.player_name) end
             }
 
             -- Re-sync with position timer when track changes
@@ -258,11 +266,31 @@ local function start_manager()
         init_player(name)
     end
 
+    awesome.register_xproperty("playerctl_lib_title", "string")
+    local title = awesome.get_xproperty("playerctl_lib_title")
+
+    awesome.register_xproperty("playerctl_lib_artist", "string")
+    local artist = awesome.get_xproperty("playerctl_lib_artist")
+
+    awesome.register_xproperty("playerctl_lib_art_url", "string")
+    local artUrl = awesome.get_xproperty("playerctl_lib_art_url")
+
+    awesome.register_xproperty("playerctl_lib_player_name", "string")
+    local playerName = awesome.get_xproperty("playerctl_lib_player_name")
+
+    if (title ~= "" or artist ~= "" or artUrl ~= "") then
+        emit_title_artist_album_signal(title, artist, artUrl, playerName)
+    end
+
     -- Callback to check if all players have exited
     function manager:on_name_vanished(name)
         if #manager.players == 0 then
             metadata_timer:stop()
             position_timer:stop()
+            awesome.set_xproperty("playerctl_lib_title", "")
+            awesome.set_xproperty("playerctl_lib_artist", "")
+            awesome.set_xproperty("playerctl_lib_art_url", "")
+            awesome.set_xproperty("playerctl_lib_player_name", "")
             awesome.emit_signal("bling::playerctl::no_players")
         end
     end
