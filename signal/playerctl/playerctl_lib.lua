@@ -137,17 +137,15 @@ local function metadata_cb(player, metadata)
         then
             if (title == "" and artist == "" and artUrl == "") then return end
 
-            if metadata_timer ~= nil then
-                if metadata_timer.started then
-                    metadata_timer:stop()
-                end
+            if metadata_timer ~= nil and metadata_timer.started then
+                metadata_timer:stop()
             end
 
             metadata_timer = gears.timer {
                 timeout = 0.3,
                 autostart = true,
                 single_shot = true,
-                callback = function() emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album) end
+                callback = function() emit_title_artist_album_signal(title:gsub('%&', ''), artist:gsub('%&', ''), artUrl, player.player_name, album:gsub('%&', '')) end
             }
 
             -- Re-sync with position timer when track changes
