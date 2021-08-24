@@ -34,6 +34,8 @@ function Scratchpad:apply(c)
     if not c or not c.valid then return end
     c.floating = self.floating
     c.sticky = self.sticky
+    c.fullscreen = false
+    c.maximized = false
     c:geometry({
         x = self.geometry.x + awful.screen.focused().geometry.x,
         y = self.geometry.y + awful.screen.focused().geometry.y,
