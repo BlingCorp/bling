@@ -147,6 +147,8 @@ function Scratchpad:turn_on()
             local function inital_apply(c1)
                 if helpers.client.is_child_of(c1, pid) then
                     self:apply(c1)
+                    if anim_x then animate(c1, anim_x, "x") end
+                    if anim_y then animate(c1, anim_y, "y") end
                     self:emit_signal("inital_apply", c1)
                 client.disconnect_signal("manage", inital_apply)
                 end
