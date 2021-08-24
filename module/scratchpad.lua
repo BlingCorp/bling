@@ -74,11 +74,6 @@ function Scratchpad:turn_on()
             anim_x:subscribe(function(x, time)
                 if c and c.valid then c.x = x end
                 self.in_anim = true
-                if time == anim_x.duration then
-                    self.in_anim = false
-                    anim_x:unsubscribe()
-                    anim_x:reset()
-                end
             end)
             -- Check for the following scenerio:
             -- Toggle on scratchpad at tag 1
@@ -90,16 +85,17 @@ function Scratchpad:turn_on()
                 anim_x.pos = anim_x:initial()
             end
             anim_x:set(new_x)
+            anim_x.ended:subscribe(function()
+                self.in_anim = false
+                anim_x:unsubscribe()
+                anim_x:reset()
+                anim_x.ended:unsubscribe()
+            end)
         end
         if anim_y then
             anim_y:subscribe(function(y, time)
                 if c and c.valid then c.y = y end
                 self.in_anim = true
-                if time == anim_y.duration then
-                    self.in_anim = false
-                    anim_y:unsubscribe()
-                    anim_y:reset()
-                end
             end)
             -- Check for the following scenerio:
             -- Toggle on scratchpad at tag 1
@@ -111,6 +107,12 @@ function Scratchpad:turn_on()
                 anim_y.pos = anim_y:initial()
             end
             anim_y:set(new_y)
+            anim_y.ended:subscribe(function()
+                self.in_anim = false
+                anim_y:unsubscribe()
+                anim_y:reset()
+                anim_y.ended:unsubscribe()
+            end)
         end
 
         helpers.client.turn_on(c)
@@ -209,18 +211,6 @@ function Scratchpad:turn_off()
                     self:apply(c)
                     self:emit_signal("turn_off", c)
                 end
-
-                if time == anim_x.duration then
-                    self.in_anim = false
-                    anim_x:unsubscribe()
-                    anim_x:reset()
-                    helpers.client.turn_off(c)
-                    -- When toggling off a scratchpad that's present on multiple tags
-                    -- depsite still being unminizmied on the other tags it will become invisible
-                    -- as it's position could be outside the screen
-                    c.x = init_x
-                    self:emit_signal("turn_off", c)
-                end
             end)
             -- Check for the following scenerio:
             -- Toggle on scratchpad at tag 1
@@ -234,6 +224,18 @@ function Scratchpad:turn_off()
                 anim_x.pos = self.geometry.x
             end
             anim_x:set(anim_x:initial())
+            anim_x.ended:subscribe(function()
+                self.in_anim = false
+                anim_x:unsubscribe()
+                anim_x:reset()
+                helpers.client.turn_off(c)
+                -- When toggling off a scratchpad that's present on multiple tags
+                -- depsite still being unminizmied on the other tags it will become invisible
+                -- as it's position could be outside the screen
+                c.x = init_x
+                self:emit_signal("turn_off", c)
+                anim_x.ended:unsubscribe()
+            end)
         end
         if anim_y then
             local init_y = c.y
@@ -266,18 +268,6 @@ function Scratchpad:turn_off()
                     self:apply(c)
                     self:emit_signal("turn_off", c)
                 end
-
-                if time == anim_y.duration then
-                    self.in_anim = false
-                    anim_y:unsubscribe()
-                    anim_y:reset()
-                    helpers.client.turn_off(c)
-                    -- When toggling off a scratchpad that's present on multiple tags
-                    -- depsite still being unminizmied on the other tags it will become invisible
-                    -- as it's position could be outside the screen
-                    c.y = init_y
-                    self:emit_signal("turn_off", c)
-                end
             end)
             -- Check for the following scenerio:
             -- Toggle on scratchpad at tag 1
@@ -291,6 +281,18 @@ function Scratchpad:turn_off()
                 anim_y.pos = self.geometry.y
             end
             anim_y:set(anim_y:initial())
+            anim_y.ended:subscribe(function()
+                self.in_anim = false
+                anim_y:unsubscribe()
+                anim_y:reset()
+                helpers.client.turn_off(c)
+                -- When toggling off a scratchpad that's present on multiple tags
+                -- depsite still being unminizmied on the other tags it will become invisible
+                -- as it's position could be outside the screen
+                c.y = init_y
+                self:emit_signal("turn_off", c)
+                anim_y.ended:unsubscribe()
+            end)
         end
 
         if not anim_x and not anim_y then
