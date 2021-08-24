@@ -50,56 +50,55 @@ end
 
 --- Turns the scratchpad on
 function Scratchpad:turn_on()
+    local function animate(c, anim, axis)
+        -- Check for the following scenerio:
+        -- Toggle on scratchpad at tag 1
+        -- Toggle on scratchpad at tag 2
+        -- The animation will instantly end
+        -- as the timer pos is already at the on position
+        -- from toggling on the scratchpad at tag 1
+        if axis == "x" and anim.pos == self.geometry.x then
+            anim.pos = anim:initial()
+        else
+            if anim.pos == self.geometry.y then anim.pos = anim:initial() end
+        end
+
+        anim:subscribe(function(pos)
+            if c and c.valid then
+                if axis == "x" then c.x = pos
+                else c.y = pos end
+            end
+            self.in_anim = true
+        end)
+
+        if axis == "x" then anim:set(self.geometry.x)
+        else anim:set(self.geometry.y) end
+
+        anim.ended:subscribe(function()
+            self.in_anim = false
+            anim:unsubscribe()
+            anim.ended:unsubscribe()
+            anim:reset()
+        end)
+    end
+
     local c = self:find()[1]
+    local anim_x = self.awestore.x
+    local anim_y = self.awestore.y
+
     if c and not self.in_anim and c.first_tag and c.first_tag.selected then
         c:raise()
         client.focus = c
         return
     end
     if c and not self.in_anim then
-        local function animate(anim, axis)
-            -- Check for the following scenerio:
-            -- Toggle on scratchpad at tag 1
-            -- Toggle on scratchpad at tag 2
-            -- The animation will instantly end
-            -- as the timer pos is already at the on position
-            -- from toggling on the scratchpad at tag 1
-            if axis == "x" and anim.pos == self.geometry.x then
-                anim.pos = anim:initial()
-            else
-                if anim.pos == self.geometry.y then anim.pos = anim:initial() end
-            end
-
-            anim:subscribe(function(pos)
-                if c and c.valid then
-                    if axis == "x" then c.x = pos
-                    else c.y = pos end
-                end
-                self.in_anim = true
-            end)
-
-            if axis == "x" then anim:set(self.geometry.x)
-            else anim:set(self.geometry.y) end
-
-            anim.ended:subscribe(function()
-                self.in_anim = false
-                anim:unsubscribe()
-                anim.ended:unsubscribe()
-                anim:reset()
-            end)
-        end
-
         -- if a client was found, turn it on
         if self.reapply then self:apply(c) end
         -- c.sticky was set to false in turn_off so it has to be reapplied anyway
         c.sticky = self.sticky
 
-        -- Get the tweens
-        local anim_x = self.awestore.x
-        local anim_y = self.awestore.y
-
-        if anim_x then animate(anim_x, "x") end
-        if anim_y then animate(anim_y, "y") end
+        if anim_x then animate(c, anim_x, "x") end
+        if anim_y then animate(c, anim_y, "y") end
 
         helpers.client.turn_on(c)
         self:emit_signal("turn_on", c)
@@ -133,6 +132,9 @@ function Scratchpad:turn_on()
                         c.minimized = false
                         -- Some clients fail to gain focus
                         c:activate{}
+
+                        if anim_x then animate(c, anim_x, "x") end
+                        if anim_y then animate(c, anim_y, "y") end
 
                         -- Discord spawns 2 windows, so keep the rule until the 2nd window shows
                         if c.name ~= "Discord Updater" then ruled.client.remove_rule("scratchpad") end
