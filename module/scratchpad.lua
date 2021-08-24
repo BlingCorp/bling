@@ -14,7 +14,7 @@ local Scratchpad = { mt = {} }
 -- @return The new scratchpad object
 function Scratchpad:new(args)
     args = args or {}
-    args.awestore = args.awestore or {}
+    args.animation = args.animation or args.awestore or {}
     args.in_anim = false
     local ret = gears.object {}
     gears.table.crush(ret, Scratchpad)
@@ -83,8 +83,8 @@ function Scratchpad:turn_on()
     end
 
     local c = self:find()[1]
-    local anim_x = self.awestore.x
-    local anim_y = self.awestore.y
+    local anim_x = self.animation.x
+    local anim_y = self.animation.y
 
     if c and not self.in_anim and c.first_tag and c.first_tag.selected then
         c:raise()
@@ -237,8 +237,8 @@ function Scratchpad:turn_off()
         c.sticky = false
 
         -- Get the tweens
-        local anim_x = self.awestore.x
-        local anim_y = self.awestore.y
+        local anim_x = self.animation.x
+        local anim_y = self.animation.y
 
         if anim_x then animate(anim_x, self.geometry.x, "x") end
         if anim_y then animate(anim_y, self.geometry.y, "y") end
