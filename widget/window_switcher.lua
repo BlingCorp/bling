@@ -217,8 +217,8 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
                 margins = client_margins,
                 widget = wibox.container.margin
             },
-            border_width = border_width,
-            border_color = border_color,
+            shape_border_width = border_width,
+            shape_border_color = border_color,
             bg = background,
             shape = helpers.shape.rrect(border_radius),
             widget = wibox.container.background
