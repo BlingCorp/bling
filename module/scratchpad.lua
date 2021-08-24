@@ -136,6 +136,8 @@ function Scratchpad:turn_on()
                         if anim_x then animate(c, anim_x, "x") end
                         if anim_y then animate(c, anim_y, "y") end
 
+                        self:emit_signal("inital_apply", c)
+
                         -- Discord spawns 2 windows, so keep the rule until the 2nd window shows
                         if c.name ~= "Discord Updater" then ruled.client.remove_rule("scratchpad") end
                         -- In a case Discord is killed before the second window spawns
