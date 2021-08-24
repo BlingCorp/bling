@@ -167,12 +167,9 @@ function Scratchpad:turn_off()
         local function animate(anim, initial_pos, axis)
             local current_tag_on_toggled_scratchpad = c.screen.selected_tag
 
-            -- Can't animate not floating windows
-            c.floating = true
-
-            -- if the app wasn't opened via a scratchpad
-            -- and it's toggled off via a scratchpad
-            -- the animation will look wrong as the gemotery wasn't applied yet
+            -- This is needed for when the client has the wrong properties
+            -- ie. if the app wasn't opened via a scratchpad so :apply wasn't called on it
+            -- or the floating state was toggled off
             self:apply(c)
 
             -- Check for the following scenerio:
