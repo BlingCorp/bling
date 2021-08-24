@@ -30,6 +30,7 @@ local ignore = {}
 local priority = {}
 local update_on_activity = true
 local interval = 1
+local debounce_delay = 0.35
 
 -- Track position callback
 local last_position = -1
@@ -142,7 +143,7 @@ local function metadata_cb(player, metadata)
             end
 
             metadata_timer = gears.timer {
-                timeout = 0.3,
+                timeout = debounce_delay,
                 autostart = true,
                 single_shot = true,
                 callback = function() emit_title_artist_album_signal(title:gsub('%&', ''), artist:gsub('%&', ''), artUrl, player.player_name, album:gsub('%&', '')) end
@@ -309,6 +310,7 @@ local function parse_args(args)
     if args then
         update_on_activity = args.update_on_activity or update_on_activity
         interval = args.interval or interval
+        debounce_delay = args.debounce_delay or debounce_delay
 
         if type(args.ignore) == "string" then
             ignore[args.ignore] = true
@@ -334,6 +336,7 @@ local function playerctl_enable(args)
     args.update_on_activity = args.update_on_activity or
                               beautiful.playerctl_update_on_activity
     args.interval = args.interval or beautiful.playerctl_position_update_interval
+    args.debounce_delay = args.debounce_delay or beautiful.playerctl_position_update_debounce_delay
     parse_args(args)
 
     -- Grab playerctl library
@@ -355,6 +358,7 @@ local function playerctl_disable()
     priority = {}
     update_on_activity = true
     interval = 1
+    debounce_delay = 0.35
     -- Reset default values
     last_position = -1
     last_length = -1
