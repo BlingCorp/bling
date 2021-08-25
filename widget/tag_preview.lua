@@ -3,95 +3,94 @@
 -- bling::tag_preview::update   -- first line is the signal
 --      t   (tag)               -- indented lines are function parameters
 -- bling::tag_preview::visibility
---      s   (screen)         
+--      s   (screen)
 --      v   (boolean)
 --
 local awful = require("awful")
 local wibox = require("wibox")
-local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 local gears = require("gears")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local cairo = require("lgi").cairo
 
-local function draw_widget(t, tag_preview_image, scale, screen_radius,
-                           client_radius, client_opacity, client_bg,
-                           client_border_color, client_border_width, widget_bg,
-                           widget_border_color, widget_border_width, geo, margin)
+local helpers = require(tostring(...):match(".*bling") .. ".helpers")
+local task_preview = require(tostring(...):match(".*bling") .. ".widget.task_preview")
+
+
+local function get_default_template(tag_preview_image, scale,
+                                    client_radius, client_opacity, client_bg,
+                                    client_border_color, client_border_width)
+    local img_box
+    if tag_preview_image then
+        img_box = {
+            id = "image_role",
+            resize = true,
+            opacity = client_opacity,
+            widget = wibox.widget.imagebox
+        }
+    else
+        img_box = {
+            id = "icon_role",
+            resize = true,
+            forced_height = 100 * scale,
+            forced_width = 100 * scale,
+            widget = wibox.widget.imagebox
+        }
+    end
+    return {
+        {
+            nil,
+            {
+                nil,
+                img_box,
+                nil,
+                expand = "outside",
+                layout = wibox.layout.align.horizontal
+            },
+            nil,
+            expand = "outside",
+            widget = wibox.layout.align.vertical
+        },
+        bg = client_bg,
+        shape_border_color = client_border_color,
+        shape_border_width = client_border_width,
+        shape = helpers.shape.rrect(client_radius),
+        widget = wibox.container.background
+    }
+end
+
+local function get_tag_preview(t, widget_template, tag_preview_image, scale, screen_radius,
+                               client_radius, client_opacity, client_bg,
+                               client_border_color, client_border_width, widget_bg,
+                               widget_border_color, widget_border_width, geo, margin)
 
     local client_list = wibox.layout.manual()
     client_list.forced_height = geo.height
     client_list.forced_width = geo.width
-    local tag_screen = t.screen
+
     for i, c in ipairs(t:clients()) do
 
         if not c.hidden and not c.minimized then
 
-            local img_box = wibox.widget {
-                image = gears.surface.load(c.icon),
-                resize = true,
-                forced_height = 100 * scale,
-                forced_width = 100 * scale,
-                widget = wibox.widget.imagebox
-            }
-
-            if tag_preview_image then
-                if c.prev_content or t.selected then
-                    local content
-                    if t.selected then
-                        content = gears.surface(c.content)
-                    else
-                        content = gears.surface(c.prev_content)
-                    end
-                    local cr = cairo.Context(content)
-                    local x, y, w, h = cr:clip_extents()
-                    local img = cairo.ImageSurface.create(cairo.Format.ARGB32,
-                                                          w - x, h - y)
-                    cr = cairo.Context(img)
-                    cr:set_source_surface(content, 0, 0)
-                    cr.operator = cairo.Operator.SOURCE
-                    cr:paint()
-
-                    img_box = wibox.widget {
-                        image = gears.surface.load(img),
-                        resize = true,
-                        opacity = client_opacity,
-                        forced_height = math.floor(c.height * scale),
-                        forced_width = math.floor(c.width * scale),
-                        widget = wibox.widget.imagebox
-                    }
-                end
+            local template
+            if not widget_template then
+                template = get_default_template(tag_preview_image, scale,
+                                                client_radius, client_opacity, client_bg,
+                                                client_border_color, client_border_width)
+            else
+                template = widget_template
             end
 
-            local client_box = wibox.widget {
-                {
-                    nil,
-                    {
-                        nil,
-                        img_box,
-                        nil,
-                        expand = "outside",
-                        layout = wibox.layout.align.horizontal
-                    },
-                    nil,
-                    expand = "outside",
-                    widget = wibox.layout.align.vertical
-                },
-                forced_height = math.floor(c.height * scale),
-                forced_width = math.floor(c.width * scale),
-                bg = client_bg,
-                shape_border_color = client_border_color,
-                shape_border_width = client_border_width,
-                shape = helpers.shape.rrect(client_radius),
-                widget = wibox.container.background
-            }
+            local w = task_preview.get_task_preview(c, template,
+                                                    math.floor(c.width * scale),
+                                                    math.floor(c.height * scale))
 
-            client_box.point = {
+            w.point = {
                 x = math.floor((c.x - geo.x) * scale),
                 y = math.floor((c.y - geo.y) * scale)
             }
 
-            client_list:add(client_box)
+            client_list:add(w)
         end
     end
 
@@ -172,7 +171,7 @@ local enable = function(opts)
 
         tag_preview_box.maximum_width = scale * geo.width + margin * 2
         tag_preview_box.maximum_height = scale * geo.height + margin * 2
-        tag_preview_box:setup(draw_widget(t, tag_preview_image, scale,
+        tag_preview_box:setup(get_tag_preview(t, nil, tag_preview_image, scale,
                                           screen_radius, client_radius,
                                           client_opacity, client_bg,
                                           client_border_color,
@@ -191,4 +190,7 @@ local enable = function(opts)
     end)
 end
 
-return {enable = enable}
+return {
+    enable = enable,
+    get_tag_preview = get_tag_preview
+}

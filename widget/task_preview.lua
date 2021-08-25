@@ -13,23 +13,10 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local cairo = require("lgi").cairo
 
--- TODO: rename structure to something better?
-local function draw_widget(c, widget_template, screen_radius, widget_bg,
-                           widget_border_color, widget_border_width, margin,
-                           widget_width, widget_height)
 
-    if not pcall(function() return type(c.content) end) then return end
-    local content = gears.surface(c.content)
-    local cr = cairo.Context(content)
-    local x, y, w, h = cr:clip_extents()
-    local img = cairo.ImageSurface.create(cairo.Format.ARGB32, w - x, h - y)
-    cr = cairo.Context(img)
-    cr:set_source_surface(content, 0, 0)
-    cr.operator = cairo.Operator.SOURCE
-    cr:paint()
-
-    local widget = wibox.widget {
-        (widget_template or {
+local function get_default_template(screen_radius, widget_bg, widget_border_color,
+                                    widget_border_width, margin)
+    return {
             {
                 {
                     {
@@ -78,7 +65,16 @@ local function draw_widget(c, widget_template, screen_radius, widget_bg,
             shape_border_color = widget_border_color,
             shape = helpers.shape.rrect(screen_radius),
             widget = wibox.container.background
-        }),
+    }
+end
+
+-- TODO: rename structure to something better?
+local function get_task_preview(c, widget_template, widget_width, widget_height, ...)
+
+    if not pcall(function() return type(c.content) end) then return end
+
+    local widget = wibox.widget {
+        widget_template or get_default_template(...),
         width = widget_width,
         height = widget_height,
         widget = wibox.container.constraint
@@ -86,8 +82,22 @@ local function draw_widget(c, widget_template, screen_radius, widget_bg,
 
     -- TODO: have something like a create callback here?
 
-    for _, w in ipairs(widget:get_children_by_id("image_role")) do
-        w.image = img -- TODO: copy it with gears.surface.xxx or something
+    for _, ibox in ipairs(widget:get_children_by_id("image_role")) do
+        local content
+        if c.first_tag.selected then -- change to: if one of Cs tags are selected
+            content = gears.surface(c.content)
+        else
+            content = gears.surface(c.prev_content)
+        end
+        local cr = cairo.Context(content)
+        local x, y, w, h = cr:clip_extents()
+        local img = cairo.ImageSurface.create(cairo.Format.ARGB32,
+                                              w - x, h - y)
+        cr = cairo.Context(img)
+        cr:set_source_surface(content, 0, 0)
+        cr.operator = cairo.Operator.SOURCE
+        cr:paint()
+        ibox.image = img -- TODO: copy it with gears.surface.xxx or something
     end
 
     for _, w in ipairs(widget:get_children_by_id("name_role")) do
@@ -133,11 +143,11 @@ local enable = function(opts)
     awesome.connect_signal("bling::task_preview::visibility", function(s, v, c)
         if v then
             -- Update task preview contents
-            task_preview_box.widget = draw_widget(c, opts.structure,
-                                                  screen_radius, widget_bg,
-                                                  widget_border_color,
-                                                  widget_border_width, margin,
-                                                  widget_width, widget_height)
+            task_preview_box.widget = get_task_preview(c, opts.structure,
+                                                       widget_width, widget_height,
+                                                       screen_radius, widget_bg,
+                                                       widget_border_color,
+                                                       widget_border_width, margin)
         end
 
         if not placement_fn then
@@ -149,4 +159,7 @@ local enable = function(opts)
     end)
 end
 
-return {enable = enable}
+return {
+    enable = enable,
+    get_task_preview = get_task_preview,
+}
