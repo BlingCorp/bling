@@ -38,32 +38,31 @@ local function emit_player_status()
     end)
 end
 
-local function emit_player_info()
-    local art_script = [[
-sh -c '
+local function get_album_art(url)
+    return awful.util.shell .. [[ -c '
 
 tmp_dir="$XDG_CACHE_HOME/awesome/"
 
-if [ -z ${XDG_CACHE_HOME} ]; then
+if [ -z "$XDG_CACHE_HOME" ]; then
     tmp_dir="$HOME/.cache/awesome/"
 fi
 
-tmp_cover_path=${tmp_dir}"cover.png"
+tmp_cover_path="${tmp_dir}cover.png"
 
-if [ ! -d $tmp_dir  ]; then
+if [ ! -d "$tmp_dir" ]; then
     mkdir -p $tmp_dir
 fi
 
-link="$(playerctl metadata mpris:artUrl)"
-
-curl -s "$link" --output $tmp_cover_path
+curl -s ']] .. url .. [[' --output $tmp_cover_path
 
 echo "$tmp_cover_path"
 ']]
+end
 
+local function emit_player_info()
     -- Command that lists artist and title in a format to find and follow
     local song_follow_cmd =
-        "playerctl metadata --format 'artist_{{artist}}title_{{title}}' -F"
+        "playerctl metadata --format 'title_{{title}}artist_{{artist}}art_url_{{mpris:artUrl}}player_name_{{playerName}}' -F"
 
     -- Progress Cmds
     local prog_cmd = "playerctl position"
@@ -89,22 +88,44 @@ echo "$tmp_cover_path"
     }, function()
         awful.spawn.with_line_callback(song_follow_cmd, {
             stdout = function(line)
-                local album_path = ""
-                awful.spawn.easy_async_with_shell(art_script, function(out)
-                    -- Get album path
-                    album_path = out:gsub('%\n', '')
-                    -- Get title and artist
-                    local artist = line:match('artist_(.*)title_')
-                    local title = line:match('title_(.*)')
-                    -- If the title is nil or empty then the players stopped
-                    if title and title ~= "" then
-                        awesome.emit_signal(
-                            "bling::playerctl::title_artist_album", title,
-                            artist, album_path)
+                local title = line:match('title_(.*)artist_')
+                local artist = line:match('artist_(.*)art_url_')
+                local art_url = line:match('art_url_(.*)player_name_')
+                local player_name = line:match('player_name_(.*)')
+
+                print("Title: " .. title .. " Artist: " .. artist .. " Player Name: " .. player_name .. " Art Url: " .. art_url)
+
+                art_url = art_url:gsub('%\n', '')
+                if player_name == "spotify" then
+                    art_url = art_url:gsub("open.spotify.com", "i.scdn.co")
+                end
+
+                if title and title ~= "" then
+                    if art_url ~= "" then
+                        awful.spawn.with_line_callback(get_album_art(art_url), {
+                            stdout = function(line)
+                                awesome.emit_signal(
+                                    "bling::playerctl::title_artist_album",
+                                    title,
+                                    artist,
+                                    line,
+                                    player_name
+                                )
+                            end
+                        })
                     else
-                        awesome.emit_signal("bling::playerctl::no_players")
+                        awesome.emit_signal(
+                            "bling::playerctl::title_artist_album",
+                            title,
+                            artist,
+                            "",
+                            player_name
+                        )
                     end
-                end)
+                else
+                    awesome.emit_signal("bling::playerctl::no_players")
+                end
+
                 collectgarbage("collect")
             end
         })
