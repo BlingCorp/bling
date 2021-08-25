@@ -73,6 +73,15 @@ echo "$tmp_cover_path"
 end
 
 local function emit_title_artist_album_signal(title, artist, artUrl, player_name, album)
+    title = title:gsub('%&', '')
+    artist = artist:gsub('%&', '')
+    album = album:gsub('%&', '')
+
+    -- Spotify client doesn't report its art URL's correctly...
+    if player_name == "spotify" then
+        artUrl = artUrl:gsub("open.spotify.com", "i.scdn.co")
+    end
+
     if artUrl ~= "" then
         awful.spawn.with_line_callback(get_album_art(artUrl), {
             stdout = function(line)
@@ -116,11 +125,6 @@ local function metadata_cb(player, metadata)
         artist = artist .. ", " .. data["xesam:artist"][i]
     end
     local artUrl = data["mpris:artUrl"] or ""
-    -- Spotify client doesn't report its art URL's correctly...
-    if player.player_name == "spotify" then
-        artUrl = artUrl:gsub("open.spotify.com", "i.scdn.co")
-    end
-
     local album = data["xesam:album"] or ""
 
     if player == manager.players[1] then
@@ -139,7 +143,7 @@ local function metadata_cb(player, metadata)
                 timeout = debounce_delay,
                 autostart = true,
                 single_shot = true,
-                callback = function() emit_title_artist_album_signal(title:gsub('%&', ''), artist:gsub('%&', ''), artUrl, player.player_name, album:gsub('%&', '')) end
+                callback = function() emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album) end
             }
 
             -- Re-sync with position timer when track changes
