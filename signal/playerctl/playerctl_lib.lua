@@ -284,6 +284,14 @@ local function start_manager()
             metadata_timer:stop()
             position_timer:stop()
             awesome.emit_signal("bling::playerctl::no_players")
+        else
+            local player = manager.players[1]
+            local title = Playerctl.Player.get_title(player)
+            local artist = Playerctl.Player.get_artist(player)
+            local artUrl = Playerctl.Player.print_metadata_prop(player, "mpris:artUrl")
+            local album = Playerctl.Player.get_album(player)
+
+            emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album)
         end
     end
 end
