@@ -86,7 +86,6 @@ local function emit_title_artist_album_signal(title, artist, artUrl, player_name
                 )
             end
         })
-        awesome.set_xproperty("playerctl_lib_art_url", artUrl)
     else
         awesome.emit_signal(
             "bling::playerctl::title_artist_album",
@@ -96,13 +95,7 @@ local function emit_title_artist_album_signal(title, artist, artUrl, player_name
             player_name,
             album
         )
-        awesome.set_xproperty("playerctl_lib_art_url", "")
     end
-
-    awesome.set_xproperty("playerctl_lib_title", title)
-    awesome.set_xproperty("playerctl_lib_artist", artist)
-    awesome.set_xproperty("playerctl_lib_player_name", player_name)
-    awesome.set_xproperty("playerctl_lib_album", album)
 end
 
 -- Metadata callback for title, artist, and album art
@@ -266,28 +259,19 @@ local function start_manager()
         init_player(name)
     end
 
+    if manager.players[1] then
+        local player = manager.players[1]
+        local title = Playerctl.Player.get_title(player)
+        local artist = Playerctl.Player.get_artist(player)
+        local artUrl = Playerctl.Player.print_metadata_prop(player, "mpris:artUrl")
+        local album = Playerctl.Player.get_album(player)
+
+        emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album)
+    end
+
     -- Callback to manage new players
     function manager:on_name_appeared(name)
         init_player(name)
-    end
-
-    awesome.register_xproperty("playerctl_lib_title", "string")
-    local title = awesome.get_xproperty("playerctl_lib_title")
-
-    awesome.register_xproperty("playerctl_lib_artist", "string")
-    local artist = awesome.get_xproperty("playerctl_lib_artist")
-
-    awesome.register_xproperty("playerctl_lib_art_url", "string")
-    local artUrl = awesome.get_xproperty("playerctl_lib_art_url")
-
-    awesome.register_xproperty("playerctl_lib_player_name", "string")
-    local playerName = awesome.get_xproperty("playerctl_lib_player_name")
-
-    awesome.register_xproperty("playerctl_lib_album", "string")
-    local album = awesome.get_xproperty("playerctl_lib_album")
-
-    if (title ~= "" or artist ~= "" or artUrl ~= "") then
-        emit_title_artist_album_signal(title, artist, artUrl, playerName, album)
     end
 
     -- Callback to check if all players have exited
@@ -295,11 +279,6 @@ local function start_manager()
         if #manager.players == 0 then
             metadata_timer:stop()
             position_timer:stop()
-            awesome.set_xproperty("playerctl_lib_title", "")
-            awesome.set_xproperty("playerctl_lib_artist", "")
-            awesome.set_xproperty("playerctl_lib_art_url", "")
-            awesome.set_xproperty("playerctl_lib_player_name", "")
-            awesome.set_xproperty("playerctl_lib_album", "")
             awesome.emit_signal("bling::playerctl::no_players")
         end
     end
