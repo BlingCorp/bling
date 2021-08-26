@@ -1,5 +1,6 @@
 local awful = require("awful")
 local gears = require("gears")
+local naughty = require("naughty")
 
 local ruled
 if awesome.version ~= "v4.3" then ruled = require("ruled") end
@@ -14,7 +15,11 @@ local Scratchpad = { mt = {} }
 -- @return The new scratchpad object
 function Scratchpad:new(args)
     args = args or {}
-    args.awestore = args.awestore or {}
+    if args.awestore then
+        naughty.notify({title = "Bling Error", text = "Awestore is no longer supported! Please take a look at the scratchpad documentation and use rubato for animations instead."})
+    end
+
+    args.rubato = args.rubato or {}
     args.in_anim = false
     local ret = gears.object {}
     gears.table.crush(ret, Scratchpad)
@@ -34,6 +39,8 @@ function Scratchpad:apply(c)
     if not c or not c.valid then return end
     c.floating = self.floating
     c.sticky = self.sticky
+    c.fullscreen = false
+    c.maximized = false
     c:geometry({
         x = self.geometry.x + awful.screen.focused().geometry.x,
         y = self.geometry.y + awful.screen.focused().geometry.y,
@@ -50,8 +57,42 @@ end
 
 --- Turns the scratchpad on
 function Scratchpad:turn_on()
-    local matches = self:find()
-    local c = matches[1]
+    local function animate(c, anim, axis)
+        -- Check for the following scenerio:
+        -- Toggle on scratchpad at tag 1
+        -- Toggle on scratchpad at tag 2
+        -- The animation will instantly end
+        -- as the timer pos is already at the on position
+        -- from toggling on the scratchpad at tag 1
+        if axis == "x" and anim.pos == self.geometry.x then
+            anim.pos = anim:initial()
+        else
+            if anim.pos == self.geometry.y then anim.pos = anim:initial() end
+        end
+
+        anim:subscribe(function(pos)
+            if c and c.valid then
+                if axis == "x" then c.x = pos
+                else c.y = pos end
+            end
+            self.in_anim = true
+        end)
+
+        if axis == "x" then anim:set(self.geometry.x)
+        else anim:set(self.geometry.y) end
+
+        anim.ended:subscribe(function()
+            self.in_anim = false
+            anim:unsubscribe()
+            anim.ended:unsubscribe()
+            anim:reset()
+        end)
+    end
+
+    local c = self:find()[1]
+    local anim_x = self.rubato.x
+    local anim_y = self.rubato.y
+
     if c and not self.in_anim and c.first_tag and c.first_tag.selected then
         c:raise()
         client.focus = c
@@ -62,49 +103,13 @@ function Scratchpad:turn_on()
         if self.reapply then self:apply(c) end
         -- c.sticky was set to false in turn_off so it has to be reapplied anyway
         c.sticky = self.sticky
-        local new_y = c.y
-        local new_x = c.x
 
-        -- Get the tweens
-        local anim_x = self.awestore.x
-        local anim_y = self.awestore.y
-
-        -- Subscribe
-        if anim_x then
-            anim_x:subscribe(function(x)
-                if c and c.valid then c.x = x end
-                self.in_anim = true
-            end)
-        end
-        if anim_y then
-            anim_y:subscribe(function(y)
-                if c and c.valid then c.y = y end
-                self.in_anim = true
-            end)
-        end
+        if anim_x then animate(c, anim_x, "x") end
+        if anim_y then animate(c, anim_y, "y") end
 
         helpers.client.turn_on(c)
         self:emit_signal("turn_on", c)
 
-        -- Unsubscribe
-        if anim_x then
-            anim_x:set(new_x)
-            local unsub_x
-            unsub_x = anim_x.ended:subscribe(
-                          function()
-                    self.in_anim = false
-                    unsub_x()
-                end)
-        end
-        if anim_y then
-            anim_y:set(new_y)
-            local unsub_y
-            unsub_y = anim_y.ended:subscribe(
-                          function()
-                    self.in_anim = false
-                    unsub_y()
-                end)
-        end
         return
     end
     if not c then
@@ -135,6 +140,11 @@ function Scratchpad:turn_on()
                         -- Some clients fail to gain focus
                         c:activate{}
 
+                        if anim_x then animate(c, anim_x, "x") end
+                        if anim_y then animate(c, anim_y, "y") end
+
+                        self:emit_signal("inital_apply", c)
+
                         -- Discord spawns 2 windows, so keep the rule until the 2nd window shows
                         if c.name ~= "Discord Updater" then ruled.client.remove_rule("scratchpad") end
                         -- In a case Discord is killed before the second window spawns
@@ -146,6 +156,8 @@ function Scratchpad:turn_on()
             local function inital_apply(c1)
                 if helpers.client.is_child_of(c1, pid) then
                     self:apply(c1)
+                    if anim_x then animate(c1, anim_x, "x") end
+                    if anim_y then animate(c1, anim_y, "y") end
                     self:emit_signal("inital_apply", c1)
                 client.disconnect_signal("manage", inital_apply)
                 end
@@ -157,53 +169,72 @@ end
 
 --- Turns the scratchpad off
 function Scratchpad:turn_off()
-    local matches = self:find()
-    local c = matches[1]
+    local c = self:find()[1]
     if c and not self.in_anim then
+        local function animate(anim, initial_pos, axis)
+            local current_tag_on_toggled_scratchpad = c.screen.selected_tag
+
+            -- Can't animate non floating clients
+            c.floating = true
+
+            if axis == "x" then anim.pos = c.x
+            else anim.pos = c.y end
+
+            anim:subscribe(function(pos)
+                if c and c.valid then
+                    if axis == "x" then c.x = pos
+                    else c.y = pos end
+                end
+                self.in_anim = true
+
+                -- Handles changing tag mid animation
+                -- Check for the following scenerio:
+                -- Toggle on scratchpad at tag 1
+                -- Toggle on scratchpad at tag 2
+                -- Toggle off scratchpad at tag 1
+                -- Switch to tag 2
+                -- The client will remain on tag 1
+                -- The client will be removed from tag 2
+                if c.screen.selected_tag ~= current_tag_on_toggled_scratchpad then
+                    self.in_anim = false
+                    anim:abort()
+                    anim:reset()
+                    anim:unsubscribe()
+                    anim.ended:unsubscribe()
+                    if axis == "x" then anim.pos = self.geometry.x
+                    else anim.pos = self.geometry.y end
+                    helpers.client.turn_off(c, current_tag_on_toggled_scratchpad)
+                    self:apply(c)
+                    self:emit_signal("turn_off", c)
+                end
+            end)
+
+            anim:set(anim:initial())
+
+            anim.ended:subscribe(function()
+                self.in_anim = false
+                anim:reset()
+                anim:unsubscribe()
+                anim.ended:unsubscribe()
+                helpers.client.turn_off(c)
+
+                -- When toggling off a scratchpad that's present on multiple tags
+                -- depsite still being unminizmied on the other tags it will become invisible
+                -- as it's position could be outside the screen from the animation
+                self:apply(c)
+
+                self:emit_signal("turn_off", c)
+            end)
+        end
+
         c.sticky = false
 
         -- Get the tweens
-        local anim_x = self.awestore.x
-        local anim_y = self.awestore.y
+        local anim_x = self.rubato.x
+        local anim_y = self.rubato.y
 
-        -- Subscribe
-        if anim_x then
-            anim_x:subscribe(function(x)
-                if c and c.valid then c.x = x end
-                self.in_anim = true
-            end)
-        end
-        if anim_y then
-            anim_y:subscribe(function(y)
-                if c and c.valid then c.y = y end
-                self.in_anim = true
-            end)
-        end
-
-        -- Unsubscribe
-        if anim_x then
-            anim_x:set(anim_x:initial())
-            local unsub
-            unsub = anim_x.ended:subscribe(
-                        function()
-                    self.in_anim = false
-                    helpers.client.turn_off(c)
-                    self:emit_signal("turn_off", c)
-                    unsub()
-                end)
-        end
-        if anim_y then
-            anim_y:set(anim_y:initial())
-
-            local unsub
-            unsub = anim_y.ended:subscribe(
-                        function()
-                    self.in_anim = false
-                    helpers.client.turn_off(c)
-                    self:emit_signal("turn_off", c)
-                    unsub()
-                end)
-        end
+        if anim_x then animate(anim_x, self.geometry.x, "x") end
+        if anim_y then animate(anim_y, self.geometry.y, "y") end
 
         if not anim_x and not anim_y then
             helpers.client.turn_off(c)
@@ -215,11 +246,11 @@ end
 --- Turns the scratchpad off if it is focused otherwise it raises the scratchpad
 function Scratchpad:toggle()
     local is_turn_off = false
-    local matches = self:find()
+    local c = self:find()[1]
     if self.dont_focus_before_close then
-        if matches[1] then
-            local current_tag = matches[1].screen.selected_tag
-            for k, tag in pairs(matches[1]:tags()) do
+        if c then
+            local current_tag = c.screen.selected_tag
+            for k, tag in pairs(c:tags()) do
                 if tag == current_tag then
                     is_turn_off = true
                     break
@@ -234,9 +265,6 @@ function Scratchpad:toggle()
     end
 
     if is_turn_off then
-        if self.disable_floating_on_close and matches[1].floating == true then
-            matches[1].floating = false
-        end
         self:turn_off()
     else
         self:turn_on()
@@ -252,4 +280,3 @@ function Scratchpad.mt:__call(...)
 end
 
 return setmetatable(Scratchpad, Scratchpad.mt)
-
