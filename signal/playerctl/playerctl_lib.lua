@@ -292,6 +292,68 @@ local function start_manager()
             get_current_player_info(manager.players[1])
         end
     end
+
+    awesome.connect_signal("bling::playerctl::pause", function()
+        if manager.players[1] then
+            manager.players[1].pause(manager.players[1])
+        end
+    end)
+
+    awesome.connect_signal("bling::playerctl::play", function()
+        if manager.players[1] then
+            manager.players[1].play(manager.players[1])
+        end
+    end)
+
+    awesome.connect_signal("bling::playerctl::stop", function()
+        if manager.players[1] then
+            manager.players[1].stop(manager.players[1])
+        end
+    end)
+
+    awesome.connect_signal("bling::playerctl::play_pause", function()
+        if manager.players[1] then
+            manager.players[1].play_pause(manager.players[1])
+        end
+    end)
+
+    awesome.connect_signal("bling::playerctl::previous", function()
+        if manager.players[1] then
+            manager.players[1].previous(manager.players[1])
+        end
+    end)
+
+    awesome.connect_signal("bling::playerctl::next", function()
+        if manager.players[1] then
+            manager.players[1].next(manager.players[1])
+        end
+    end)
+
+    awesome.connect_signal("bling::playerctl::set_loop_status", function(loop_status)
+        if manager.players[1] then
+            manager.players[1].set_loop_status(manager.players[1], loop_status)
+        end
+    end)
+
+    awesome.connect_signal("bling::playerctl::set_position", function(position)
+        if manager.players[1] then
+            -- Disabled as it throws:
+            -- (process:115888): GLib-CRITICAL **: 09:53:03.111: g_variant_new_object_path: assertion 'g_variant_is_object_path (object_path)' failed
+            --manager.players[1].set_position(manager.players[1], 1000)
+        end
+    end)
+
+    awesome.connect_signal("bling::playerctl::set_shuffle", function(shuffle)
+        if manager.players[1] then
+            manager.players[1].set_shuffle(manager.players[1], shuffle)
+        end
+    end)
+
+    awesome.connect_signal("bling::playerctl::set_volume", function(volume)
+        if manager.players[1] then
+            manager.players[1].set_volume(manager.players[1], volume)
+        end
+    end)
 end
 
 -- Parse arguments
@@ -355,6 +417,17 @@ local function playerctl_disable()
     last_title = ""
     last_artist = ""
     last_artUrl = ""
+
+    awesome.disconnect_signal("bling::playerctl::pause")
+    awesome.disconnect_signal("bling::playerctl::play")
+    awesome.disconnect_signal("bling::playerctl::stop")
+    awesome.disconnect_signal("bling::playerctl::play_pause")
+    awesome.disconnect_signal("bling::playerctl::previous")
+    awesome.disconnect_signal("bling::playerctl::next")
+    awesome.disconnect_signal("bling::playerctl::set_loop_status")
+    awesome.disconnect_signal("bling::playerctl::set_position")
+    awesome.disconnect_signal("bling::playerctl::set_shuffle")
+    awesome.disconnect_signal("bling::playerctl::set_volume")
 end
 
 return {enable = playerctl_enable, disable = playerctl_disable}
