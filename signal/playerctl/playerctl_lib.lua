@@ -270,6 +270,7 @@ local function start_manager()
         local artUrl = Playerctl.Player.print_metadata_prop(player, "mpris:artUrl")
         local album = Playerctl.Player.get_album(player)
 
+        playback_status_cb(player, player.playback_status)
         emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album)
     end
 
@@ -291,6 +292,7 @@ local function start_manager()
             local artUrl = Playerctl.Player.print_metadata_prop(player, "mpris:artUrl")
             local album = Playerctl.Player.get_album(player)
 
+            playback_status_cb(player, player.playback_status)
             emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album)
         end
     end
