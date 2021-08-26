@@ -16,7 +16,7 @@ local Scratchpad = { mt = {} }
 function Scratchpad:new(args)
     args = args or {}
     if args.awestore then
-        naughty.notify({title = "Error", text = "Awestore is no longer supported! Use ruboato instead!"})
+        naughty.notify({title = "Bling Error", text = "Awestore is no longer supported! Please take a look at the scratchpad documentation and use rubato for animations instead."})
     end
 
     args.rubato = args.rubato or {}
