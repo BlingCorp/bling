@@ -1,5 +1,6 @@
 local awful = require("awful")
 local gears = require("gears")
+local naughty = require("naughty")
 
 local ruled
 if awesome.version ~= "v4.3" then ruled = require("ruled") end
@@ -14,7 +15,11 @@ local Scratchpad = { mt = {} }
 -- @return The new scratchpad object
 function Scratchpad:new(args)
     args = args or {}
-    args.animation = args.animation or args.awestore or {}
+    if args.awestore then
+        naughty.notify({title = "Error", text = "Awestore is no longer supported! Use ruboato instead!"})
+    end
+
+    args.rubato = args.rubato or {}
     args.in_anim = false
     local ret = gears.object {}
     gears.table.crush(ret, Scratchpad)
@@ -85,8 +90,8 @@ function Scratchpad:turn_on()
     end
 
     local c = self:find()[1]
-    local anim_x = self.animation.x
-    local anim_y = self.animation.y
+    local anim_x = self.rubato.x
+    local anim_y = self.rubato.y
 
     if c and not self.in_anim and c.first_tag and c.first_tag.selected then
         c:raise()
@@ -225,8 +230,8 @@ function Scratchpad:turn_off()
         c.sticky = false
 
         -- Get the tweens
-        local anim_x = self.animation.x
-        local anim_y = self.animation.y
+        local anim_x = self.rubato.x
+        local anim_y = self.rubato.y
 
         if anim_x then animate(anim_x, self.geometry.x, "x") end
         if anim_y then animate(anim_y, self.geometry.y, "y") end
