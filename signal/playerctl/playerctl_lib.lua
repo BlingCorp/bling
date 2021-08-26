@@ -172,6 +172,16 @@ local function playback_status_cb(player, status)
     end
 end
 
+local function get_current_player_info(player)
+    local title = Playerctl.Player.get_title(player)
+    local artist = Playerctl.Player.get_artist(player)
+    local artUrl = Playerctl.Player.print_metadata_prop(player, "mpris:artUrl")
+    local album = Playerctl.Player.get_album(player)
+
+    playback_status_cb(player, player.playback_status)
+    emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album)
+end
+
 -- Determine if player should be managed
 local function name_is_selected(name)
     if ignore[name.name] then
@@ -264,14 +274,7 @@ local function start_manager()
     end
 
     if manager.players[1] then
-        local player = manager.players[1]
-        local title = Playerctl.Player.get_title(player)
-        local artist = Playerctl.Player.get_artist(player)
-        local artUrl = Playerctl.Player.print_metadata_prop(player, "mpris:artUrl")
-        local album = Playerctl.Player.get_album(player)
-
-        playback_status_cb(player, player.playback_status)
-        emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album)
+        get_current_player_info(manager.players[1])
     end
 
     -- Callback to manage new players
@@ -286,14 +289,7 @@ local function start_manager()
             position_timer:stop()
             awesome.emit_signal("bling::playerctl::no_players")
         else
-            local player = manager.players[1]
-            local title = Playerctl.Player.get_title(player)
-            local artist = Playerctl.Player.get_artist(player)
-            local artUrl = Playerctl.Player.print_metadata_prop(player, "mpris:artUrl")
-            local album = Playerctl.Player.get_album(player)
-
-            playback_status_cb(player, player.playback_status)
-            emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album)
+            get_current_player_info(manager.players[1])
         end
     end
 end
