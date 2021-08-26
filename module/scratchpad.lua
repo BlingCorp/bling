@@ -169,22 +169,11 @@ function Scratchpad:turn_off()
         local function animate(anim, initial_pos, axis)
             local current_tag_on_toggled_scratchpad = c.screen.selected_tag
 
-            -- This is needed for when the client has the wrong properties
-            -- ie. if the app wasn't opened via a scratchpad so :apply wasn't called on it
-            -- or the floating state was toggled off
-            self:apply(c)
+            -- Can't animate non floating clients
+            c.floating = true
 
-            -- Check for the following scenerio:
-            -- Toggle on scratchpad at tag 1
-            -- Toggle on scratchpad at tag 2
-            -- Toggle off scratchpad at tag 1
-            -- Toggle off scratchpad at tag 2
-            -- The animation will instantly end
-            -- as the timer pos is already at the off position
-            -- from toggling off the scratchpad at tag 1
-            if anim.pos == anim:initial() then
-                anim.pos = initial_pos
-            end
+            if axis == "x" then anim.pos = c.x
+            else anim.pos = c.y end
 
             anim:subscribe(function(pos)
                 if c and c.valid then
