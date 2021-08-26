@@ -13,20 +13,9 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local cairo = require("lgi").cairo
 
--- TODO: rename structure to something better?
-local function draw_widget(c, widget_template, screen_radius, widget_bg,
+local function draw_widget(widget_template, screen_radius, widget_bg,
                            widget_border_color, widget_border_width, margin,
                            widget_width, widget_height)
-
-    if not pcall(function() return type(c.content) end) then return end
-    local content = gears.surface(c.content)
-    local cr = cairo.Context(content)
-    local x, y, w, h = cr:clip_extents()
-    local img = cairo.ImageSurface.create(cairo.Format.ARGB32, w - x, h - y)
-    cr = cairo.Context(img)
-    cr:set_source_surface(content, 0, 0)
-    cr.operator = cairo.Operator.SOURCE
-    cr:paint()
 
     local widget = wibox.widget {
         (widget_template or {
@@ -84,20 +73,6 @@ local function draw_widget(c, widget_template, screen_radius, widget_bg,
         widget = wibox.container.constraint
     }
 
-    -- TODO: have something like a create callback here?
-
-    for _, w in ipairs(widget:get_children_by_id("image_role")) do
-        w.image = img -- TODO: copy it with gears.surface.xxx or something
-    end
-
-    for _, w in ipairs(widget:get_children_by_id("name_role")) do
-        w.text = c.name
-    end
-
-    for _, w in ipairs(widget:get_children_by_id("icon_role")) do
-        w.image = c.icon -- TODO: detect clienticon
-    end
-
     return widget
 end
 
@@ -125,19 +100,38 @@ local enable = function(opts)
             visible = false,
             ontop = true,
             placement = placement_fn,
-            widget = wibox.container.background, -- A dummy widget to make awful.popup not scream
+            widget = draw_widget(opts.structure, screen_radius, widget_bg,
+                                 widget_border_color, widget_border_width,
+                                 margin, widget_width, widget_height),
             input_passthrough = true,
             bg = "#00000000"
         })
 
     awesome.connect_signal("bling::task_preview::visibility", function(s, v, c)
         if v then
-            -- Update task preview contents
-            task_preview_box.widget = draw_widget(c, opts.structure,
-                                                  screen_radius, widget_bg,
-                                                  widget_border_color,
-                                                  widget_border_width, margin,
-                                                  widget_width, widget_height)
+
+            if not pcall(function() return type(c.content) end) then
+                return
+            end
+
+            local content = gears.surface(c.content)
+            local cr = cairo.Context(content)
+            local x, y, w, h = cr:clip_extents()
+            local img = cairo.ImageSurface.create(cairo.Format.ARGB32, w - x,
+                                                  h - y)
+            cr = cairo.Context(img)
+            cr:set_source_surface(content, 0, 0)
+            cr.operator = cairo.Operator.SOURCE
+            cr:paint()
+
+            for _, w in ipairs(task_preview_box.widget:get_children_by_id(
+                                   "image_role")) do w.image = img end
+
+            for _, w in ipairs(task_preview_box.widget:get_children_by_id(
+                                   "name_role")) do w.text = c.name end
+
+            for _, w in ipairs(task_preview_box.widget:get_children_by_id(
+                                   "icon_role")) do w.image = c.icon end
         end
 
         if not placement_fn then
