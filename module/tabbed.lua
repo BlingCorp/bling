@@ -200,16 +200,15 @@ end
 tabbed.switch_to = function(tabobj, new_idx)
     local old_focused_c = tabobj.clients[tabobj.focused_idx]
     tabobj.focused_idx = new_idx
+    helpers.client.turn_on(tabobj.clients[new_idx])
+    c:raise()
+    if old_focused_c and old_focused_c.valid then
+        c:swap(old_focused_c)
+    end
+    helpers.client.sync(c, old_focused_c)
     for idx, c in ipairs(tabobj.clients) do
         if idx ~= new_idx then
             helpers.client.turn_off(c)
-        else
-            helpers.client.turn_on(c)
-            c:raise()
-            if old_focused_c and old_focused_c.valid then
-                c:swap(old_focused_c)
-            end
-            helpers.client.sync(c, old_focused_c)
         end
     end
     awesome.emit_signal("bling::tabbed::changed_focus", tabobj)
