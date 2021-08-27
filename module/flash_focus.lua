@@ -8,14 +8,16 @@ local flashfocus = function(c)
     if c then
         c.opacity = op
         local q = op
-        local g = gears.timer {
+        local g = gears.timer({
             timeout = stp,
             call_now = false,
-            autostart = true
-        }
+            autostart = true,
+        })
 
         g:connect_signal("timeout", function()
-            if not c.valid then return end
+            if not c.valid then
+                return
+            end
             if q >= 1 then
                 c.opacity = 1
                 g:stop()
@@ -27,10 +29,16 @@ local flashfocus = function(c)
     end
 
     -- Bring the focused client to the top
-    if c then c:raise() end
+    if c then
+        c:raise()
+    end
 end
 
-local enable = function() client.connect_signal("focus", flashfocus) end
-local disable = function() client.disconnect_signal("focus", flashfocus) end
+local enable = function()
+    client.connect_signal("focus", flashfocus)
+end
+local disable = function()
+    client.disconnect_signal("focus", flashfocus)
+end
 
-return {enable = enable, disable = disable, flashfocus = flashfocus}
+return { enable = enable, disable = disable, flashfocus = flashfocus }

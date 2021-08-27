@@ -25,9 +25,9 @@ function mylayout.arrange(p)
     end
 
     local xoffset = area.width * 0.1 / (client_count - 1)
-    local yoffset = area.height  * 0.1 / (client_count - 1)
+    local yoffset = area.height * 0.1 / (client_count - 1)
 
-    for idx=1,client_count do
+    for idx = 1, client_count do
         local c = p.clients[idx]
         local g = {
             x = area.x + (idx - 1) * xoffset,
@@ -39,7 +39,9 @@ function mylayout.arrange(p)
     end
 end
 
-local icon_raw = gears.filesystem.get_configuration_dir() .. tostring(...):match("^.*bling"):gsub("%.", "/") .. "/icons/layouts/deck.png"
+local icon_raw = gears.filesystem.get_configuration_dir()
+    .. tostring(...):match("^.*bling"):gsub("%.", "/")
+    .. "/icons/layouts/deck.png"
 
 local function get_icon()
     if icon_raw ~= nil then

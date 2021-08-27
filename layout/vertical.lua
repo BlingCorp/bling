@@ -18,44 +18,48 @@ function mylayout.arrange(p)
     local master_area_width = area.width * mwfact
     local slave_area_width = area.width - master_area_width
 
-    -- Special case: no slaves 
-    if nslaves == 0 then 
+    -- Special case: no slaves
+    if nslaves == 0 then
         master_area_width = area.width
         slave_area_width = 0
-    end 
+    end
 
-    -- Special case: no masters 
-    if nmaster == 0 then 
+    -- Special case: no masters
+    if nmaster == 0 then
         master_area_width = 0
         slave_area_width = area.width
-    end 
+    end
 
     -- iterate through masters
-    for idx=1,nmaster do
+    for idx = 1, nmaster do
         local c = p.clients[idx]
         local g = {
             x = area.x,
-            y = area.y + (idx-1)*(area.height/nmaster),
+            y = area.y + (idx - 1) * (area.height / nmaster),
             width = master_area_width,
-            height = area.height/nmaster,
+            height = area.height / nmaster,
         }
         p.geometries[c] = g
     end
 
     -- itearte through slaves
-    for idx=1,nslaves do
-        local c = p.clients[idx+nmaster]
+    for idx = 1, nslaves do
+        local c = p.clients[idx + nmaster]
         local g = {
-            x = area.x + master_area_width + (idx-1)*(slave_area_width/nslaves),
+            x = area.x
+                + master_area_width
+                + (idx - 1) * (slave_area_width / nslaves),
             y = area.y,
-            width = slave_area_width/nslaves,
+            width = slave_area_width / nslaves,
             height = area.height,
         }
         p.geometries[c] = g
     end
 end
 
-local icon_raw = gears.filesystem.get_configuration_dir() .. tostring(...):match("^.*bling"):gsub("%.", "/") .. "/icons/layouts/vertical.png"
+local icon_raw = gears.filesystem.get_configuration_dir()
+    .. tostring(...):match("^.*bling"):gsub("%.", "/")
+    .. "/icons/layouts/vertical.png"
 
 local function get_icon()
     if icon_raw ~= nil then

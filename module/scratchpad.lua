@@ -3,7 +3,9 @@ local gears = require("gears")
 local naughty = require("naughty")
 
 local ruled
-if awesome.version ~= "v4.3" then ruled = require("ruled") end
+if awesome.version ~= "v4.3" then
+    ruled = require("ruled")
+end
 
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
@@ -16,12 +18,15 @@ local Scratchpad = { mt = {} }
 function Scratchpad:new(args)
     args = args or {}
     if args.awestore then
-        naughty.notify({title = "Bling Error", text = "Awestore is no longer supported! Please take a look at the scratchpad documentation and use rubato for animations instead."})
+        naughty.notify({
+            title = "Bling Error",
+            text = "Awestore is no longer supported! Please take a look at the scratchpad documentation and use rubato for animations instead.",
+        })
     end
 
     args.rubato = args.rubato or {}
     args.in_anim = false
-    local ret = gears.object {}
+    local ret = gears.object({})
     gears.table.crush(ret, Scratchpad)
     gears.table.crush(ret, args)
     return ret
@@ -30,13 +35,17 @@ end
 --- Find all clients that satisfy the the rule
 --
 -- @return A list of all clients that satisfy the rule
-function Scratchpad:find() return helpers.client.find(self.rule) end
+function Scratchpad:find()
+    return helpers.client.find(self.rule)
+end
 
 --- Applies the objects scratchpad properties to a given client
 --
 -- @param c A client to which to apply the properties
 function Scratchpad:apply(c)
-    if not c or not c.valid then return end
+    if not c or not c.valid then
+        return
+    end
     c.floating = self.floating
     c.sticky = self.sticky
     c.fullscreen = false
@@ -45,7 +54,7 @@ function Scratchpad:apply(c)
         x = self.geometry.x + awful.screen.focused().geometry.x,
         y = self.geometry.y + awful.screen.focused().geometry.y,
         width = self.geometry.width,
-        height = self.geometry.height
+        height = self.geometry.height,
     })
     if self.autoclose then
         c:connect_signal("unfocus", function(c1)
@@ -67,19 +76,27 @@ function Scratchpad:turn_on()
         if axis == "x" and anim.pos == self.geometry.x then
             anim.pos = anim:initial()
         else
-            if anim.pos == self.geometry.y then anim.pos = anim:initial() end
+            if anim.pos == self.geometry.y then
+                anim.pos = anim:initial()
+            end
         end
 
         anim:subscribe(function(pos)
             if c and c.valid then
-                if axis == "x" then c.x = pos
-                else c.y = pos end
+                if axis == "x" then
+                    c.x = pos
+                else
+                    c.y = pos
+                end
             end
             self.in_anim = true
         end)
 
-        if axis == "x" then anim:set(self.geometry.x)
-        else anim:set(self.geometry.y) end
+        if axis == "x" then
+            anim:set(self.geometry.x)
+        else
+            anim:set(self.geometry.y)
+        end
 
         anim.ended:subscribe(function()
             self.in_anim = false
@@ -100,12 +117,18 @@ function Scratchpad:turn_on()
     end
     if c and not self.in_anim then
         -- if a client was found, turn it on
-        if self.reapply then self:apply(c) end
+        if self.reapply then
+            self:apply(c)
+        end
         -- c.sticky was set to false in turn_off so it has to be reapplied anyway
         c.sticky = self.sticky
 
-        if anim_x then animate(c, anim_x, "x") end
-        if anim_y then animate(c, anim_y, "y") end
+        if anim_x then
+            animate(c, anim_x, "x")
+        end
+        if anim_y then
+            animate(c, anim_y, "y")
+        end
 
         helpers.client.turn_on(c)
         self:emit_signal("turn_on", c)
@@ -117,49 +140,64 @@ function Scratchpad:turn_on()
         --  apply the properties only once (until the next closing)
         local pid = awful.spawn.with_shell(self.command)
         if awesome.version ~= "v4.3" then
-            ruled.client.append_rule
-            {
+            ruled.client.append_rule({
                 id = "scratchpad",
                 rule = self.rule,
-                properties =
-                {
+                properties = {
                     -- If a scratchpad is opened it should spawn at the current tag
                     -- the same way it will behave if the client was already open
                     tag = awful.screen.focused().selected_tag,
                     switch_to_tags = false,
                     -- Hide the client until the gemoetry rules are applied
                     hidden = true,
-                    minimized = true
+                    minimized = true,
                 },
                 callback = function(c)
                     -- For a reason I can't quite get the gemotery rules will fail to apply unless we use this timer
-                    gears.timer{timeout = 0.15, autostart = true, single_shot = true, callback = function()
-                        self:apply(c)
-                        c.hidden = false
-                        c.minimized = false
-                        -- Some clients fail to gain focus
-                        c:activate{}
+                    gears.timer({
+                        timeout = 0.15,
+                        autostart = true,
+                        single_shot = true,
+                        callback = function()
+                            self:apply(c)
+                            c.hidden = false
+                            c.minimized = false
+                            -- Some clients fail to gain focus
+                            c:activate({})
 
-                        if anim_x then animate(c, anim_x, "x") end
-                        if anim_y then animate(c, anim_y, "y") end
+                            if anim_x then
+                                animate(c, anim_x, "x")
+                            end
+                            if anim_y then
+                                animate(c, anim_y, "y")
+                            end
 
-                        self:emit_signal("inital_apply", c)
+                            self:emit_signal("inital_apply", c)
 
-                        -- Discord spawns 2 windows, so keep the rule until the 2nd window shows
-                        if c.name ~= "Discord Updater" then ruled.client.remove_rule("scratchpad") end
-                        -- In a case Discord is killed before the second window spawns
-                        c:connect_signal("request::unmanage", function() ruled.client.remove_rule("scratchpad") end)
-                    end}
-                end
-            }
+                            -- Discord spawns 2 windows, so keep the rule until the 2nd window shows
+                            if c.name ~= "Discord Updater" then
+                                ruled.client.remove_rule("scratchpad")
+                            end
+                            -- In a case Discord is killed before the second window spawns
+                            c:connect_signal("request::unmanage", function()
+                                ruled.client.remove_rule("scratchpad")
+                            end)
+                        end,
+                    })
+                end,
+            })
         else
             local function inital_apply(c1)
                 if helpers.client.is_child_of(c1, pid) then
                     self:apply(c1)
-                    if anim_x then animate(c1, anim_x, "x") end
-                    if anim_y then animate(c1, anim_y, "y") end
+                    if anim_x then
+                        animate(c1, anim_x, "x")
+                    end
+                    if anim_y then
+                        animate(c1, anim_y, "y")
+                    end
                     self:emit_signal("inital_apply", c1)
-                client.disconnect_signal("manage", inital_apply)
+                    client.disconnect_signal("manage", inital_apply)
                 end
             end
             client.connect_signal("manage", inital_apply)
@@ -177,13 +215,19 @@ function Scratchpad:turn_off()
             -- Can't animate non floating clients
             c.floating = true
 
-            if axis == "x" then anim.pos = c.x
-            else anim.pos = c.y end
+            if axis == "x" then
+                anim.pos = c.x
+            else
+                anim.pos = c.y
+            end
 
             anim:subscribe(function(pos)
                 if c and c.valid then
-                    if axis == "x" then c.x = pos
-                    else c.y = pos end
+                    if axis == "x" then
+                        c.x = pos
+                    else
+                        c.y = pos
+                    end
                 end
                 self.in_anim = true
 
@@ -195,15 +239,23 @@ function Scratchpad:turn_off()
                 -- Switch to tag 2
                 -- The client will remain on tag 1
                 -- The client will be removed from tag 2
-                if c.screen.selected_tag ~= current_tag_on_toggled_scratchpad then
+                if
+                    c.screen.selected_tag ~= current_tag_on_toggled_scratchpad
+                then
                     self.in_anim = false
                     anim:abort()
                     anim:reset()
                     anim:unsubscribe()
                     anim.ended:unsubscribe()
-                    if axis == "x" then anim.pos = self.geometry.x
-                    else anim.pos = self.geometry.y end
-                    helpers.client.turn_off(c, current_tag_on_toggled_scratchpad)
+                    if axis == "x" then
+                        anim.pos = self.geometry.x
+                    else
+                        anim.pos = self.geometry.y
+                    end
+                    helpers.client.turn_off(
+                        c,
+                        current_tag_on_toggled_scratchpad
+                    )
                     self:apply(c)
                     self:emit_signal("turn_off", c)
                 end
@@ -233,8 +285,12 @@ function Scratchpad:turn_off()
         local anim_x = self.rubato.x
         local anim_y = self.rubato.y
 
-        if anim_x then animate(anim_x, self.geometry.x, "x") end
-        if anim_y then animate(anim_y, self.geometry.y, "y") end
+        if anim_x then
+            animate(anim_x, self.geometry.x, "x")
+        end
+        if anim_y then
+            animate(anim_y, self.geometry.y, "y")
+        end
 
         if not anim_x and not anim_y then
             helpers.client.turn_off(c)
@@ -260,8 +316,8 @@ function Scratchpad:toggle()
             end
         end
     else
-        is_turn_off = client.focus and
-                          awful.rules.match(client.focus, self.rule)
+        is_turn_off = client.focus
+            and awful.rules.match(client.focus, self.rule)
     end
 
     if is_turn_off then

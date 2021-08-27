@@ -39,10 +39,12 @@ local function position_cb()
         local position = player:get_position() / 1000000
         local length = (player.metadata.value["mpris:length"] or 0) / 1000000
         if position ~= last_position or length ~= last_length then
-            awesome.emit_signal("bling::playerctl::position",
-                                position,
-                                length,
-                                player.player_name)
+            awesome.emit_signal(
+                "bling::playerctl::position",
+                position,
+                length,
+                player.player_name
+            )
             last_position = position
             last_length = length
         end
@@ -50,7 +52,8 @@ local function position_cb()
 end
 
 local function get_album_art(url)
-    return awful.util.shell .. [[ -c '
+    return awful.util.shell
+        .. [[ -c '
 
 tmp_dir="$XDG_CACHE_HOME/awesome/"
 
@@ -64,7 +67,9 @@ if [ ! -d "$tmp_dir" ]; then
     mkdir -p $tmp_dir
 fi
 
-curl -s ']] .. url .. [[' --output $tmp_cover_path
+curl -s ']]
+        .. url
+        .. [[' --output $tmp_cover_path
 
 echo "$tmp_cover_path"
 ']]
@@ -96,10 +101,15 @@ local function metadata_cb(player, metadata)
     if player == manager.players[1] then
         -- Callback can be called even though values we care about haven't
         -- changed, so check to see if they have
-        if player ~= last_player or title ~= last_title or
-            artist ~= last_artist or artUrl ~= last_artUrl
+        if
+            player ~= last_player
+            or title ~= last_title
+            or artist ~= last_artist
+            or artUrl ~= last_artUrl
         then
-            if (title == "" and artist == "" and artUrl == "") then return end
+            if title == "" and artist == "" and artUrl == "" then
+                return
+            end
 
             if metadata_timer ~= nil then
                 if metadata_timer.started then
@@ -107,7 +117,7 @@ local function metadata_cb(player, metadata)
                 end
             end
 
-            metadata_timer = gears.timer {
+            metadata_timer = gears.timer({
                 timeout = 0.3,
                 autostart = true,
                 single_shot = true,
@@ -122,7 +132,7 @@ local function metadata_cb(player, metadata)
                                     line,
                                     player.player_name
                                 )
-                            end
+                            end,
                         })
                     else
                         awesome.emit_signal(
@@ -133,8 +143,8 @@ local function metadata_cb(player, metadata)
                             player.player_name
                         )
                     end
-                end
-            }
+                end,
+            })
 
             -- Re-sync with position timer when track changes
             position_timer:again()
@@ -155,9 +165,17 @@ local function playback_status_cb(player, status)
 
     if player == manager.players[1] then
         if status == "PLAYING" then
-            awesome.emit_signal("bling::playerctl::status", true, player.player_name)
+            awesome.emit_signal(
+                "bling::playerctl::status",
+                true,
+                player.player_name
+            )
         else
-            awesome.emit_signal("bling::playerctl::status", false, player.player_name)
+            awesome.emit_signal(
+                "bling::playerctl::status",
+                false,
+                player.player_name
+            )
         end
     end
 end
@@ -243,10 +261,10 @@ local function start_manager()
     end
 
     -- Timer to update track position at specified interval
-    position_timer = gears.timer {
+    position_timer = gears.timer({
         timeout = interval,
-        callback = position_cb
-    }
+        callback = position_cb,
+    })
 
     -- Manage existing players on startup
     for _, name in ipairs(manager.player_names) do
@@ -295,9 +313,10 @@ local function playerctl_enable(args)
     -- Grab settings from beautiful variables if not set explicitly
     args.ignore = args.ignore or beautiful.playerctl_ignore
     args.player = args.player or beautiful.playerctl_player
-    args.update_on_activity = args.update_on_activity or
-                              beautiful.playerctl_update_on_activity
-    args.interval = args.interval or beautiful.playerctl_position_update_interval
+    args.update_on_activity = args.update_on_activity
+        or beautiful.playerctl_update_on_activity
+    args.interval = args.interval
+        or beautiful.playerctl_position_update_interval
     parse_args(args)
 
     -- Grab playerctl library
@@ -328,4 +347,4 @@ local function playerctl_disable()
     last_artUrl = ""
 end
 
-return {enable = playerctl_enable, disable = playerctl_disable}
+return { enable = playerctl_enable, disable = playerctl_disable }

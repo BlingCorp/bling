@@ -24,7 +24,7 @@ local layout = {
     vertical = vertical.layout,
     horizontal = horizontal.layout,
     equalarea = equalarea.layout,
-    deck = deck.layout
+    deck = deck.layout,
 }
 
 return layout
