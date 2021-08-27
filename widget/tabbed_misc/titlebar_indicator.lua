@@ -42,7 +42,7 @@ return function(c, opts)
     awesome.connect_signal("bling::tabbed::client_removed", function(_, removed_c)
         -- Remove from list
         for idx, icon in ipairs(tabbed_icons.children) do
-            if icon:get_children_by_id("icon_role")[1].client == removed_c then
+            if icon._client == removed_c then
                 tabbed_icons:remove(idx)
             end
         end
@@ -85,6 +85,8 @@ return function(c, opts)
                     valign = "center",
                     widget = wibox.container.place,
                 })
+
+                widget._client = client
 
                 -- No creation call back since this would be called on creation & every time the widget updated.
                 if opts.widget_template.update_callback then
