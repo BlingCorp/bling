@@ -200,7 +200,8 @@ end
 tabbed.switch_to = function(tabobj, new_idx)
     local old_focused_c = tabobj.clients[tabobj.focused_idx]
     tabobj.focused_idx = new_idx
-    helpers.client.turn_on(tabobj.clients[new_idx])
+    local c = tabobj.clients[new_idx]
+    helpers.client.turn_on(c)
     c:raise()
     if old_focused_c and old_focused_c.valid then
         c:swap(old_focused_c)
