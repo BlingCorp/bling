@@ -16,9 +16,12 @@ To use the task list indicator:
 
 ```lua
 bling.widget.tabbed_misc.titlebar_indicator(client, {
+    layout = wibox.layout.fixed.vertical,
     layout_spacing = dpi(5), -- Set spacing in between items
     icon_size = dpi(24),
     icon_margin = 0,
+    fg_color = "#cccccc", -- Normal color for text
+    fg_color_focus = "#ffffff", -- Color for focused text
     bg_color_focus = "#282828", -- Color for the focused items
     bg_color = "#1d2021", -- Color for normal / unfocused items
     icon_shape = gears.shape.circle -- Set icon shape,
@@ -35,7 +38,7 @@ bling.widget.tabbed_misc.titlebar_indicator(client, {
         },
         widget = wibox.container.margin,
         margins = 2,
-        id = 'click_role',
+        id = 'bg_role',
         update_callback = function(self, client, group)
             if client == group.clients[group.focused_idx] then
                 self.margins = 5
