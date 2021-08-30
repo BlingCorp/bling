@@ -46,8 +46,8 @@ local function tabobj_support(self, c, index, clients)
 						client = c
 					},
 					widget = wibox.container.constraint,
-					width = 24,
-					height = 24
+					width = dpi(24),
+					height = dpi(24)
 				})
 			end
 		end
