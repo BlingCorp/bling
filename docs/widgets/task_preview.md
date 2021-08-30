@@ -41,7 +41,7 @@ bling.widget.task_preview.enable {
         }) 
     end,
     -- Your widget will automatically conform to the given size due to a constraint container.
-    widget_structure = {
+    widget_template = {
         {
             {
                 {
