@@ -171,6 +171,7 @@ local exit = function()
     for k, v in pairs(all_entries) do
         grid:add(create_app(v.name, v.cmdline, v.icon, k))
     end
+    awesome.emit_signal("bling::app_launcher::turn_off")
 end
 
 local prompt = function()
@@ -283,5 +284,8 @@ awesome.connect_signal("bling::app_launcher::visibility", function(v)
     final_widget.visible = v
     if v then
         prompt()
+        awesome.emit_signal("bling::app_launcher::turn_on")
+    else
+        awesome.emit_signal("bling::app_launcher::turn_off")
     end
 end)
