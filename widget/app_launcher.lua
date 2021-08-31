@@ -18,6 +18,7 @@ local forced_num_cols = 5
 local prompt_text = "<b>Search</b>: "
 local prompt_cursor_bg = beautiful.xcolor0
 local prompt_start_text = ""
+local search_commands = true
 
 -- =============================================================================
 --  Locals
@@ -128,6 +129,9 @@ local search = function(command)
     for k, v in pairs(all_entries) do
         command = command:gsub( "%W", "" )
         if string.find(v.name, case_insensitive_pattern(command)) ~= nil then
+            grid:add(create_app(v.name, v.cmdline, v.icon, k))
+            table.insert(matched_entries, #matched_entries + 1, { name = v.name, cmdline = v.cmdline, icon = v.icon })
+        elseif search_commands and string.find(v.cmdline, case_insensitive_pattern(command)) ~= nil then
             grid:add(create_app(v.name, v.cmdline, v.icon, k))
             table.insert(matched_entries, #matched_entries + 1, { name = v.name, cmdline = v.cmdline, icon = v.icon })
         end
