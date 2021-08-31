@@ -3,6 +3,7 @@ local gears = require("gears")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local menu_gen   = require("menubar.menu_gen")
+local dpi = beautiful.xresources.apply_dpi
 
 -- =============================================================================
 --  Customization
