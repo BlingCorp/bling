@@ -19,6 +19,8 @@ local prompt_text = "<b>Search</b>: "
 local prompt_cursor_bg = beautiful.xcolor0
 local prompt_start_text = ""
 local search_commands = true
+local skip_names = {}
+local skip_commands = {}
 
 -- =============================================================================
 --  Locals
@@ -88,11 +90,22 @@ local create_app = function(name, cmdline, icon, index)
     return button
 end
 
+local has_value = function(tab, val)
+    for index, value in pairs(tab) do
+        if val:find(value) then
+            return true
+        end
+    end
+    return false
+end
+
 menu_gen.generate(function(entries)
     table.sort(entries, function(a, b) return a.name:lower() < b.name:lower() end)
     for k, v in pairs(entries) do
-        table.insert(all_entries, k, { name = v.name, cmdline = v.cmdline, icon = v.icon })
-        grid:add(create_app(v.name, v.cmdline, v.icon, k))
+        if not has_value(skip_names, v.name) and not has_value(skip_commands, v.cmdline) then
+            table.insert(all_entries, #all_entries + 1, { name = v.name, cmdline = v.cmdline, icon = v.icon })
+            grid:add(create_app(v.name, v.cmdline, v.icon, k))
+        end
     end
     matched_entries = all_entries
     apps_on_last_page = #all_entries % apps_per_page
