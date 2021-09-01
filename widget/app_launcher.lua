@@ -21,6 +21,7 @@ local prompt_start_text = ""
 local search_commands = true
 local skip_names = {}
 local skip_commands = {}
+local skip_empty_icons = false
 
 -- =============================================================================
 --  Locals
@@ -103,8 +104,10 @@ menu_gen.generate(function(entries)
     table.sort(entries, function(a, b) return a.name:lower() < b.name:lower() end)
     for k, v in pairs(entries) do
         if not has_value(skip_names, v.name) and not has_value(skip_commands, v.cmdline) then
-            table.insert(all_entries, #all_entries + 1, { name = v.name, cmdline = v.cmdline, icon = v.icon })
-            grid:add(create_app(v.name, v.cmdline, v.icon, k))
+            if v.icon ~= nil or skip_empty_icons == false then
+                table.insert(all_entries, #all_entries + 1, { name = v.name, cmdline = v.cmdline, icon = v.icon })
+                grid:add(create_app(v.name, v.cmdline, v.icon, k))
+            end
         end
     end
     matched_entries = all_entries
