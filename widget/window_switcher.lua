@@ -52,7 +52,7 @@ local window_switcher_hide = function(window_switcher_box)
     window_switcher_box.visible = false
 end
 
-local function draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, mouse_keys)
+local function draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, thumbnail_scale, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, mouse_keys)
     local tasklist_widget = type == "thumbnail"
     and
         awful.widget.tasklist {
@@ -81,8 +81,8 @@ local function draw_widget(type, background, border_width, border_radius, border
                 {
                     {
                         {
-                            horizontal_fit_policy = "fit",
-                            vertical_fit_policy = "fit",
+                            horizontal_fit_policy = thumbnail_scale == true and "fit" or "auto",
+                            vertical_fit_policy = thumbnail_scale == true and "fit" or "auto",
                             id = "thumbnail",
                             widget = wibox.widget.imagebox
                         },
@@ -184,6 +184,7 @@ local enable = function(opts)
     local client_height = beautiful.window_switcher_client_height or dpi(type == "thumbnail" and 250 or 50)
     local client_margins = beautiful.window_switcher_client_margins or dpi(10)
     local thumbnail_margins = beautiful.window_switcher_thumbnail_margins or dpi(5)
+    local thumbnail_scale = beautiful.thumbnail_scale or false
     local name_margins = beautiful.window_switcher_name_margins or (type == "thumbnail"
         and { left = dpi(5), right = dpi(0), top = dpi(0), bottom = dpi(0) }
         or { left = dpi(5), right = dpi(14), top = dpi(14), bottom = dpi(14) } )
@@ -342,7 +343,7 @@ local enable = function(opts)
             end
         end)
 
-        window_switcher_box.widget = draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, mouse_keys)
+        window_switcher_box.widget = draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, thumbnail_scale, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, mouse_keys)
         window_switcher_box.visible = true
     end)
 end
