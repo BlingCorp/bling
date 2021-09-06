@@ -52,7 +52,12 @@ local window_switcher_hide = function(window_switcher_box)
     window_switcher_box.visible = false
 end
 
-local function draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, thumbnail_scale, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, mouse_keys)
+local function draw_widget(type, background, border_width, border_radius, border_color,
+    clients_spacing, client_icon_horizontal_spacing, client_width, client_height,
+    client_margins, thumbnail_margins, thumbnail_scale, name_margins, name_valign,
+    name_forced_width, name_font, name_normal_color, name_focus_color,
+    icon_valign, icon_width, mouse_keys)
+
     local tasklist_widget = type == "thumbnail"
     and
         awful.widget.tasklist {
@@ -343,7 +348,11 @@ local enable = function(opts)
             end
         end)
 
-        window_switcher_box.widget = draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, thumbnail_scale, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, mouse_keys)
+        window_switcher_box.widget = draw_widget(type, background, border_width,
+            border_radius, border_color, clients_spacing, client_icon_horizontal_spacing,
+            client_width, client_height, client_margins, thumbnail_margins, thumbnail_scale,
+            name_margins, name_valign, name_forced_width, name_font, name_normal_color,
+            name_focus_color, icon_valign, icon_width, mouse_keys)
         window_switcher_box.visible = true
     end)
 end
