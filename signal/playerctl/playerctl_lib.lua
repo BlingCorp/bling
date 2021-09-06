@@ -10,6 +10,7 @@
 --      album_path (string)
 --      player_name (string)
 --      album (string)
+--      new (bool)
 -- bling::playerctl::position
 --      interval_sec (number)
 --      length_sec (number)
@@ -72,7 +73,7 @@ echo "$tmp_cover_path"
 ']]
 end
 
-local function emit_title_artist_album_signal(title, artist, artUrl, player_name, album)
+local function emit_title_artist_album_signal(title, artist, artUrl, player_name, album, new)
     title = title:gsub('%&', '')
     artist = artist:gsub('%&', '')
     album = album:gsub('%&', '')
@@ -91,7 +92,8 @@ local function emit_title_artist_album_signal(title, artist, artUrl, player_name
                     artist,
                     line,
                     player_name,
-                    album
+                    album,
+                    new
                 )
             end
         })
@@ -102,7 +104,8 @@ local function emit_title_artist_album_signal(title, artist, artUrl, player_name
             artist,
             "",
             player_name,
-            album
+            album,
+            new
         )
     end
 end
@@ -143,7 +146,7 @@ local function metadata_cb(player, metadata)
                 timeout = debounce_delay,
                 autostart = true,
                 single_shot = true,
-                callback = function() emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album) end
+                callback = function() emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album, false) end
             }
 
             -- Re-sync with position timer when track changes
@@ -179,7 +182,7 @@ local function get_current_player_info(player)
     local album = Playerctl.Player.get_album(player)
 
     playback_status_cb(player, player.playback_status)
-    emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album)
+    emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album, true)
 end
 
 -- Determine if player should be managed
