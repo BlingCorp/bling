@@ -53,72 +53,71 @@ local window_switcher_hide = function(window_switcher_box)
 end
 
 local function draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, mouse_keys)
-    local tasklist_widget = function()
-        if type == "thumbnail" then
-            return awful.widget.tasklist {
-                screen = awful.screen.focused(),
-                filter = awful.widget.tasklist.filter.currenttags,
-                buttons = mouse_keys,
-                style = { font = name_font, fg_normal = name_normal_color, fg_focus = name_focus_color },
-                layout = { layout  = wibox.layout.flex.horizontal, spacing = clients_spacing },
-                widget_template =
+    local tasklist_widget = type == "thumbnail"
+    and
+        awful.widget.tasklist {
+            screen = awful.screen.focused(),
+            filter = awful.widget.tasklist.filter.currenttags,
+            buttons = mouse_keys,
+            style = { font = name_font, fg_normal = name_normal_color, fg_focus = name_focus_color },
+            layout = { layout  = wibox.layout.flex.horizontal, spacing = clients_spacing },
+            widget_template =
+            {
+                widget = wibox.container.background,
+                id = "bg_role",
+                forced_width = client_width,
+                forced_height = client_height,
+                create_callback = function(self, c, _, __)
+                    local content = gears.surface(c.content)
+                    local cr = cairo.Context(content)
+                    local x, y, w, h = cr:clip_extents()
+                    local img = cairo.ImageSurface.create(cairo.Format.ARGB32, w - x, h - y)
+                    cr = cairo.Context(img)
+                    cr:set_source_surface(content, 0, 0)
+                    cr.operator = cairo.Operator.SOURCE
+                    cr:paint()
+                    self:get_children_by_id("thumbnail")[1].image = gears.surface.load(img)
+                end,
                 {
-                    widget = wibox.container.background,
-                    id = "bg_role",
-                    forced_width = client_width,
-                    forced_height = client_height,
-                    create_callback = function(self, c, _, __)
-                        local content = gears.surface(c.content)
-                        local cr = cairo.Context(content)
-                        local x, y, w, h = cr:clip_extents()
-                        local img = cairo.ImageSurface.create(cairo.Format.ARGB32, w - x, h - y)
-                        cr = cairo.Context(img)
-                        cr:set_source_surface(content, 0, 0)
-                        cr.operator = cairo.Operator.SOURCE
-                        cr:paint()
-                        self:get_children_by_id("thumbnail")[1].image = gears.surface.load(img)
-                    end,
+                    {
+                        {
+                            horizontal_fit_policy = "fit",
+                            vertical_fit_policy = "fit",
+                            id = "thumbnail",
+                            widget = wibox.widget.imagebox
+                        },
+                        margins = thumbnail_margins,
+                        widget = wibox.container.margin
+                    },
                     {
                         {
                             {
-                                horizontal_fit_policy = "fit",
-                                vertical_fit_policy = "fit",
-                                id = "thumbnail",
+                                id     = "icon_role",
                                 widget = wibox.widget.imagebox
                             },
-                            margins = thumbnail_margins,
-                            widget = wibox.container.margin
+                            forced_width = icon_width,
+                            valign = icon_valign,
+                            widget = wibox.container.place
                         },
                         {
                             {
-                                {
-                                    id     = "icon_role",
-                                    widget = wibox.widget.imagebox
-                                },
-                                forced_width = icon_width,
-                                valign = icon_valign,
-                                widget = wibox.container.place
+                                forced_width = name_forced_width,
+                                valign  = name_valign,
+                                id = "text_role",
+                                widget = wibox.widget.textbox
                             },
-                            {
-                                {
-                                    forced_width = name_forced_width,
-                                    valign  = name_valign,
-                                    id = "text_role",
-                                    widget = wibox.widget.textbox
-                                },
-                                margins = name_margins,
-                                widget = wibox.container.margin
-                            },
-                            spacing = client_icon_horizontal_spacing,
-                            layout = wibox.layout.fixed.horizontal
+                            margins = name_margins,
+                            widget = wibox.container.margin
                         },
-                        layout = wibox.layout.flex.vertical
-                    }
+                        spacing = client_icon_horizontal_spacing,
+                        layout = wibox.layout.fixed.horizontal
+                    },
+                    layout = wibox.layout.flex.vertical
                 }
             }
-        end
-
-        return awful.widget.tasklist {
+        }
+    or
+        awful.widget.tasklist {
             screen = awful.screen.focused(),
             filter = awful.widget.tasklist.filter.currenttags,
             buttons = mouse_keys,
@@ -155,12 +154,11 @@ local function draw_widget(type, background, border_width, border_radius, border
                 },
             },
         }
-    end
 
     return wibox.widget
     {
         {
-            tasklist_widget(),
+            tasklist_widget,
             margins = client_margins,
             widget = wibox.container.margin
         },
