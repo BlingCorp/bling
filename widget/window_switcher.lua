@@ -331,8 +331,8 @@ local enable = function(opts)
         [vim_next_key] = function() awful.client.focus.byidx(-1) end,
     }
 
-    awesome.connect_signal("bling::window_switcher::visibility", function(s)
         local number_of_clients = get_num_clients(s)
+    awesome.connect_signal("bling::window_switcher::turn_on", function()
         if number_of_clients == 0 then
             return
         end
