@@ -53,18 +53,6 @@ local window_switcher_hide = function(window_switcher_box)
 end
 
 local function draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, mouse_keys)
-    local update_thumbnail = function(self, c)
-        local content = gears.surface(c.content)
-        local cr = cairo.Context(content)
-        local x, y, w, h = cr:clip_extents()
-        local img = cairo.ImageSurface.create(cairo.Format.ARGB32, w - x, h - y)
-        cr = cairo.Context(img)
-        cr:set_source_surface(content, 0, 0)
-        cr.operator = cairo.Operator.SOURCE
-        cr:paint()
-        self:get_children_by_id("thumbnail")[1].image = gears.surface.load(img)
-    end
-
     local tasklist_widget = function()
         if type == "thumbnail" then
             return awful.widget.tasklist {
@@ -80,10 +68,15 @@ local function draw_widget(type, background, border_width, border_radius, border
                     forced_width = client_width,
                     forced_height = client_height,
                     create_callback = function(self, c, _, __)
-                        update_thumbnail(self, c)
-                    end,
-                    update_callback = function(self, c, _, __)
-                        update_thumbnail(self, c)
+                        local content = gears.surface(c.content)
+                        local cr = cairo.Context(content)
+                        local x, y, w, h = cr:clip_extents()
+                        local img = cairo.ImageSurface.create(cairo.Format.ARGB32, w - x, h - y)
+                        cr = cairo.Context(img)
+                        cr:set_source_surface(content, 0, 0)
+                        cr.operator = cairo.Operator.SOURCE
+                        cr:paint()
+                        self:get_children_by_id("thumbnail")[1].image = gears.surface.load(img)
                     end,
                     {
                         {
