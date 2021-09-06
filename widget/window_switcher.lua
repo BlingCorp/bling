@@ -11,18 +11,18 @@ local window_switcher_first_client -- The client that was focused when the windo
 local window_switcher_minimized_clients = {} -- The clients that were minimized when the window switcher was activated
 local window_switcher_grabber
 
-local get_num_clients = function(s)
+local get_num_clients = function()
     local minimized_clients_in_tag = 0
     local matcher = function (c)
-        return awful.rules.match(c, { minimized = true, skip_taskbar = false, hidden = false, first_tag = s.selected_tag })
+        return awful.rules.match(c, { minimized = true, skip_taskbar = false, hidden = false, first_tag = awful.screen.focused().selected_tag })
     end
     for c in awful.client.iterate(matcher) do
         minimized_clients_in_tag = minimized_clients_in_tag + 1
     end
-    return minimized_clients_in_tag + #s.clients
+    return minimized_clients_in_tag + #awful.screen.focused().clients
 end
 
-local window_switcher_hide = function()
+local window_switcher_hide = function(window_switcher_box)
     -- Add currently focused client to history
     if client.focus then
         local window_switcher_last_client = client.focus
@@ -49,10 +49,10 @@ local window_switcher_hide = function()
     awful.client.focus.history.enable_tracking()
     -- Stop and hide window_switcher
     awful.keygrabber.stop(window_switcher_grabber)
-    s.window_switcher_box.visible = false
+    window_switcher_box.visible = false
 end
 
-local function draw_widget(s, type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
+local function draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
     local set_font_icon = function(self, c)
         local i = font_icons[c.class] or font_icons["_"]
         self:get_children_by_id("text_icon")[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
@@ -107,7 +107,7 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
     local tasklist_widget = function()
         if type == "thumbnail" then
             return awful.widget.tasklist {
-                screen = s,
+                screen = awful.screen.focused(),
                 filter = awful.widget.tasklist.filter.currenttags,
                 buttons = mouse_keys,
                 style = { font = name_font, fg_normal = name_normal_color, fg_focus = name_focus_color },
@@ -164,7 +164,7 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
         end
 
         return awful.widget.tasklist {
-            screen = s,
+            screen = awful.screen.focused(),
             filter = awful.widget.tasklist.filter.currenttags,
             buttons = mouse_keys,
             style = { font = name_font, fg_normal = name_normal_color, fg_focus = name_focus_color },
@@ -203,39 +203,19 @@ local function draw_widget(s, type, background, border_width, border_radius, bor
         }
     end
 
-    s.window_switcher_box = awful.popup
-    ({
-        bg = "#00000000",
-        visible = false,
-        ontop = true,
-        placement = awful.placement.centered,
-        screen = s,
-        widget =
+    return wibox.widget
+    {
         {
-            {
-                tasklist_widget(),
-                margins = client_margins,
-                widget = wibox.container.margin
-            },
-            shape_border_width = border_width,
-            shape_border_color = border_color,
-            bg = background,
-            shape = helpers.shape.rrect(border_radius),
-            widget = wibox.container.background
-        }
-    })
-
-    s.window_switcher_box:connect_signal("property::width", function()
-        if s.window_switcher_box.visible and get_num_clients(s) == 0 then
-            window_switcher_hide()
-        end
-    end)
-
-    s.window_switcher_box:connect_signal("property::height", function()
-        if s.window_switcher_box.visible and get_num_clients(s) == 0 then
-            window_switcher_hide()
-        end
-    end)
+            tasklist_widget(),
+            margins = client_margins,
+            widget = wibox.container.margin
+        },
+        shape_border_width = border_width,
+        shape_border_color = border_color,
+        bg = background,
+        shape = helpers.shape.rrect(border_radius),
+        widget = wibox.container.background
+    }
 end
 
 local enable = function(opts)
@@ -284,6 +264,29 @@ local enable = function(opts)
     local scroll_previous_key = opts.scroll_previous_key or 4
     local scroll_next_key = opts.scroll_next_key or 5
 
+    local window_switcher_box = awful.popup
+    ({
+        bg = "#00000000",
+        visible = false,
+        ontop = true,
+        placement = awful.placement.centered,
+        screen = awful.screen.focused(),
+        widget = wibox.container.background, -- A dummy widget to make awful.popup not scream
+        widget =
+        {
+            {
+                draw_widget(),
+                margins = client_margins,
+                widget = wibox.container.margin
+            },
+            shape_border_width = border_width,
+            shape_border_color = border_color,
+            bg = background,
+            shape = helpers.shape.rrect(border_radius),
+            widget = wibox.container.background
+        }
+    })
+
     local mouse_keys = gears.table.join
     (
         awful.button
@@ -316,7 +319,7 @@ local enable = function(opts)
 
     local keyboard_keys =
     {
-        [hide_window_switcher_key] = window_switcher_hide,
+        [hide_window_switcher_key] = function() window_switcher_hide(window_switcher_box) end,
 
         [minimize_key] = function() if client.focus then client.focus.minimized = true end end,
         [unminimize_key] = function() if awful.client.restore() then client.focus = awful.client.restore() end end,
@@ -331,8 +334,20 @@ local enable = function(opts)
         [vim_next_key] = function() awful.client.focus.byidx(-1) end,
     }
 
-        local number_of_clients = get_num_clients(s)
+    window_switcher_box:connect_signal("property::width", function()
+        if window_switcher_box.visible and get_num_clients() == 0 then
+            window_switcher_hide(window_switcher_box)
+        end
+    end)
+
+    window_switcher_box:connect_signal("property::height", function()
+        if window_switcher_box.visible and get_num_clients() == 0 then
+            window_switcher_hide(window_switcher_box)
+        end
+    end)
+
     awesome.connect_signal("bling::window_switcher::turn_on", function()
+        local number_of_clients = get_num_clients()
         if number_of_clients == 0 then
             return
         end
@@ -350,7 +365,7 @@ local enable = function(opts)
         -- Unminimize them
         -- Lower them so that they are always below other
         -- originally unminimized windows
-        local clients = s.selected_tag:clients()
+        local clients = awful.screen.focused().selected_tag:clients()
         for _, c in pairs(clients) do
             if c.minimized then
                 table.insert(window_switcher_minimized_clients, c)
@@ -366,7 +381,7 @@ local enable = function(opts)
                 -- We try to match Super or Alt or Control since we do not know which keybind is
                 -- used to activate the window switcher (the keybind is set by the user in keys.lua)
                 if key:match("Super") or key:match("Alt") or key:match("Control") then
-                    window_switcher_hide()
+                    window_switcher_hide(window_switcher_box)
                 end
                 -- Do nothing
                 return
@@ -378,12 +393,8 @@ local enable = function(opts)
             end
         end)
 
-        gears.timer.delayed_call(function()
-            -- Finally make the window switcher wibox visible after
-            -- a small delay, to allow the popup size to update
-            draw_widget(s, type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
-            s.window_switcher_box.visible = true
-        end)
+        window_switcher_box.widget = draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
+        window_switcher_box.visible = true
     end)
 end
 
