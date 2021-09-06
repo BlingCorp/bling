@@ -4,7 +4,6 @@ local gears = require("gears")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local helpers = require(tostring(...):match(".*bling") .. ".helpers")
-
 local dpi = beautiful.xresources.apply_dpi
 
 local window_switcher_first_client -- The client that was focused when the window_switcher was activated
@@ -190,9 +189,7 @@ local enable = function(opts)
     local client_margins = beautiful.window_switcher_client_margins or dpi(10)
     local thumbnail_margins = beautiful.window_switcher_thumbnail_margins or dpi(5)
     local thumbnail_scale = beautiful.thumbnail_scale or false
-    local name_margins = beautiful.window_switcher_name_margins or (type == "thumbnail"
-        and { left = dpi(5), right = dpi(0), top = dpi(0), bottom = dpi(0) }
-        or { left = dpi(5), right = dpi(14), top = dpi(14), bottom = dpi(14) } )
+    local name_margins = beautiful.window_switcher_name_margins or dpi(10)
     local name_valign = beautiful.window_switcher_name_valign or "center"
     local name_forced_width = beautiful.window_switcher_name_forced_width or dpi(type == "thumbnail" and 200 or 550)
     local name_font = beautiful.window_switcher_name_font or beautiful.font
