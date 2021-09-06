@@ -52,17 +52,7 @@ local window_switcher_hide = function(window_switcher_box)
     window_switcher_box.visible = false
 end
 
-local function draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
-    local set_font_icon = function(self, c)
-        local i = font_icons[c.class] or font_icons["_"]
-        self:get_children_by_id("text_icon")[1].markup = "<span foreground='" .. i.color .. "'>" .. i.symbol .. "</span>"
-    end
-
-    local set_custom_icon = function(self, c)
-        local i = custom_icons[c.class] or custom_icons["_"]
-        self:get_children_by_id("custom_icon")[1].image = i.icon
-    end
-
+local function draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, mouse_keys)
     local update_thumbnail = function(self, c)
         local content = gears.surface(c.content)
         local cr = cairo.Context(content)
@@ -73,35 +63,6 @@ local function draw_widget(type, background, border_width, border_radius, border
         cr.operator = cairo.Operator.SOURCE
         cr:paint()
         self:get_children_by_id("thumbnail")[1].image = gears.surface.load(img)
-    end
-
-    local icon_widget = function()
-        if (font_icons) ~= nil then
-            return {
-                font = font_icons_font,
-                forced_width = icon_width,
-                valign = icon_valign,
-                id = "text_icon",
-                widget = wibox.widget.textbox
-            }
-        elseif (custom_icons) ~= nil then
-            return {
-                forced_width = icon_width,
-                valign = icon_valign,
-                id = "custom_icon",
-                widget = wibox.widget.imagebox
-            }
-        end
-
-        return {
-            {
-                id     = "icon_role",
-                widget = wibox.widget.imagebox
-            },
-            forced_width = icon_width,
-            valign = icon_valign,
-            widget = wibox.container.place
-        }
     end
 
     local tasklist_widget = function()
@@ -119,13 +80,6 @@ local function draw_widget(type, background, border_width, border_radius, border
                     forced_width = client_width,
                     forced_height = client_height,
                     create_callback = function(self, c, _, __)
-                        if (font_icons) ~= nil then
-                            set_font_icon(self, c)
-                            c:connect_signal("property::class", function() set_font_icon(self, c) end)
-                        elseif (custom_icons) ~= nil then
-                            set_custom_icon(self, c)
-                            c:connect_signal("property::class", function() set_custom_icon(self, c) end)
-                        end
                         update_thumbnail(self, c)
                     end,
                     update_callback = function(self, c, _, __)
@@ -143,7 +97,15 @@ local function draw_widget(type, background, border_width, border_radius, border
                             widget = wibox.container.margin
                         },
                         {
-                            icon_widget(),
+                            {
+                                {
+                                    id     = "icon_role",
+                                    widget = wibox.widget.imagebox
+                                },
+                                forced_width = icon_width,
+                                valign = icon_valign,
+                                widget = wibox.container.place
+                            },
                             {
                                 {
                                     forced_width = name_forced_width,
@@ -175,17 +137,16 @@ local function draw_widget(type, background, border_width, border_radius, border
                 id = "bg_role",
                 forced_width = client_width,
                 forced_height = client_height,
-                create_callback = function(self, c, _, __)
-                    if (font_icons) ~= nil then
-                        set_font_icon(self, c)
-                        c:connect_signal("property::class", function() set_font_icon(self, c) end)
-                    elseif (custom_icons) ~= nil then
-                        set_custom_icon(self, c)
-                        c:connect_signal("property::class", function() set_custom_icon(self, c) end)
-                    end
-                end,
                 {
-                    icon_widget(),
+                    {
+                        {
+                            id     = "icon_role",
+                            widget = wibox.widget.imagebox
+                        },
+                        forced_width = icon_width,
+                        valign = icon_valign,
+                        widget = wibox.container.place
+                    },
                     {
                         {
                             forced_width = name_forced_width,
@@ -242,9 +203,6 @@ local enable = function(opts)
     local name_focus_color = beautiful.window_switcher_name_focus_color or "#FF0000"
     local icon_valign = beautiful.window_switcher_icon_valign  or "center"
     local icon_width = beautiful.window_switcher_icon_width or dpi(40)
-    local custom_icons = beautiful.window_switcher_custom_icons or nil
-    local font_icons = beautiful.window_switcher_font_icons or nil
-    local font_icons_font = beautiful.window_switcher_font_icons_font or beautiful.font
 
     local hide_window_switcher_key = opts.hide_window_switcher_key or "Escape"
 
@@ -393,7 +351,7 @@ local enable = function(opts)
             end
         end)
 
-        window_switcher_box.widget = draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, custom_icons, font_icons, font_icons_font, mouse_keys)
+        window_switcher_box.widget = draw_widget(type, background, border_width, border_radius, border_color, clients_spacing, client_icon_horizontal_spacing, client_width, client_height, client_margins, thumbnail_margins, name_margins, name_valign, name_forced_width, name_font, name_normal_color, name_focus_color, icon_valign, icon_width, mouse_keys)
         window_switcher_box.visible = true
     end)
 end
