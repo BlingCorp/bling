@@ -182,12 +182,9 @@ local simple_schedule_object = nil
 -- @tparam[opt=`setters.simple`] function args.wallpaper_set_function The set_function used by default
 function setters.simple_schedule(args)
     local function update_wallpaper()
-        local fake_args = gears.table.join(
-            args,
-            {
-                wallpaper = args.wallpaper[simple_schedule_object.closest_lower_time],
-            }
-        )
+        local fake_args = gears.table.join(args, {
+            wallpaper = args.wallpaper[simple_schedule_object.closest_lower_time],
+        })
         simple_schedule_object.schedule_set_function(fake_args)
     end
     if not simple_schedule_object then
