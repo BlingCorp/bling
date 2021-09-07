@@ -178,7 +178,7 @@ end
 local function get_current_player_info(player)
     local title = Playerctl.Player.get_title(player)
     local artist = Playerctl.Player.get_artist(player)
-    local artUrl = Playerctl.Player.print_metadata_prop(player, "mpris:artUrl")
+    local artUrl = Playerctl.Player.print_metadata_prop(player, "mpris:artUrl") or ""
     local album = Playerctl.Player.get_album(player)
 
     playback_status_cb(player, player.playback_status)
