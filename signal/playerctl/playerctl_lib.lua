@@ -22,6 +22,7 @@ local beautiful = require("beautiful")
 local Playerctl = nil
 
 local manager = nil
+local metadata_timer = nil
 local position_timer = nil
 
 local ignore = {}
@@ -36,12 +37,14 @@ local function position_cb()
     local player = manager.players[1]
     if player then
         local position = player:get_position() / 1000000
-        local length = player.metadata.value["mpris:length"] / 1000000
+        local length = (player.metadata.value["mpris:length"] or 0) / 1000000
         if position ~= last_position or length ~= last_length then
-            awesome.emit_signal("bling::playerctl::position",
-                                position,
-                                length,
-                                player.player_name)
+            awesome.emit_signal(
+                "bling::playerctl::position",
+                position,
+                length,
+                player.player_name
+            )
             last_position = position
             last_length = length
         end
@@ -49,7 +52,8 @@ local function position_cb()
 end
 
 local function get_album_art(url)
-    return awful.util.shell .. [[ -c '
+    return awful.util.shell
+        .. [[ -c '
 
 tmp_dir="$XDG_CACHE_HOME/awesome/"
 
@@ -63,7 +67,9 @@ if [ ! -d "$tmp_dir" ]; then
     mkdir -p $tmp_dir
 fi
 
-curl -s ']] .. url .. [[' --output $tmp_cover_path
+curl -s ']]
+        .. url
+        .. [[' --output $tmp_cover_path
 
 echo "$tmp_cover_path"
 ']]
@@ -74,7 +80,6 @@ local last_player = nil
 local last_title = ""
 local last_artist = ""
 local last_artUrl = ""
-local index = 0
 local function metadata_cb(player, metadata)
     if update_on_activity then
         manager:move_player_to_top(player)
@@ -96,33 +101,51 @@ local function metadata_cb(player, metadata)
     if player == manager.players[1] then
         -- Callback can be called even though values we care about haven't
         -- changed, so check to see if they have
-        index = index + 1
-        if (player ~= last_player or title ~= last_title or
-           artist ~= last_artist) and (artUrl ~= "" or index >= 2)
+        if
+            player ~= last_player
+            or title ~= last_title
+            or artist ~= last_artist
+            or artUrl ~= last_artUrl
         then
-            if (title == "" and artist == "" and artUrl == "") then return end
-            index = 0
-            if artUrl ~= "" then
-                awful.spawn.with_line_callback(get_album_art(artUrl), {
-                    stdout = function(line)
+            if title == "" and artist == "" and artUrl == "" then
+                return
+            end
+
+            if metadata_timer ~= nil then
+                if metadata_timer.started then
+                    metadata_timer:stop()
+                end
+            end
+
+            metadata_timer = gears.timer({
+                timeout = 0.3,
+                autostart = true,
+                single_shot = true,
+                callback = function()
+                    if artUrl ~= "" then
+                        awful.spawn.with_line_callback(get_album_art(artUrl), {
+                            stdout = function(line)
+                                awesome.emit_signal(
+                                    "bling::playerctl::title_artist_album",
+                                    title,
+                                    artist,
+                                    line,
+                                    player.player_name
+                                )
+                            end,
+                        })
+                    else
                         awesome.emit_signal(
                             "bling::playerctl::title_artist_album",
                             title,
                             artist,
-                            line,
+                            "",
                             player.player_name
                         )
                     end
-                })
-            else
-                awesome.emit_signal(
-                    "bling::playerctl::title_artist_album",
-                    title,
-                    artist,
-                    "",
-                    player.player_name
-                )
-            end
+                end,
+            })
+
             -- Re-sync with position timer when track changes
             position_timer:again()
             last_player = player
@@ -142,9 +165,17 @@ local function playback_status_cb(player, status)
 
     if player == manager.players[1] then
         if status == "PLAYING" then
-            awesome.emit_signal("bling::playerctl::status", true, player.player_name)
+            awesome.emit_signal(
+                "bling::playerctl::status",
+                true,
+                player.player_name
+            )
         else
-            awesome.emit_signal("bling::playerctl::status", false, player.player_name)
+            awesome.emit_signal(
+                "bling::playerctl::status",
+                false,
+                player.player_name
+            )
         end
     end
 end
@@ -230,10 +261,10 @@ local function start_manager()
     end
 
     -- Timer to update track position at specified interval
-    position_timer = gears.timer {
+    position_timer = gears.timer({
         timeout = interval,
-        callback = position_cb
-    }
+        callback = position_cb,
+    })
 
     -- Manage existing players on startup
     for _, name in ipairs(manager.player_names) do
@@ -248,6 +279,7 @@ local function start_manager()
     -- Callback to check if all players have exited
     function manager:on_name_vanished(name)
         if #manager.players == 0 then
+            metadata_timer:stop()
             position_timer:stop()
             awesome.emit_signal("bling::playerctl::no_players")
         end
@@ -281,9 +313,10 @@ local function playerctl_enable(args)
     -- Grab settings from beautiful variables if not set explicitly
     args.ignore = args.ignore or beautiful.playerctl_ignore
     args.player = args.player or beautiful.playerctl_player
-    args.update_on_activity = args.update_on_activity or
-                              beautiful.playerctl_update_on_activity
-    args.interval = args.interval or beautiful.playerctl_position_update_interval
+    args.update_on_activity = args.update_on_activity
+        or beautiful.playerctl_update_on_activity
+    args.interval = args.interval
+        or beautiful.playerctl_position_update_interval
     parse_args(args)
 
     -- Grab playerctl library
@@ -296,6 +329,8 @@ end
 local function playerctl_disable()
     -- Remove manager and timer
     manager = nil
+    metadata_timer:stop()
+    metadata_timer = nil
     position_timer:stop()
     position_timer = nil
     -- Restore default settings
@@ -312,4 +347,4 @@ local function playerctl_disable()
     last_artUrl = ""
 end
 
-return {enable = playerctl_enable, disable = playerctl_disable}
+return { enable = playerctl_enable, disable = playerctl_disable }

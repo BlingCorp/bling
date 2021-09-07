@@ -4,7 +4,7 @@ local beautiful = require("beautiful")
 local backend_config = beautiful.playerctl_backend or "playerctl_cli"
 local backends = {
     playerctl_cli = require(... .. ".playerctl_cli"),
-    playerctl_lib = require(... .. ".playerctl_lib")
+    playerctl_lib = require(... .. ".playerctl_lib"),
 }
 
 local function enable_wrapper(args)
@@ -16,4 +16,4 @@ local function disable_wrapper()
     backends[backend_config].disable()
 end
 
-return {enable = enable_wrapper, disable = disable_wrapper}
+return { enable = enable_wrapper, disable = disable_wrapper }

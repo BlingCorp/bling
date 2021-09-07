@@ -1,8 +1,4 @@
-
-
 local _color = {}
-
-
 
 --- Try to guess if a color is dark or light.
 --
@@ -10,13 +6,12 @@ local _color = {}
 -- @treturn bool `true` if the color is dark, `false` if it is light.
 function _color.is_dark(color)
     -- Try to determine if the color is dark or light
-    local numeric_value = 0;
+    local numeric_value = 0
     for s in color:gmatch("[a-fA-F0-9][a-fA-F0-9]") do
-        numeric_value = numeric_value + tonumber("0x"..s);
+        numeric_value = numeric_value + tonumber("0x" .. s)
     end
     return (numeric_value < 383)
 end
-
 
 --- Lighten a color.
 --
@@ -26,9 +21,9 @@ end
 function _color.lighten(color, amount)
     amount = amount or 26
     local c = {
-        r = tonumber("0x"..color:sub(2,3)),
-        g = tonumber("0x"..color:sub(4,5)),
-        b = tonumber("0x"..color:sub(6,7)),
+        r = tonumber("0x" .. color:sub(2, 3)),
+        g = tonumber("0x" .. color:sub(4, 5)),
+        b = tonumber("0x" .. color:sub(6, 7)),
     }
 
     c.r = c.r + amount
@@ -41,7 +36,7 @@ function _color.lighten(color, amount)
     c.b = c.b < 0 and 0 or c.b
     c.b = c.b > 255 and 255 or c.b
 
-    return string.format('#%02x%02x%02x', c.r, c.g, c.b)
+    return string.format("#%02x%02x%02x", c.r, c.g, c.b)
 end
 
 --- Darken a color.
@@ -53,7 +48,5 @@ function _color.darken(color, amount)
     amount = amount or 26
     return _color.lighten(color, -amount)
 end
-
-
 
 return _color
