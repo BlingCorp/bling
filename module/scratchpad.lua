@@ -243,7 +243,6 @@ function Scratchpad:turn_off()
                     c.screen.selected_tag ~= current_tag_on_toggled_scratchpad
                 then
                     self.in_anim = false
-                    anim:abort()
                     anim:reset()
                     anim:unsubscribe()
                     anim.ended:unsubscribe()
