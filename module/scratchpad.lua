@@ -218,6 +218,9 @@ local function on_animate_turn_off_end(self, c, anim, tag)
     -- depsite still being unminizmied on the other tags it will become invisible
     -- as it's position could be outside the screen from the animation
     self:apply(c)
+    -- :apply() will set the client sticky state to self.sticky
+    -- which might be true depanding on the user configuration
+    c.sticky = false
 
     self:emit_signal("turn_off", c)
 end
