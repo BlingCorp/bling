@@ -246,11 +246,6 @@ function Scratchpad:turn_off()
                     anim:reset()
                     anim:unsubscribe()
                     anim.ended:unsubscribe()
-                    if axis == "x" then
-                        anim.pos = self.geometry.x
-                    else
-                        anim.pos = self.geometry.y
-                    end
                     helpers.client.turn_off(
                         c,
                         current_tag_on_toggled_scratchpad
