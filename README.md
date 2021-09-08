@@ -1,5 +1,5 @@
 <p align="center">
-        <img src="/images/bling_banner.png" />
+    <img src="/images/bling_banner.png" />
 </p>
 <h1 align="center"></h1>
 
@@ -36,12 +36,6 @@ In order to use the `tabbed` modules `pick` function, you need to install `xwini
 
 Contributions are welcome 💛
 
-When adding a module/layout/signal, please add theme variables for customization and add the according documentation under `docs`.
+Before requesting changes, makes sure that your editor have installed "editorconfig" extension, this will use our code style everytime when you enter `bling` folder.
 
-A special thanks to all our contributors...
-
-<a href="https://github.com/Nooo37/bling/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Nooo37/bling" />
-</a>
-
-Made with [contributors-img](https://contrib.rocks).
+When adding a layout/module/signal/widget, please add theme variables for customization and add the according documentation under `docs`.
