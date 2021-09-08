@@ -74,9 +74,9 @@ echo "$tmp_cover_path"
 end
 
 local function emit_title_artist_album_signal(title, artist, artUrl, player_name, album, new)
-    title = title:gsub('%&', '')
-    artist = artist:gsub('%&', '')
-    album = album:gsub('%&', '')
+    title = gears.string.xml_escape(title)
+    artist = gears.string.xml_escape(artist)
+    album = gears.string.xml_escape(album)
 
     -- Spotify client doesn't report its art URL's correctly...
     if player_name == "spotify" then
