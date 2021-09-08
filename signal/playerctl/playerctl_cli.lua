@@ -12,6 +12,7 @@
 -- bling::playerctl::no_players
 --
 local awful = require("awful")
+local gears = require("gears")
 local beautiful = require("beautiful")
 
 local interval = beautiful.playerctl_position_update_interval or 1
@@ -62,7 +63,7 @@ end
 local function emit_player_info()
     -- Command that lists artist and title in a format to find and follow
     local song_follow_cmd =
-        "playerctl metadata --format 'title_{{title}}artist_{{artist}}art_url_{{mpris:artUrl}}player_name_{{playerName}}' -F"
+        "playerctl metadata --format 'title_{{title}}artist_{{artist}}art_url_{{mpris:artUrl}}player_name_{{playerName}}album_{{album}}' -F"
 
     -- Progress Cmds
     local prog_cmd = "playerctl position"
@@ -88,12 +89,11 @@ local function emit_player_info()
     }, function()
         awful.spawn.with_line_callback(song_follow_cmd, {
             stdout = function(line)
-                local title = line:match('title_(.*)artist_')
-                local artist = line:match('artist_(.*)art_url_')
+                local title = gears.string.xml_escape(line:match('title_(.*)artist_'))
+                local artist = gears.string.xml_escape(line:match('artist_(.*)art_url_'))
                 local art_url = line:match('art_url_(.*)player_name_')
-                local player_name = line:match('player_name_(.*)')
-
-                print("Title: " .. title .. " Artist: " .. artist .. " Player Name: " .. player_name .. " Art Url: " .. art_url)
+                local player_name = line:match('player_name_(.*)album_')
+                local album = gears.string.xml_escape(line:match('album_(.*)'))
 
                 art_url = art_url:gsub('%\n', '')
                 if player_name == "spotify" then
@@ -109,7 +109,8 @@ local function emit_player_info()
                                     title,
                                     artist,
                                     line,
-                                    player_name
+                                    player_name,
+                                    album
                                 )
                             end
                         })
@@ -119,7 +120,8 @@ local function emit_player_info()
                             title,
                             artist,
                             "",
-                            player_name
+                            player_name,
+                            album
                         )
                     end
                 else
