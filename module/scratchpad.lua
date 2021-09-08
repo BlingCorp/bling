@@ -225,7 +225,7 @@ function Scratchpad:turn_off()
         end
 
         local function animate(anim, initial_pos, axis)
-            local current_tag_on_toggled_scratchpad = c.screen.selected_tag
+            local tag_on_toggled_scratchpad = c.screen.selected_tag
 
             -- Can't animate non floating clients
             c.floating = true
@@ -254,10 +254,8 @@ function Scratchpad:turn_off()
                 -- Switch to tag 2
                 -- The client will remain on tag 1
                 -- The client will be removed from tag 2
-                if
-                    c.screen.selected_tag ~= current_tag_on_toggled_scratchpad
-                then
-                    on_animate_end(anim, current_tag_on_toggled_scratchpad)
+                if c.screen.selected_tag ~= tag_on_toggled_scratchpad then
+                    on_animate_end(anim, tag_on_toggled_scratchpad)
                 end
             end)
 
