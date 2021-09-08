@@ -209,6 +209,21 @@ end
 function Scratchpad:turn_off()
     local c = self:find()[1]
     if c and not self.in_anim then
+        local function on_animate_end(anim, tag)
+            self.in_anim = false
+            anim:reset()
+            anim:unsubscribe()
+            anim.ended:unsubscribe()
+            helpers.client.turn_off(c, tag)
+
+            -- When toggling off a scratchpad that's present on multiple tags
+            -- depsite still being unminizmied on the other tags it will become invisible
+            -- as it's position could be outside the screen from the animation
+            self:apply(c)
+
+            self:emit_signal("turn_off", c)
+        end
+
         local function animate(anim, initial_pos, axis)
             local current_tag_on_toggled_scratchpad = c.screen.selected_tag
 
@@ -242,34 +257,14 @@ function Scratchpad:turn_off()
                 if
                     c.screen.selected_tag ~= current_tag_on_toggled_scratchpad
                 then
-                    self.in_anim = false
-                    anim:reset()
-                    anim:unsubscribe()
-                    anim.ended:unsubscribe()
-                    helpers.client.turn_off(
-                        c,
-                        current_tag_on_toggled_scratchpad
-                    )
-                    self:apply(c)
-                    self:emit_signal("turn_off", c)
+                    on_animate_end(anim, current_tag_on_toggled_scratchpad)
                 end
             end)
 
             anim:set(anim:initial())
 
             anim.ended:subscribe(function()
-                self.in_anim = false
-                anim:reset()
-                anim:unsubscribe()
-                anim.ended:unsubscribe()
-                helpers.client.turn_off(c)
-
-                -- When toggling off a scratchpad that's present on multiple tags
-                -- depsite still being unminizmied on the other tags it will become invisible
-                -- as it's position could be outside the screen from the animation
-                self:apply(c)
-
-                self:emit_signal("turn_off", c)
+                on_animate_end(anim)
             end)
         end
 
