@@ -176,10 +176,10 @@ local function playback_status_cb(player, status)
 end
 
 local function get_current_player_info(player)
-    local title = Playerctl.Player.get_title(player)
-    local artist = Playerctl.Player.get_artist(player)
+    local title = Playerctl.Player.get_title(player) or ""
+    local artist = Playerctl.Player.get_artist(player) or ""
     local artUrl = Playerctl.Player.print_metadata_prop(player, "mpris:artUrl") or ""
-    local album = Playerctl.Player.get_album(player)
+    local album = Playerctl.Player.get_album(player) or ""
 
     playback_status_cb(player, player.playback_status)
     emit_title_artist_album_signal(title, artist, artUrl, player.player_name, album, true)
