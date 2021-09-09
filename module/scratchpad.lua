@@ -298,13 +298,17 @@ function Scratchpad:toggle()
     local c = self:find()[1]
     if self.dont_focus_before_close then
         if c then
-            local current_tag = c.screen.selected_tag
-            for k, tag in pairs(c:tags()) do
-                if tag == current_tag then
-                    is_turn_off = true
-                    break
-                else
-                    is_turn_off = false
+            if c.sticky and #c:tags() > 0 then
+                is_turn_off = true
+            else
+                local current_tag = c.screen.selected_tag
+                for k, tag in pairs(c:tags()) do
+                    if tag == current_tag then
+                        is_turn_off = true
+                        break
+                    else
+                        is_turn_off = false
+                    end
                 end
             end
         end
