@@ -18,6 +18,8 @@ local gears = require("gears")
 local beautiful = require("beautiful")
 
 local interval = beautiful.playerctl_position_update_interval or 1
+local debounce_delay = 0.35
+local metadata_timer = nil
 
 local function emit_player_status()
     local status_cmd = "playerctl status -F"
@@ -102,33 +104,44 @@ local function emit_player_info()
                     art_url = art_url:gsub("open.spotify.com", "i.scdn.co")
                 end
 
-                if title and title ~= "" then
-                    if art_url ~= "" then
-                        awful.spawn.with_line_callback(get_album_art(art_url), {
-                            stdout = function(line)
+                if metadata_timer ~= nil and metadata_timer.started then
+                    metadata_timer:stop()
+                end
+
+                metadata_timer = gears.timer {
+                    timeout = debounce_delay,
+                    autostart = true,
+                    single_shot = true,
+                    callback = function()
+                        if title and title ~= "" then
+                            if art_url ~= "" then
+                                awful.spawn.with_line_callback(get_album_art(art_url), {
+                                    stdout = function(art_url_line)
+                                        awesome.emit_signal(
+                                            "bling::playerctl::title_artist_album",
+                                            title,
+                                            artist,
+                                            art_url_line,
+                                            player_name,
+                                            album
+                                        )
+                                    end
+                                })
+                            else
                                 awesome.emit_signal(
                                     "bling::playerctl::title_artist_album",
                                     title,
                                     artist,
-                                    line,
+                                    "",
                                     player_name,
                                     album
                                 )
                             end
-                        })
-                    else
-                        awesome.emit_signal(
-                            "bling::playerctl::title_artist_album",
-                            title,
-                            artist,
-                            "",
-                            player_name,
-                            album
-                        )
+                        else
+                            awesome.emit_signal("bling::playerctl::no_players")
+                        end
                     end
-                else
-                    awesome.emit_signal("bling::playerctl::no_players")
-                end
+                }
 
                 collectgarbage("collect")
             end
@@ -143,11 +156,15 @@ end
 
 local enable = function(args)
     interval = (args and args.interval) or interval
+    debounce_delay = (args and args.debounce_delay) or debounce_delay
+
     emit_player_status()
     emit_player_info()
 end
 
 local disable = function()
+    metadata_timer:stop()
+    metadata_timer = nil
     awful.spawn.with_shell("pkill --full --uid " .. os.getenv("USER") ..
                                " '^playerctl status -F'")
 
