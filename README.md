@@ -36,6 +36,6 @@ In order to use the `tabbed` modules `pick` function, you need to install `xwini
 
 Contributions are welcome 💛
 
-Before requesting changes, makes sure that your editor have installed "editorconfig" extension, this will use our code style everytime when you enter `bling` folder.
+Before requesting changes, makes sure that your editor has an "editorconfig" extension installed, this will use our code style everytime when you edit in the `bling` folder.
 
 When adding a layout/module/signal/widget, please add theme variables for customization and add the according documentation under `docs`.
