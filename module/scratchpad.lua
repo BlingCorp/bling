@@ -227,8 +227,25 @@ end
 local function animate_turn_off(self, c, anim, axis, turn_off_on_end)
     local tag_on_toggled_scratchpad = c.screen.selected_tag
 
-    -- Can't animate non floating clients
-    c.floating = true
+    if c.floating == false then
+        -- Save the client geometry before floating it
+        local non_floating_x = c.x
+        local non_floating_y = c.y
+        local non_floating_width = c.width
+        local non_floating_height = c.height
+
+        -- Can't animate non floating clients
+        c.floating = true
+
+        -- Set the client geometry back to what it was before floating it
+        c:geometry({
+            x = non_floating_x,
+            y = non_floating_y,
+            width = non_floating_width,
+            height = non_floating_height,
+        })
+    end
+
 
     if axis == "x" then
         anim.pos = c.x
