@@ -6,6 +6,8 @@
 --      title (string)
 --      artist    (string)
 --      album_path (string)
+--      player_name (string)
+--      album (string)
 -- bling::playerctl::position
 --      interval_sec (number)
 --      length_sec (number)
