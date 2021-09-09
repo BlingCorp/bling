@@ -45,24 +45,12 @@ end
 
 local function get_album_art(url)
     return awful.util.shell .. [[ -c '
-
-tmp_dir="$XDG_CACHE_HOME/awesome/"
-
-if [ -z "$XDG_CACHE_HOME" ]; then
-    tmp_dir="$HOME/.cache/awesome/"
-fi
-
-tmp_cover_path="${tmp_dir}cover.png"
-
-if [ ! -d "$tmp_dir" ]; then
-    mkdir -p $tmp_dir
-fi
-
-curl -s ']] .. url .. [[' --output $tmp_cover_path
-
-echo "$tmp_cover_path"
-']]
+        tmp_cover_path=]] .. os.tmpname() .. [[.png
+        curl -s ']] .. url .. [[' --output $tmp_cover_path
+        echo "$tmp_cover_path"
+    ']]
 end
+
 
 local function emit_player_info()
     -- Command that lists artist and title in a format to find and follow
