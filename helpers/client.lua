@@ -18,6 +18,7 @@ function _client.turn_off(c, current_tag)
         end
     end
     c:tags(ctags)
+    c.sticky = false
 end
 
 --- Turn on passed client (add current tag to window's tags)

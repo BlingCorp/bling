@@ -212,15 +212,12 @@ local function on_animate_turn_off_end(self, c, anim, tag)
     anim:reset()
     anim:unsubscribe()
     anim.ended:unsubscribe()
-    helpers.client.turn_off(c, tag)
 
     -- When toggling off a scratchpad that's present on multiple tags
     -- depsite still being unminizmied on the other tags it will become invisible
     -- as it's position could be outside the screen from the animation
     self:apply(c)
-    -- :apply() will set the client sticky state to self.sticky
-    -- which might be true depanding on the user configuration
-    c.sticky = false
+    helpers.client.turn_off(c, tag)
 
     self:emit_signal("turn_off", c)
 end
@@ -285,7 +282,6 @@ function Scratchpad:turn_off()
 
         if not anim_x and not anim_y then
             helpers.client.turn_off(c)
-            c.sticky = false
             self:emit_signal("turn_off", c)
         end
     end
