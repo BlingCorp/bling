@@ -101,7 +101,6 @@ local function animate_turn_on(self, c, anim, axis)
         self.in_anim = false
         anim:unsubscribe()
         anim.ended:unsubscribe()
-        anim:reset()
     end)
 end
 
@@ -207,23 +206,25 @@ function Scratchpad:turn_on()
 end
 
 --- Called when the turn off animation has ended
-local function on_animate_turn_off_end(self, c, anim, tag)
-    self.in_anim = false
-    anim:reset()
+local function on_animate_turn_off_end(self, c, anim, tag, turn_off_on_end)
     anim:unsubscribe()
     anim.ended:unsubscribe()
 
-    -- When toggling off a scratchpad that's present on multiple tags
-    -- depsite still being unminizmied on the other tags it will become invisible
-    -- as it's position could be outside the screen from the animation
-    self:apply(c)
-    helpers.client.turn_off(c, tag)
+    if turn_off_on_end then
+        -- When toggling off a scratchpad that's present on multiple tags
+        -- depsite still being unminizmied on the other tags it will become invisible
+        -- as it's position could be outside the screen from the animation
+        self:apply(c)
+        helpers.client.turn_off(c, tag)
 
-    self:emit_signal("turn_off", c)
+        self:emit_signal("turn_off", c)
+
+        self.in_anim = false
+    end
 end
 
 --- The turn off animation
-local function animate_turn_off(self, c, anim, axis)
+local function animate_turn_off(self, c, anim, axis, turn_off_on_end)
     local tag_on_toggled_scratchpad = c.screen.selected_tag
 
     -- Can't animate non floating clients
@@ -253,14 +254,14 @@ local function animate_turn_off(self, c, anim, axis)
         -- Switch to tag 2
         -- Outcome: The client will remain on tag 1 and will instead be removed from tag 2
         if c.screen.selected_tag ~= tag_on_toggled_scratchpad then
-            on_animate_turn_off_end(self, c, anim, tag_on_toggled_scratchpad)
+            on_animate_turn_off_end(self, c, anim, tag_on_toggled_scratchpad, true)
         end
     end)
 
     anim:set(anim:initial())
 
     anim.ended:subscribe(function()
-        on_animate_turn_off_end(self, c, anim)
+        on_animate_turn_off_end(self, c, anim, nil, turn_off_on_end)
     end)
 end
 
@@ -272,11 +273,15 @@ function Scratchpad:turn_off()
         local anim_x = self.rubato.x
         local anim_y = self.rubato.y
 
+        local anim_x_duration = (anim_x and anim_x.duration) or 0
+        local anim_y_duration = (anim_y and anim_y.duration) or 0
+
+        local turn_off_on_end = (anim_x_duration >= anim_y_duration) and true or false
         if anim_x then
-            animate_turn_off(self, c, anim_x, "x")
+            animate_turn_off(self, c, anim_x, "x", turn_off_on_end)
         end
         if anim_y then
-            animate_turn_off(self, c, anim_y, "y")
+            animate_turn_off(self, c, anim_y, "y", not turn_off_on_end)
         end
 
         if not anim_x and not anim_y then
