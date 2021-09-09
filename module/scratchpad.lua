@@ -251,8 +251,7 @@ local function animate_turn_off(self, c, anim, axis)
         -- Toggle on scratchpad at tag 2
         -- Toggle off scratchpad at tag 1
         -- Switch to tag 2
-        -- The client will remain on tag 1
-        -- The client will be removed from tag 2
+        -- Outcome: The client will remain on tag 1 and will instead be removed from tag 2
         if c.screen.selected_tag ~= tag_on_toggled_scratchpad then
             on_animate_turn_off_end(self, c, anim, tag_on_toggled_scratchpad)
         end
