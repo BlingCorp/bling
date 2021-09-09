@@ -272,8 +272,6 @@ end
 function Scratchpad:turn_off()
     local c = self:find()[1]
     if c and not self.in_anim then
-        c.sticky = false
-
         -- Get the tweens
         local anim_x = self.rubato.x
         local anim_y = self.rubato.y
@@ -287,6 +285,7 @@ function Scratchpad:turn_off()
 
         if not anim_x and not anim_y then
             helpers.client.turn_off(c)
+            c.sticky = false
             self:emit_signal("turn_off", c)
         end
     end
