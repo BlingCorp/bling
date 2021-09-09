@@ -223,7 +223,7 @@ local function on_animate_turn_off_end(self, c, anim, tag)
 end
 
 --- The turn off animation
-local function animate_turn_off(self, c, anim, initial_pos, axis)
+local function animate_turn_off(self, c, anim, axis)
     local tag_on_toggled_scratchpad = c.screen.selected_tag
 
     -- Can't animate non floating clients
@@ -274,10 +274,10 @@ function Scratchpad:turn_off()
         local anim_y = self.rubato.y
 
         if anim_x then
-            animate_turn_off(self, c, anim_x, self.geometry.x, "x")
+            animate_turn_off(self, c, anim_x, "x")
         end
         if anim_y then
-            animate_turn_off(self, c, anim_y, self.geometry.y, "y")
+            animate_turn_off(self, c, anim_y, "y")
         end
 
         if not anim_x and not anim_y then
