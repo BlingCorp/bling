@@ -89,11 +89,11 @@ local function emit_player_info()
     }, function()
         awful.spawn.with_line_callback(song_follow_cmd, {
             stdout = function(line)
-                local title = gears.string.xml_escape(line:match('title_(.*)artist_'))
-                local artist = gears.string.xml_escape(line:match('artist_(.*)art_url_'))
-                local art_url = line:match('art_url_(.*)player_name_')
-                local player_name = line:match('player_name_(.*)album_')
-                local album = gears.string.xml_escape(line:match('album_(.*)'))
+                local title = gears.string.xml_escape(line:match('title_(.*)artist_')) or ""
+                local artist = gears.string.xml_escape(line:match('artist_(.*)art_url_')) or ""
+                local art_url = line:match('art_url_(.*)player_name_') or ""
+                local player_name = line:match('player_name_(.*)album_') or ""
+                local album = gears.string.xml_escape(line:match('album_(.*)')) or ""
 
                 art_url = art_url:gsub('%\n', '')
                 if player_name == "spotify" then
