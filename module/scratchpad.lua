@@ -225,7 +225,8 @@ end
 
 --- The turn off animation
 local function animate_turn_off(self, c, anim, axis, turn_off_on_end)
-    local tag_on_toggled_scratchpad = c.screen.selected_tag
+    local screen_on_toggled_scratchpad = c.screen
+    local tag_on_toggled_scratchpad = screen_on_toggled_scratchpad.selected_tag
 
     if c.floating == false then
         -- Save the client geometry before floating it
@@ -270,7 +271,7 @@ local function animate_turn_off(self, c, anim, axis, turn_off_on_end)
         -- Toggle off scratchpad at tag 1
         -- Switch to tag 2
         -- Outcome: The client will remain on tag 1 and will instead be removed from tag 2
-        if c.screen.selected_tag ~= tag_on_toggled_scratchpad then
+        if screen_on_toggled_scratchpad.selected_tag ~= tag_on_toggled_scratchpad then
             on_animate_turn_off_end(self, c, anim, tag_on_toggled_scratchpad, true)
         end
     end)
