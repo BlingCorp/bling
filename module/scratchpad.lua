@@ -214,7 +214,12 @@ local function on_animate_turn_off_end(self, c, anim, tag, turn_off_on_end)
         -- When toggling off a scratchpad that's present on multiple tags
         -- depsite still being unminizmied on the other tags it will become invisible
         -- as it's position could be outside the screen from the animation
-        self:apply(c)
+        c:geometry({
+            x = self.geometry.x + c.screen.geometry.x,
+            y = self.geometry.y + c.screen.geometry.y,
+            width = self.geometry.width,
+            height = self.geometry.height,
+        })
         helpers.client.turn_off(c, tag)
 
         self:emit_signal("turn_off", c)
