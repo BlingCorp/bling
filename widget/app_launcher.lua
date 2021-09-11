@@ -18,6 +18,10 @@ local function mark_app(self, index)
     local app = self._private.grid.children[index]
     if app ~= nil then
         app:get_children_by_id("background")[1].bg = self.app_selected_color
+        local text_widget = app:get_children_by_id("text")[1]
+        if text_widget ~= nil then
+            text_widget.markup = "<span foreground='" .. self.app_name_selected_color .. "'>" .. text_widget.text .. "</span>"
+        end
     end
 end
 
@@ -25,15 +29,49 @@ local function unmark_app(self, index)
     local app = self._private.grid.children[index]
     if app ~= nil then
         app:get_children_by_id("background")[1].bg = self.app_normal_color
+        local text_widget = app:get_children_by_id("text")[1]
+        if text_widget ~= nil then
+            text_widget.markup = "<span foreground='" .. self.app_name_normal_color .. "'>" .. text_widget.text .. "</span>"
+        end
     end
 end
 
 local function create_app_widget(self, name, cmdline, icon, index)
+    local icon = self.app_show_icon == true
+        and
+        {
+            widget = wibox.container.place,
+            halign = self.app_name_halign,
+            {
+                widget = wibox.widget.imagebox,
+                forced_width = self.app_icon_width,
+                forced_height = self.app_icon_height,
+                image = icon
+            }
+        }
+        or nil
+    local name = self.app_show_name == true
+        and
+        {
+            widget = wibox.container.place,
+            halign = self.app_icon_halign,
+            {
+                widget = wibox.widget.textbox,
+                id = "text",
+                align = "center",
+                font = self.app_name_font,
+                markup = name
+            }
+        }
+        or nil
+
     return wibox.widget
     {
         widget = wibox.container.background,
         id = "background",
-        shape = gears.shape.rounded_rect,
+        forced_width = self.app_width,
+        forced_height = self.app_height,
+        shape = self.app_shape,
         bg = self.app_normal_color,
         spawn = function() awful.spawn(cmdline) end,
         buttons =
@@ -48,33 +86,19 @@ local function create_app_widget(self, name, cmdline, icon, index)
 
                     self._private.current_index = index
 
-                    -- Mark the next app
+                    -- Mark this app
                     mark_app(self, self._private.current_index)
                 end
             end),
         },
         {
-            layout = wibox.layout.fixed.vertical,
-            forced_width = dpi(200),
-            forced_height = dpi(100),
+            widget = wibox.container.place,
+            valign = self.app_content_valign,
             {
-                layout = wibox.layout.align.horizontal,
-                expand = "outside",
-                nil,
-                {
-                    widget = wibox.widget.imagebox,
-                    forced_width = dpi(70),
-                    forced_height = dpi(70),
-                    image = icon
-                },
-                nil
-            },
-            {
-                widget = wibox.widget.textbox,
-                id = "text",
-                font = beautiful.font,
-                align = "center",
-                markup = name
+                layout = wibox.layout.fixed.vertical,
+                spacing = self.app_content_spacing,
+                icon,
+                name
             }
         }
     }
@@ -196,12 +220,11 @@ local function scroll_up(self)
         local max_app_index_to_include = (self._private.current_page - 1) * self._private.apps_per_page
         local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
 
-        local widgets_count = 0
+
         for index, entry in pairs(self._private.matched_entries) do
             -- Only add widgets that are between this range (part of the current page)
             if index > min_app_index_to_include and index <= max_app_index_to_include then
-                widgets_count = widgets_count + 1
-                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, widgets_count))
+                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, #self._private.grid.children + 1))
             end
         end
 
@@ -244,12 +267,10 @@ local function scroll_down(self)
         local min_app_index_to_include = self._private.current_index * self._private.current_page
         local max_app_index_to_include = min_app_index_to_include + self._private.apps_per_page
 
-        local widgets_count = 0
         for index, entry in pairs(self._private.matched_entries) do
             -- Only add widgets that are between this range (part of the current page)
             if index > min_app_index_to_include and index <= max_app_index_to_include then
-                widgets_count = widgets_count + 1
-                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, widgets_count))
+                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, #self._private.grid.children + 1))
             end
         end
 
@@ -324,32 +345,55 @@ function app_launcher:toggle(args)
     end
 end
 
--- Returns a new app launc` her
+-- Returns a new app launcher
 local function new(args)
     args = args or {}
 
-    args.select_before_spawn = args.select_before_spawn or true
-    args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
-
-    args.background = args.background or "#000000"
-    args.screen = args.screen or screen.primary
-    args.placement = args.placement or awful.placement.centered
-    args.shape = args.shape or nil
-    args.app_normal_color = args.app_normal_color or beautiful.bg_normal or "#808080"
-    args.app_selected_color = args.app_selected_color or beautiful.fg_normal or "#FF0000"
-    args.grid_margin = args.grid_margin or dpi(30)
-    args.grid_spacing = args.grid_spacing or dpi(30)
-    args.item_width = args.item_width or dpi(200)
-    args.forced_num_rows = args.forced_num_rows or 3
-    args.forced_num_cols = args.forced_num_cols or 5
-    args.prompt_text = args.prompt_text or "<b>Search</b>: "
-    args.prompt_cursor_bg = args.prompt_cursor_bg or beautiful.fg_normal
-    args.prompt_start_text = args.prompt_start_text or ""
     args.search_commands = args.search_commands or true
     args.skip_names = args.skip_names or {}
     args.skip_commands = args.skip_commands or {}
     args.skip_empty_icons = args.skip_empty_icons or false
     args.sort_alphabetically = args.sort_alphabetically or true
+    args.select_before_spawn = args.select_before_spawn or true
+    args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
+
+    args.shirnk_width = args.shirnk_width or false
+    args.shrink_height = args.shrink_height or false
+    args.background = args.background or "#000000"
+    args.screen = args.screen or screen.primary
+    args.placement = args.placement or awful.placement.centered
+    args.shape = args.shape or nil
+
+    args.prompt_height = dpi(100)
+    args.prompt_text = args.prompt_text or "<b>Search</b>: "
+    args.prompt_start_text = args.prompt_start_text or ""
+    args.prompt_text_margins = dpi(10)
+    args.prompt_background_color = args.prompt_background_color or beautiful.fg_normal or "#FFFFFF"
+    args.prompt_text_color = args.prompt_text_color or beautiful.bg_normal or "#000000"
+    args.prompt_cursor_bg = args.prompt_cursor_bg or beautiful.bg_normal or "#000000"
+
+    args.apps_per_row = args.apps_per_row or 5
+    args.apps_per_column = args.apps_per_column or 3
+    args.apps_margin = args.apps_margin or dpi(30)
+    args.apps_spacing = args.apps_spacing or dpi(30)
+
+    args.expand_apps = args.expand_apps or true
+    args.app_width = args.app_width or dpi(300)
+    args.app_height = args.app_height or dpi(100)
+    args.app_shape = args.app_shape or nil
+    args.app_normal_color = args.app_normal_color or beautiful.bg_normal or "#000000"
+    args.app_selected_color = args.app_selected_color or beautiful.fg_normal or "#FFFFFF"
+    args.app_content_valign = args.app_content_valign or "center"
+    args.app_content_spacing = args.app_content_spacing or dpi(10)
+    args.app_show_icon = args.app_show_icon == nil and true or args.app_show_icon
+    args.app_icon_halign = args.app_icon_halign or "center"
+    args.app_icon_width = args.app_icon_width or dpi(70)
+    args.app_icon_height = args.app_icon_height or dpi(70)
+    args.app_show_name = args.app_show_name == nil and true or args.app_show_name
+    args.app_name_halign = args.app_name_halign or "center"
+    args.app_name_font = args.app_name_font or beautiful.font
+    args.app_name_normal_color = args.app_name_normal_color or beautiful.fg_normal or "#FFFFFF"
+    args.app_name_selected_color = args.app_name_selected_color or beautiful.bg_normal or "#000000"
 
     local ret = gears.object({})
     ret._private = {}
@@ -358,29 +402,33 @@ local function new(args)
     gtable.crush(ret, args)
 
     -- Determines the grid width
-    ret._private.grid_width = dpi(ret.item_width * ret.forced_num_cols + ret.grid_margin + ret.grid_spacing)
+    local grid_width =  ret.shirnk_width == false
+        and dpi((ret.app_width * ret.apps_per_column) + ((ret.apps_per_column - 1) * ret.apps_spacing))
+        or nil
+    local grid_height = ret.shrink_height == false
+        and dpi((ret.app_height * ret.apps_per_row) + ((ret.apps_per_row - 1) * ret.apps_spacing))
+        or nil
 
     -- These widgets need to be later accessed
     ret._private.shell = awful.widget.prompt
     {
-        bg = "#00000000",
-        fg = beautiful.xcolor0,
+        bg = ret.prompt_background_color,
+        fg = ret.prompt_text_color,
         font = beautiful.font_name .. "Bold 15"
     }
     ret._private.grid = wibox.widget
     {
         layout = wibox.layout.grid,
+        forced_width = grid_width,
+        forced_height = grid_height,
         orientation = "horizontal",
-        forced_num_rows = ret.forced_num_rows,
         homogeneous     = true,
-        expand          = false,
-        forced_width = ret._private.grid_width,
-        spacing = dpi(30),
+        expand          = ret.expand_apps,
+        spacing = ret.apps_spacing,
+        forced_num_rows = ret.apps_per_row,
         buttons =
         {
-            -- Scroll up
             awful.button({}, 4, function() scroll_up(ret) end),
-            -- Scroll down
             awful.button({}, 5, function() scroll_down(ret) end)
         }
     }
@@ -396,17 +444,17 @@ local function new(args)
             layout = wibox.layout.fixed.vertical,
             {
                 widget = wibox.container.background,
-                forced_height = dpi(100),
-                bg = beautiful.xcolor1,
+                forced_height = ret.prompt_height,
+                bg = ret.prompt_background_color,
                 {
                     widget = wibox.container.margin,
-                    left = dpi(15),
+                    margins = ret.prompt_text_margins,
                     ret._private.shell
                 }
             },
             {
                 widget = wibox.container.margin,
-                margins = dpi(30),
+                margins = ret.apps_margin,
                 ret._private.grid
             }
         }
@@ -415,7 +463,7 @@ local function new(args)
     -- Private variables to be used to be used by the scrolling and searching functions
     ret._private.all_entries = {}
     ret._private.matched_entries = {}
-    ret._private.apps_per_page = ret.forced_num_cols * ret.forced_num_rows
+    ret._private.apps_per_page = ret.apps_per_column * ret.apps_per_row
     ret._private.max_apps_per_page = ret._private.apps_per_page
     ret._private.apps_on_last_page = 0
     ret._private.pages_count = 0
