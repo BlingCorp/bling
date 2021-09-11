@@ -237,13 +237,13 @@ local function scroll_down(self)
         -- Remove the current page apps from the grid
         self._private.grid:reset()
 
-        -- TODO: Add only widgets for the current page
-        -- Don't add apps that index are less tham
-        local min_app_index_to_include = (self._private.current_index * self._private.current_page)
+        local min_app_index_to_include = self._private.current_index * self._private.current_page
+        local max_app_index_to_include = min_app_index_to_include + self._private.apps_per_page
 
         local widgets_count = 0
         for index, entry in pairs(self._private.matched_entries) do
-            if index > min_app_index_to_include then
+            -- Only add widgets that are between this range (part of the current page)
+            if index > min_app_index_to_include and index <= max_app_index_to_include then
                 widgets_count = widgets_count + 1
                 self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, widgets_count))
             end
