@@ -122,13 +122,10 @@ local function search(self, text)
     for index, entry in pairs(self._private.all_entries) do
         text = text:gsub( "%W", "" )
 
-        -- Check if there's a match by the app name
-        if string.find(entry.name, case_insensitive_pattern(text)) ~= nil then
-            table.insert(self._private.matched_entries, #self._private.matched_entries + 1, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
-            self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, #self._private.matched_entries))
-
-        -- Check if there's a match by the app command
-        elseif self.search_commands and string.find(entry.cmdline, case_insensitive_pattern(text)) ~= nil then
+        -- Check if there's a match by the app name or app command
+        if string.find(entry.name, case_insensitive_pattern(text)) ~= nil or
+            self.search_commands and string.find(entry.cmdline, case_insensitive_pattern(text)) ~= nil
+        then
             table.insert(self._private.matched_entries, #self._private.matched_entries + 1, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
             self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, #self._private.matched_entries))
         end
@@ -294,7 +291,7 @@ function app_launcher:hide(args)
 
     -- Add the app widgets for the next time
     for index, entry in pairs(self._private.all_entries) do
-        -- Only add the apps that are part of the first apge
+        -- Only add the apps that are part of the first page
         if index <= self._private.apps_per_page then
             self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, index))
         else
