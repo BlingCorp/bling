@@ -214,7 +214,7 @@ local scroll_up = function()
     elseif current_page > 1 then
         grid:reset()
         current_index = apps_per_page
-        for k, v in pairs(all_entries) do
+        for k, v in pairs(matched_entries) do
             if k <= (current_index * current_page) and k > (current_index * (current_page - 2)) then
                 grid:add(create_app(v.name, v.cmdline, v.icon, k))
             end
