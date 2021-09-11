@@ -11,7 +11,6 @@ local table = table
 local math = math
 local pairs = pairs
 local root = root
-local screen = screen
 
 local app_launcher  = { mt = {} }
 
@@ -43,10 +42,7 @@ local function create_app_widget(self, name, cmdline, icon, index)
                 -- TODO: Add an option to spawn the app regardless if it's selected or not
                 if index == self._private.current_index then
                     awful.spawn(cmdline)
-
-                    -- There's no other way to stop the prompt?
-                    root.fake_input('key_press', "Escape")
-                    root.fake_input('key_release', "Escape")
+                    self:hide()
                 else
                     -- Unmark the previous app
                     unmark_app(self, self._private.current_index)
@@ -155,7 +151,7 @@ local function search(self, text)
     mark_app(self, self._private.current_index)
 end
 
-local function run_prompt(self, screen)
+local function run_prompt(self)
     awful.prompt.run
     {
         prompt = self.prompt_text,
@@ -171,7 +167,7 @@ local function run_prompt(self, screen)
             end
         end,
         done_callback = function()
-            self:hide(screen)
+            self:hide()
         end
     }
 end
@@ -263,22 +259,26 @@ end
 function app_launcher:show(args)
     local args = args or {}
 
-    local screen = args.screen or self.screen
-    screen.app_launcher = self._private.widget
-    screen.app_launcher.screen = screen
-    screen.app_launcher.placement = args.placement or self.placement
-    screen.app_launcher.visible = true
-    run_prompt(self, screen)
-    self:emit_signal("bling::app_launcher::visibility", false)
+    self.screen = args.screen or self.screen
+    self.screen.app_launcher = self._private.widget
+    self.screen.app_launcher.screen = self.screen
+    self.screen.app_launcher.placement = args.placement or self.placement
+    self.screen.app_launcher.visible = true
+    run_prompt(self)
+    self:emit_signal("bling::app_launcher::visibility", true)
 end
 
 --- Hides the app launcher
 function app_launcher:hide(args)
     local args = args or {}
 
-    local screen = args.screen or self.screen
-    screen.app_launcher.visible = false
-    screen.app_launcher = nil
+    -- There's no other way to stop the prompt?
+    root.fake_input('key_press', "Escape")
+    root.fake_input('key_release', "Escape")
+
+    self.screen = args.screen or self.screen
+    self.screen.app_launcher.visible = false
+    self.screen.app_launcher = nil
 
     -- Reset back to initial values
     self._private.apps_per_page = self.forced_num_cols * self.forced_num_rows
@@ -302,18 +302,18 @@ function app_launcher:hide(args)
     -- Select the first app for the next time
     mark_app(self, self._private.current_index)
 
-    self:emit_signal("bling::app_launcher::visibility", true)
+    self:emit_signal("bling::app_launcher::visibility", false)
 end
 
 --- Toggles the app launcher
 function app_launcher:toggle(args)
     local args = args or {}
 
-    local screen = args.screen or self.screen
-    if screen.app_launcher.visible then
-        app_launcher:hide(screen)
+    self.screen = args.screen or self.screen
+    if self.screen.app_launcher and self.screen.app_launcher.visible then
+        self:hide(self.screen)
     else
-        app_launcher:show(screen)
+        self:show(self.screen)
     end
 end
 
