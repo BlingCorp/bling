@@ -105,10 +105,6 @@ local function case_insensitive_pattern(pattern)
 end
 
 local function search(self, text)
-    -- Unmark the current selected app
-    -- TODO: Is this actually needed? the widget get removed anyways
-    unmark_app(self, self._private.current_index)
-
     -- Reset all the matched entries
     self._private.matched_entries = {}
     -- Remove all the grid widgets
