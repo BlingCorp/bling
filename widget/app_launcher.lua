@@ -137,10 +137,16 @@ local function search(self, text)
         self._private.apps_on_last_page = #self._private.matched_entries % self._private.apps_per_page
     end
 
-    -- TODO: Add an option to match rofi functionality where it tries to keep marking the app
-    -- based on the currently selected index
-    -- Select the first app on the list
-    self._private.current_index = 1
+    -- This is an option to mimic rofi behaviour where after a search
+    -- it will reselect the app whose index is the same as the app index that was previously selected
+    -- and if matched_entries.length < current_index it will instead select the app with the greatest index
+    if self.try_to_keep_index_after_searching then
+        self._private.current_index = math.max(math.min(self._private.current_index, #self._private.matched_entries), 1)
+
+    -- Otherwise select the first app on the list
+    else
+        self._private.current_index = 1
+    end
     self._private.current_page = 1
 
     mark_app(self, self._private.current_index)
@@ -319,6 +325,8 @@ local function new(args)
     args = args or {}
 
     args.select_before_spawn = args.select_before_spawn or true
+    args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
+
     args.background = args.background or "#000000"
     args.screen = args.screen or screen.primary
     args.placement = args.placement or awful.placement.centered
