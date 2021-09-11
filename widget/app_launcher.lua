@@ -195,9 +195,11 @@ local function scroll_up(self)
         local min_app_index_to_include = (self._private.current_index * (self._private.current_page - 2))
         local max_app_index_to_include = (self._private.current_index * self._private.current_page)
 
+        local widgets_count = 0
         for index, entry in pairs(self._private.matched_entries) do
             if index > min_app_index_to_include and index <= max_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, index))
+                widgets_count = widgets_count + 1
+                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, widgets_count))
             end
         end
 
@@ -240,9 +242,11 @@ local function scroll_down(self)
         -- Don't add apps that index are less tham
         local min_app_index_to_include = (self._private.current_index * self._private.current_page) + 1
 
+        local widgets_count = 0
         for index, entry in pairs(self._private.matched_entries) do
             if index >= min_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, index))
+                widgets_count = widgets_count + 1
+                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, widgets_count))
             end
         end
 
