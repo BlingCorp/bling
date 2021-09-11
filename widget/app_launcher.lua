@@ -118,7 +118,10 @@ local function search(self, text)
             self.search_commands and string.find(entry.cmdline, case_insensitive_pattern(text)) ~= nil
         then
             table.insert(self._private.matched_entries, #self._private.matched_entries + 1, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
-            self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, #self._private.matched_entries))
+
+            if #self._private.matched_entries <= self._private.apps_per_page then
+                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, #self._private.matched_entries))
+            end
         end
     end
 
