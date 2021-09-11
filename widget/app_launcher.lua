@@ -278,7 +278,7 @@ function app_launcher:hide(args)
 
     self.screen = args.screen or self.screen
     self.screen.app_launcher.visible = false
-    self.screen.app_launcher = nil
+    self.screen.app_launcher = {}
 
     -- Reset back to initial values
     self._private.apps_per_page = self.forced_num_cols * self.forced_num_rows
