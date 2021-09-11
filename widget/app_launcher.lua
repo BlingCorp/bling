@@ -119,14 +119,15 @@ local function search(self, text)
         then
             table.insert(self._private.matched_entries, #self._private.matched_entries + 1, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
 
-            if #self._private.matched_entries <= self._private.apps_per_page then
-                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, #self._private.matched_entries))
+            -- Only add the widgets for apps that are part of the first page
+            if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
+                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon,  #self._private.grid.children + 1))
             end
         end
     end
 
     -- Recalculate the apps per page based on the current matched entries
-    self._private.apps_per_page = math.min(#self._private.matched_entries, self.forced_num_cols * self.forced_num_rows)
+    self._private.apps_per_page = math.min(#self._private.matched_entries, self._private.max_apps_per_page)
 
     -- Recalculate the apps per page based on the current pages count
     self._private.pages_count = math.ceil(math.max(1, #self._private.matched_entries) / math.max(1, self._private.apps_per_page))
@@ -287,7 +288,7 @@ function app_launcher:hide(args)
     self.screen.app_launcher = {}
 
     -- Reset back to initial values
-    self._private.apps_per_page = self.forced_num_cols * self.forced_num_rows
+    self._private.apps_per_page = self._private.max_apps_per_page
     self._private.apps_on_last_page = #self._private.all_entries % self._private.apps_per_page
     self._private.pages_count = math.ceil(#self._private.all_entries / self._private.apps_per_page)
     self._private.matched_entries = self._private.all_entries
@@ -415,6 +416,7 @@ local function new(args)
     ret._private.all_entries = {}
     ret._private.matched_entries = {}
     ret._private.apps_per_page = ret.forced_num_cols * ret.forced_num_rows
+    ret._private.max_apps_per_page = ret._private.apps_per_page
     ret._private.apps_on_last_page = 0
     ret._private.pages_count = 0
     ret._private.current_index = 1
