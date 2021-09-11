@@ -183,22 +183,20 @@ local function scroll_up(self)
         -- Remove the current page apps from the grid
         self._private.grid:reset()
 
-        -- If we scrolled up a page, selected app should be the last one
-        -- TODO: This shouldn't be done here
-        self._private.current_index = self._private.apps_per_page
-
-        local min_app_index_to_include = (self._private.current_index * (self._private.current_page - 2))
-        local max_app_index_to_include = (self._private.current_index * self._private.current_page)
+        local max_app_index_to_include = (self._private.current_page - 1) * self._private.apps_per_page
+        local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
 
         local widgets_count = 0
         for index, entry in pairs(self._private.matched_entries) do
+            -- Only add widgets that are between this range (part of the current page)
             if index > min_app_index_to_include and index <= max_app_index_to_include then
                 widgets_count = widgets_count + 1
                 self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, widgets_count))
             end
         end
 
-        -- Mark the current selected app for the new selected page
+        -- If we scrolled up a page, selected app should be the last one
+        self._private.current_index = self._private.apps_per_page
         mark_app(self, self._private.current_index)
 
         -- Current page should be decremented
