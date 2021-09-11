@@ -124,13 +124,13 @@ local function search(self, text)
 
         -- Check if there's a match by the app name
         if string.find(entry.name, case_insensitive_pattern(text)) ~= nil then
-            self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, index))
             table.insert(self._private.matched_entries, #self._private.matched_entries + 1, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
+            self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, #self._private.matched_entries))
 
         -- Check if there's a match by the app command
         elseif self.search_commands and string.find(entry.cmdline, case_insensitive_pattern(text)) ~= nil then
-            self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, index))
             table.insert(self._private.matched_entries, #self._private.matched_entries + 1, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
+            self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, #self._private.matched_entries))
         end
     end
 
