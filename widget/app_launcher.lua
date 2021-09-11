@@ -39,8 +39,7 @@ local function create_app_widget(self, name, cmdline, icon, index)
         buttons =
         {
             awful.button({}, 1, function()
-                -- TODO: Add an option to spawn the app regardless if it's selected or not
-                if index == self._private.current_index then
+                if index == self._private.current_index or not self.select_before_spawn then
                     awful.spawn(cmdline)
                     self:hide()
                 else
@@ -325,6 +324,7 @@ end
 local function new(args)
     args = args or {}
 
+    args.select_before_spawn = args.select_before_spawn or true
     args.background = args.background or "#000000"
     args.screen = args.screen or screen.primary
     args.placement = args.placement or awful.placement.centered
