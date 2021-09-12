@@ -156,15 +156,6 @@ local function search(self, text)
     -- Recalculate the apps per page based on the current pages count
     self._private.pages_count = math.ceil(math.max(1, #self._private.matched_entries) / math.max(1, self._private.apps_per_page))
 
-    -- If there's only 1 page, apps on last page is the same as apps per page
-    if self._private.pages_count <=1 then
-        self._private.apps_on_last_page = self._private.apps_per_page
-
-    -- Otherwise recalculate the apps on last page
-    else
-        self._private.apps_on_last_page = #self._private.matched_entries % self._private.apps_per_page
-    end
-
     -- This is an option to mimic rofi behaviour where after a search
     -- it will reselect the app whose index is the same as the app index that was previously selected
     -- and if matched_entries.length < current_index it will instead select the app with the greatest index
@@ -217,18 +208,11 @@ local function scroll_up(self)
 end
 
 local function scroll_down(self)
-    local is_less_than_max_app = self._private.current_index < self._private.apps_per_page
+    local is_less_than_max_app = self._private.current_index < #self._private.grid.children
     local is_less_than_max_page = self._private.current_page < self._private.pages_count
-    local can_scroll_less_than_max_page = is_less_than_max_app and is_less_than_max_page
-
-    local max_page_is_less_than_max_app = self._private.current_index < self._private.apps_on_last_page
-    local is_max_page = self._private.current_page == self._private.pages_count
-    local can_scroll_max_page = max_page_is_less_than_max_app and is_max_page
-
-    local can_switch_to_next_page = self._private.current_page < self._private.pages_count
 
     -- Check if we can scroll down the app list
-    if can_scroll_less_than_max_page or can_scroll_max_page then
+    if is_less_than_max_app then
         -- Unmark the previous app
         unmark_app(self, self._private.current_index)
 
@@ -239,7 +223,7 @@ local function scroll_down(self)
         mark_app(self, self._private.current_index)
 
     -- If we can't scroll down the app list, check if we can scroll down a page
-    elseif can_switch_to_next_page then
+    elseif is_less_than_max_page then
         -- Remove the current page apps from the grid
         self._private.grid:reset()
 
@@ -289,7 +273,6 @@ function app_launcher:hide(args)
 
     -- Reset back to initial values
     self._private.apps_per_page = self._private.max_apps_per_page
-    self._private.apps_on_last_page = #self._private.all_entries % self._private.apps_per_page
     self._private.pages_count = math.ceil(#self._private.all_entries / self._private.apps_per_page)
     self._private.matched_entries = self._private.all_entries
     self._private.current_index = 1
@@ -493,7 +476,6 @@ local function new(args)
     ret._private.matched_entries = {}
     ret._private.apps_per_page = ret.apps_per_column * ret.apps_per_row
     ret._private.max_apps_per_page = ret._private.apps_per_page
-    ret._private.apps_on_last_page = 0
     ret._private.pages_count = 0
     ret._private.current_index = 1
     ret._private.current_page = 1
@@ -514,8 +496,8 @@ local function new(args)
                     table.insert(ret._private.all_entries, #ret._private.all_entries + 1, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
 
                     -- Only add the app widgets that are part of the first page
-                    if index <= ret._private.apps_per_page then
-                        ret._private.grid:add(create_app_widget(ret, entry.name, entry.cmdline, entry.icon, index))
+                    if #ret._private.all_entries <= ret._private.apps_per_page then
+                        ret._private.grid:add(create_app_widget(ret, entry.name, entry.cmdline, entry.icon, #ret._private.all_entries))
                     end
                 end
             end
@@ -523,8 +505,6 @@ local function new(args)
 
         -- Matched entries contains all the apps initially
         ret._private.matched_entries = ret._private.all_entries
-
-        ret._private.apps_on_last_page = #ret._private.all_entries % ret._private.apps_per_page
         ret._private.pages_count = math.ceil(#ret._private.all_entries / ret._private.apps_per_page)
 
         -- Mark the first app on startup
