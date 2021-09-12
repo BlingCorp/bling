@@ -153,7 +153,7 @@ local function search(self, text)
     -- Recalculate the apps per page based on the current matched entries
     self._private.apps_per_page = math.min(#self._private.matched_entries, self._private.max_apps_per_page)
 
-    -- Recalculate the apps per page based on the current pages count
+    -- Recalculate the pages count based on the current apps per page
     self._private.pages_count = math.ceil(math.max(1, #self._private.matched_entries) / math.max(1, self._private.apps_per_page))
 
     -- This is an option to mimic rofi behaviour where after a search
@@ -253,9 +253,28 @@ function app_launcher:show(args)
     self.screen = args.screen or self.screen
     self.screen.app_launcher = self._private.widget
     self.screen.app_launcher.screen = self.screen
-    self.screen.app_launcher.placement = args.placement or self.placement
     self.screen.app_launcher.visible = true
     self._private.prompt:run()
+
+    local x = args.x or self.x or nil
+    if self.rubato and self.rubato.x and x then
+        self.rubato.x:set(x)
+    elseif x then
+        self.screen.app_launcher.x = x
+    end
+
+    local y = args.y or self.y or nil
+    if self.rubato and self.rubato.y and y then
+        self.rubato.y:set(y)
+    elseif y then
+        self.screen.app_launcher.y = y
+    end
+
+    local placement = args.placement or self.placement or nil
+    if placement then
+        self.screen.app_launcher.placement = placement
+    end
+
     self:emit_signal("bling::app_launcher::visibility", true)
 end
 
@@ -267,8 +286,25 @@ function app_launcher:hide(args)
     root.fake_input('key_press', "Escape")
     root.fake_input('key_release', "Escape")
 
+    if self.rubato and self.rubato.x then
+        self.rubato.x:set(self.rubato.x:initial())
+        self.rubato.x.ended:subscribe(function()
+            self.screen.app_launcher.visible = false
+        end)
+    end
+
+    if self.rubato and self.rubato.y then
+        self.rubato.y:set(self.rubato.y:initial())
+        self.rubato.y.ended:subscribe(function()
+            self.screen.app_launcher.visible = false
+        end)
+    end
+
+    if not self.rubato then
+        self.screen.app_launcher.visible = false
+    end
+
     self.screen = args.screen or self.screen
-    self.screen.app_launcher.visible = false
     self.screen.app_launcher = {}
 
     -- Reset back to initial values
@@ -319,11 +355,14 @@ local function new(args)
     args.select_before_spawn = args.select_before_spawn or true
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
 
+    args.rubato = args.rubato or nil
     args.shirnk_width = args.shirnk_width or false
     args.shrink_height = args.shrink_height or false
     args.background = args.background or "#000000"
     args.screen = args.screen or screen.primary
-    args.placement = args.placement or awful.placement.centered
+    args.placement = args.placement or nil
+    args.x = args.x or nil
+    args.y = args.y or nil
     args.shape = args.shape or nil
 
     args.prompt_height = args.prompt_height or dpi(100)
@@ -510,6 +549,17 @@ local function new(args)
         -- Mark the first app on startup
         mark_app(ret, 1)
     end)
+
+    if ret.rubato and ret.rubato.x then
+        ret.rubato.x:subscribe(function(pos)
+            ret._private.widget.x = pos
+        end)
+    end
+    if ret.rubato and ret.rubato.y then
+        ret.rubato.y:subscribe(function(pos)
+            ret._private.widget.y = pos
+        end)
+    end
 
     return ret
 end
