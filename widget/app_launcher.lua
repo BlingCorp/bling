@@ -180,27 +180,6 @@ local function search(self, text)
     mark_app(self, self._private.current_index)
 end
 
-local function run_prompt(self)
-    awful.prompt.run
-    {
-        prompt = self.prompt_text,
-        bg_cursor = self.prompt_cursor_bg,
-        textbox = self._private.shell.widget,
-        text = self.prompt_start_text,
-        changed_callback = function(text)
-            search(self, text)
-        end,
-        keypressed_callback = function(mod, key, cmd)
-            if key == "Return" then
-                self._private.grid.children[self._private.current_index].spawn()
-            end
-        end,
-        done_callback = function()
-            self:hide()
-        end
-    }
-end
-
 local function scroll_up(self)
     -- Check if the current marked app is not the first
     if self._private.current_index > 1 then
@@ -292,7 +271,7 @@ function app_launcher:show(args)
     self.screen.app_launcher.screen = self.screen
     self.screen.app_launcher.placement = args.placement or self.placement
     self.screen.app_launcher.visible = true
-    run_prompt(self)
+    self._private.prompt:run()
     self:emit_signal("bling::app_launcher::visibility", true)
 end
 
@@ -364,13 +343,26 @@ local function new(args)
     args.placement = args.placement or awful.placement.centered
     args.shape = args.shape or nil
 
-    args.prompt_height = dpi(100)
+    args.prompt_height = args.prompt_height or dpi(100)
+    args.prompt_margins = args.prompt_margins or dpi(0)
+    args.prompt_paddings = args.prompt_paddings or dpi(30)
+    args.prompt_shape = args.prompt_shape or nil
+    args.prompt_color = args.prompt_color or beautiful.fg_normal or "#FFFFFF"
+    args.prompt_border_width = args.prompt_border_width or beautiful.border_width or dpi(0)
+    args.prompt_border_color = args.prompt_border_color or beautiful.border_color or args.prompt_color
+    args.prompt_text_halign = args.prompt_text_halign or "left"
+    args.prompt_text_valign = args.prompt_text_valign or "center"
+    args.prompt_icon_text_spacing = args.prompt_icon_text_spacing or dpi(10)
+    args.prompt_show_icon = args.prompt_show_icon == nil and true or args.prompt_show_icon
+    args.prompt_icon_font = args.prompt_icon_font or beautiful.font
+    args.prompt_icon_color = args.prompt_icon_color or beautiful.bg_normal or "#000000"
+    args.prompt_icon = args.prompt_icon or ""
+    args.prompt_icon_markup = args.prompt_icon_markup or string.format("<span size='xx-large' foreground='%s'>%s</span>", args.prompt_icon_color, args.prompt_icon)
     args.prompt_text = args.prompt_text or "<b>Search</b>: "
     args.prompt_start_text = args.prompt_start_text or ""
-    args.prompt_text_margins = dpi(10)
-    args.prompt_background_color = args.prompt_background_color or beautiful.fg_normal or "#FFFFFF"
+    args.prompt_font = args.prompt_font or beautiful.font
     args.prompt_text_color = args.prompt_text_color or beautiful.bg_normal or "#000000"
-    args.prompt_cursor_bg = args.prompt_cursor_bg or beautiful.bg_normal or "#000000"
+    args.prompt_cursor_color = args.prompt_cursor_color or beautiful.bg_normal or "#000000"
 
     args.apps_per_row = args.apps_per_row or 5
     args.apps_per_column = args.apps_per_column or 3
@@ -410,12 +402,27 @@ local function new(args)
         or nil
 
     -- These widgets need to be later accessed
-    ret._private.shell = awful.widget.prompt
+    ret._private.prompt = awful.widget.prompt
     {
-        bg = ret.prompt_background_color,
+        prompt = ret.prompt_text,
+        text = ret.prompt_start_text,
+        font = ret.prompt_font,
+        bg = ret.prompt_color,
         fg = ret.prompt_text_color,
-        font = beautiful.font_name .. "Bold 15"
+        bg_cursor = ret.prompt_cursor_color,
+        changed_callback = function(text)
+            search(ret, text)
+        end,
+        keypressed_callback = function(mod, key, cmd)
+            if key == "Return" then
+                ret._private.grid.children[ret._private.current_index].spawn()
+            end
+        end,
+        done_callback = function()
+            ret:hide()
+        end
     }
+
     ret._private.grid = wibox.widget
     {
         layout = wibox.layout.grid,
@@ -443,13 +450,34 @@ local function new(args)
         {
             layout = wibox.layout.fixed.vertical,
             {
-                widget = wibox.container.background,
-                forced_height = ret.prompt_height,
-                bg = ret.prompt_background_color,
+                widget = wibox.container.margin,
+                margins = ret.prompt_margins,
                 {
-                    widget = wibox.container.margin,
-                    margins = ret.prompt_text_margins,
-                    ret._private.shell
+                    widget = wibox.container.background,
+                    forced_height = ret.prompt_height,
+                    shape = ret.prompt_shape,
+                    bg = ret.prompt_color,
+                    border_width = ret.prompt_border_width,
+                    border_color = ret.prompt_border_color,
+                    {
+                        widget = wibox.container.margin,
+                        margins = ret.prompt_paddings,
+                        {
+                            widget = wibox.container.place,
+                            halign = ret.prompt_text_halign,
+                            valign = ret.prompt_text_valign,
+                            {
+                                layout = wibox.layout.fixed.horizontal,
+                                spacing = ret.prompt_icon_text_spacing,
+                                {
+                                    widget = wibox.widget.textbox,
+                                    font = ret.prompt_icon_font,
+                                    markup = ret.prompt_icon_markup
+                                },
+                                ret._private.prompt
+                            }
+                        }
+                    }
                 }
             },
             {
