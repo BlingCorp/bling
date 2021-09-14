@@ -64,48 +64,48 @@ function Scratchpad:apply(c)
     end
 end
 
---- Turns the scratchpad on
-function Scratchpad:turn_on()
-    local function animate(c, anim, axis)
-        -- Check for the following scenerio:
-        -- Toggle on scratchpad at tag 1
-        -- Toggle on scratchpad at tag 2
-        -- The animation will instantly end
-        -- as the timer pos is already at the on position
-        -- from toggling on the scratchpad at tag 1
-        if axis == "x" and anim.pos == self.geometry.x then
+--- The turn on animation
+local function animate_turn_on(self, c, anim, axis)
+    -- Check for the following scenerio:
+    -- Toggle on scratchpad at tag 1
+    -- Toggle on scratchpad at tag 2
+    -- The animation will instantly end
+    -- as the timer pos is already at the on position
+    -- from toggling on the scratchpad at tag 1
+    if axis == "x" and anim.pos == self.geometry.x then
+        anim.pos = anim:initial()
+    else
+        if anim.pos == self.geometry.y then
             anim.pos = anim:initial()
-        else
-            if anim.pos == self.geometry.y then
-                anim.pos = anim:initial()
-            end
         end
-
-        anim:subscribe(function(pos)
-            if c and c.valid then
-                if axis == "x" then
-                    c.x = pos
-                else
-                    c.y = pos
-                end
-            end
-            self.in_anim = true
-        end)
-
-        if axis == "x" then
-            anim:set(self.geometry.x)
-        else
-            anim:set(self.geometry.y)
-        end
-
-        anim.ended:subscribe(function()
-            self.in_anim = false
-            anim:unsubscribe()
-            anim.ended:unsubscribe()
-            anim:reset()
-        end)
     end
 
+    anim:subscribe(function(pos)
+        if c and c.valid then
+            if axis == "x" then
+                c.x = pos
+            else
+                c.y = pos
+            end
+        end
+        self.in_anim = true
+    end)
+
+    if axis == "x" then
+        anim:set(self.geometry.x)
+    else
+        anim:set(self.geometry.y)
+    end
+
+    anim.ended:subscribe(function()
+        self.in_anim = false
+        anim:unsubscribe()
+        anim.ended:unsubscribe()
+    end)
+end
+
+--- Turns the scratchpad on
+function Scratchpad:turn_on()
     local c = self:find()[1]
     local anim_x = self.rubato.x
     local anim_y = self.rubato.y
@@ -124,10 +124,10 @@ function Scratchpad:turn_on()
         c.sticky = self.sticky
 
         if anim_x then
-            animate(c, anim_x, "x")
+            animate_turn_on(self, c, anim_x, "x")
         end
         if anim_y then
-            animate(c, anim_y, "y")
+            animate_turn_on(self, c, anim_y, "y")
         end
 
         helpers.client.turn_on(c)
@@ -166,10 +166,10 @@ function Scratchpad:turn_on()
                             c:activate({})
 
                             if anim_x then
-                                animate(c, anim_x, "x")
+                                animate_turn_on(self, c, anim_x, "x")
                             end
                             if anim_y then
-                                animate(c, anim_y, "y")
+                                animate_turn_on(self, c, anim_y, "y")
                             end
 
                             self:emit_signal("inital_apply", c)
@@ -191,10 +191,10 @@ function Scratchpad:turn_on()
                 if helpers.client.is_child_of(c1, pid) then
                     self:apply(c1)
                     if anim_x then
-                        animate(c1, anim_x, "x")
+                        animate_turn_on(self, c1, anim_x, "x")
                     end
                     if anim_y then
-                        animate(c1, anim_y, "y")
+                        animate_turn_on(self, c1, anim_y, "y")
                     end
                     self:emit_signal("inital_apply", c1)
                     client.disconnect_signal("manage", inital_apply)
@@ -205,91 +205,106 @@ function Scratchpad:turn_on()
     end
 end
 
+--- Called when the turn off animation has ended
+local function on_animate_turn_off_end(self, c, anim, tag, turn_off_on_end)
+    anim:unsubscribe()
+    anim.ended:unsubscribe()
+
+    if turn_off_on_end then
+        -- When toggling off a scratchpad that's present on multiple tags
+        -- depsite still being unminizmied on the other tags it will become invisible
+        -- as it's position could be outside the screen from the animation
+        c:geometry({
+            x = self.geometry.x + c.screen.geometry.x,
+            y = self.geometry.y + c.screen.geometry.y,
+            width = self.geometry.width,
+            height = self.geometry.height,
+        })
+        helpers.client.turn_off(c, tag)
+
+        self:emit_signal("turn_off", c)
+
+        self.in_anim = false
+    end
+end
+
+--- The turn off animation
+local function animate_turn_off(self, c, anim, axis, turn_off_on_end)
+    local screen_on_toggled_scratchpad = c.screen
+    local tag_on_toggled_scratchpad = screen_on_toggled_scratchpad.selected_tag
+
+    if c.floating == false then
+        -- Save the client geometry before floating it
+        local non_floating_x = c.x
+        local non_floating_y = c.y
+        local non_floating_width = c.width
+        local non_floating_height = c.height
+
+        -- Can't animate non floating clients
+        c.floating = true
+
+        -- Set the client geometry back to what it was before floating it
+        c:geometry({
+            x = non_floating_x,
+            y = non_floating_y,
+            width = non_floating_width,
+            height = non_floating_height,
+        })
+    end
+
+
+    if axis == "x" then
+        anim.pos = c.x
+    else
+        anim.pos = c.y
+    end
+
+    anim:subscribe(function(pos)
+        if c and c.valid then
+            if axis == "x" then
+                c.x = pos
+            else
+                c.y = pos
+            end
+        end
+        self.in_anim = true
+
+        -- Handles changing tag mid animation
+        -- Check for the following scenerio:
+        -- Toggle on scratchpad at tag 1
+        -- Toggle on scratchpad at tag 2
+        -- Toggle off scratchpad at tag 1
+        -- Switch to tag 2
+        -- Outcome: The client will remain on tag 1 and will instead be removed from tag 2
+        if screen_on_toggled_scratchpad.selected_tag ~= tag_on_toggled_scratchpad then
+            on_animate_turn_off_end(self, c, anim, tag_on_toggled_scratchpad, true)
+        end
+    end)
+
+    anim:set(anim:initial())
+
+    anim.ended:subscribe(function()
+        on_animate_turn_off_end(self, c, anim, nil, turn_off_on_end)
+    end)
+end
+
 --- Turns the scratchpad off
 function Scratchpad:turn_off()
     local c = self:find()[1]
     if c and not self.in_anim then
-        local function animate(anim, initial_pos, axis)
-            local current_tag_on_toggled_scratchpad = c.screen.selected_tag
-
-            -- Can't animate non floating clients
-            c.floating = true
-
-            if axis == "x" then
-                anim.pos = c.x
-            else
-                anim.pos = c.y
-            end
-
-            anim:subscribe(function(pos)
-                if c and c.valid then
-                    if axis == "x" then
-                        c.x = pos
-                    else
-                        c.y = pos
-                    end
-                end
-                self.in_anim = true
-
-                -- Handles changing tag mid animation
-                -- Check for the following scenerio:
-                -- Toggle on scratchpad at tag 1
-                -- Toggle on scratchpad at tag 2
-                -- Toggle off scratchpad at tag 1
-                -- Switch to tag 2
-                -- The client will remain on tag 1
-                -- The client will be removed from tag 2
-                if
-                    c.screen.selected_tag ~= current_tag_on_toggled_scratchpad
-                then
-                    self.in_anim = false
-                    anim:abort()
-                    anim:reset()
-                    anim:unsubscribe()
-                    anim.ended:unsubscribe()
-                    if axis == "x" then
-                        anim.pos = self.geometry.x
-                    else
-                        anim.pos = self.geometry.y
-                    end
-                    helpers.client.turn_off(
-                        c,
-                        current_tag_on_toggled_scratchpad
-                    )
-                    self:apply(c)
-                    self:emit_signal("turn_off", c)
-                end
-            end)
-
-            anim:set(anim:initial())
-
-            anim.ended:subscribe(function()
-                self.in_anim = false
-                anim:reset()
-                anim:unsubscribe()
-                anim.ended:unsubscribe()
-                helpers.client.turn_off(c)
-
-                -- When toggling off a scratchpad that's present on multiple tags
-                -- depsite still being unminizmied on the other tags it will become invisible
-                -- as it's position could be outside the screen from the animation
-                self:apply(c)
-
-                self:emit_signal("turn_off", c)
-            end)
-        end
-
-        c.sticky = false
-
         -- Get the tweens
         local anim_x = self.rubato.x
         local anim_y = self.rubato.y
 
+        local anim_x_duration = (anim_x and anim_x.duration) or 0
+        local anim_y_duration = (anim_y and anim_y.duration) or 0
+
+        local turn_off_on_end = (anim_x_duration >= anim_y_duration) and true or false
         if anim_x then
-            animate(anim_x, self.geometry.x, "x")
+            animate_turn_off(self, c, anim_x, "x", turn_off_on_end)
         end
         if anim_y then
-            animate(anim_y, self.geometry.y, "y")
+            animate_turn_off(self, c, anim_y, "y", not turn_off_on_end)
         end
 
         if not anim_x and not anim_y then
@@ -305,13 +320,17 @@ function Scratchpad:toggle()
     local c = self:find()[1]
     if self.dont_focus_before_close then
         if c then
-            local current_tag = c.screen.selected_tag
-            for k, tag in pairs(c:tags()) do
-                if tag == current_tag then
-                    is_turn_off = true
-                    break
-                else
-                    is_turn_off = false
+            if c.sticky and #c:tags() > 0 then
+                is_turn_off = true
+            else
+                local current_tag = c.screen.selected_tag
+                for k, tag in pairs(c:tags()) do
+                    if tag == current_tag then
+                        is_turn_off = true
+                        break
+                    else
+                        is_turn_off = false
+                    end
                 end
             end
         end
