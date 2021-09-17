@@ -10,6 +10,8 @@ local bg_normal = beautiful.tabbar_bg_normal or beautiful.bg_normal or "#ffffff"
 local fg_normal = beautiful.tabbar_fg_normal or beautiful.fg_normal or "#000000"
 local bg_focus = beautiful.tabbar_bg_focus or beautiful.bg_focus or "#000000"
 local fg_focus = beautiful.tabbar_fg_focus or beautiful.fg_focus or "#ffffff"
+local bg_inactive = beautiful.tabbar_bg_inactive or bg_focus
+local fg_inactive = beautiful.tabbar_fg_inactive or fg_focus
 local font = beautiful.tabbar_font or beautiful.font or "Hack 15"
 local size = beautiful.tabbar_size or dpi(40)
 local border_radius = beautiful.mstab_border_radius
@@ -66,14 +68,14 @@ local function create_title_button(c, color_focus, color_unfocus)
     return tb
 end
 
-local function create(c, focused_bool, buttons)
+local function create(c, focused_bool, buttons, inactive_bool)
     -- local flexlist = wibox.layout.flex.horizontal()
     local title_temp = c.name or c.class or "-"
     local bg_temp = bg_normal
     local fg_temp = fg_normal
     if focused_bool then
-        bg_temp = bg_focus
-        fg_temp = fg_focus
+        bg_temp = inactive_bool and bg_inactive or bg_focus
+        fg_temp = inactive_bool and fg_inactive or fg_focus
     end
     local text_temp = wibox.widget.textbox()
     text_temp.align = "center"

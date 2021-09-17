@@ -36,6 +36,8 @@ theme.tabbar_bg_normal = "#000000" -- background color of the focused client on 
 theme.tabbar_fg_normal = "#ffffff" -- foreground color of the focused client on the tabbar
 theme.tabbar_bg_focus = "#1A2026" -- background color of unfocused clients on the tabbar
 theme.tabbar_fg_focus = "#ff0000" -- foreground color of unfocused clients on the tabbar
+theme.tabbar_bg_inactive = nil -- background color of the current client on the tabbar when unfocused
+theme.tabbar_fg_inactive = nil -- foreground color of the current client on the tabbar when unfocused
 
 -- mstab
 theme.mstab_bar_ontop = false -- whether you want to allow the bar to be ontop of clients
