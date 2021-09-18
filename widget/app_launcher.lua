@@ -360,9 +360,9 @@ local function new(args)
     args.shrink_height = args.shrink_height or false
     args.background = args.background or "#000000"
     args.screen = args.screen or screen.primary
-    args.placement = args.placement or nil
     args.x = args.x or nil
     args.y = args.y or nil
+    args.placement = args.placement or (args.x == nil and args.y == nil) and awful.placement.centered or nil
     args.shape = args.shape or nil
 
     args.prompt_height = args.prompt_height or dpi(100)
