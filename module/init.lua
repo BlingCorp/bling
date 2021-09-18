@@ -5,4 +5,5 @@ return {
     flash_focus = require(... .. ".flash_focus"),
     tabbed = require(... .. ".tabbed"),
     scratchpad = require(... .. ".scratchpad"),
+    persistent = require(... .. ".persistent"),
 }
