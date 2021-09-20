@@ -184,7 +184,7 @@ local function new(args)
     return ret
 end
 
-function persistent.mt:__call(...)
+function persistent.enable(...)
     if not instance then
         instance = new(...)
     end
