@@ -121,27 +121,33 @@ local function restore()
         client.width = tonumber(client_get_xproperty(client, "width", "string"))
         client.height = tonumber(client_get_xproperty(client, "height", "string"))
 
-        local bling_tabbed_clients_amount = client_get_xproperty(client, "bling_tabbed_clients_amount", "number") or 0
+        local parent = client
+        local bling_tabbed_clients_amount = client_get_xproperty(parent, "bling_tabbed_clients_amount", "number") or 0
         for i = 1, bling_tabbed_clients_amount, 1 do
-            local client_window = tonumber(client_get_xproperty(client, "bling_tabbed_client_" .. i, "string"))
-            local parent = client
-            for index, entry in ipairs(capi.client.get()) do
-                local tab_index = client_get_xproperty(client, "bling_tabbed_focused_idx", "number")
-                if entry.window == client_window then
-                    if not parent.bling_tabbed and not entry.bling_tabbed then
+            local child_window = tonumber(client_get_xproperty(parent, "bling_tabbed_client_" .. i, "string"))
+            for index, child in ipairs(capi.client.get()) do
+                if child.window == child_window then
+                    local tab_index = client_get_xproperty(client, "bling_tabbed_focused_idx", "number")
+                    if not parent.bling_tabbed and not child.bling_tabbed then
                         tabbed.init(parent)
-                        tabbed.add(entry, parent.bling_tabbed)
-                        gears.timer.delayed_call(function() tabbed.switch_to(parent.bling_tabbed, tab_index) end)
+                        tabbed.add(child, parent.bling_tabbed)
+                        gears.timer.delayed_call(function()
+                            tabbed.switch_to(parent.bling_tabbed, tab_index)
+                        end)
                     end
-                    if not parent.bling_tabbed and entry.bling_tabbed then
-                        tabbed.add(parent, entry.bling_tabbed)
-                        gears.timer.delayed_call(function() tabbed.switch_to(entry.bling_tabbed, tab_index) end)
+                    if not parent.bling_tabbed and child.bling_tabbed then
+                        tabbed.add(parent, child.bling_tabbed)
+                        gears.timer.delayed_call(function()
+                            tabbed.switch_to(child.bling_tabbed, tab_index)
+                        end)
                     end
-                    if parent.bling_tabbed and not entry.bling_tabbed then
-                        tabbed.add(entry, parent.bling_tabbed)
-                        gears.timer.delayed_call(function() tabbed.switch_to(parent.bling_tabbed, tab_index) end)
+                    if parent.bling_tabbed and not child.bling_tabbed then
+                        tabbed.add(child, parent.bling_tabbed)
+                        gears.timer.delayed_call(function()
+                            tabbed.switch_to(parent.bling_tabbed, tab_index)
+                        end)
                     end
-                   entry :tags({})
+                   child:tags({})
                 end
             end
         end
