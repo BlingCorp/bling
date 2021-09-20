@@ -239,6 +239,7 @@ end
 
 tabbed.init = function(c)
     local tabobj = {}
+    tabobj.parent = c.window
     tabobj.clients = { c }
     tabobj.focused_idx = 1
     tabbed.update(tabobj)

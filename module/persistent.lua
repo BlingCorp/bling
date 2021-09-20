@@ -73,7 +73,7 @@ local function save()
             client_set_xproperty(client, "tag_" .. index, "number", client_tag.index)
         end
 
-        if client.bling_tabbed then
+        if client.bling_tabbed and client.bling_tabbed.parent == client.window then
             client_set_xproperty(client, "bling_tabbed_clients_amount", "number", #client.bling_tabbed.clients)
             client_set_xproperty(client, "bling_tabbed_focused_idx", "number", tostring(client.bling_tabbed.focused_idx))
             for index, bling_tabbed_client in ipairs(client.bling_tabbed.clients) do
