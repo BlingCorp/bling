@@ -62,10 +62,10 @@ local function save()
         client_set_xproperty(client, "maximized_vertical", "boolean", client.maximized_vertical)
         client_set_xproperty(client, "sticky", "boolean", client.sticky)
         client_set_xproperty(client, "floating", "boolean", client.floating)
-        client_set_xproperty(client, "x", "string", tostring(client.x))
-        client_set_xproperty(client, "y", "string", tostring(client.y))
-        client_set_xproperty(client, "width", "string", tostring(client.width))
-        client_set_xproperty(client, "height", "string", tostring(client.height))
+        client_set_xproperty(client, "x", "number", client.x)
+        client_set_xproperty(client, "y", "number", client.y)
+        client_set_xproperty(client, "width", "number", client.width)
+        client_set_xproperty(client, "height", "number", client.height)
 
         client_set_xproperty(client, "tags_count", "number", #client:tags())
         for index, client_tag in ipairs(client:tags()) do
@@ -116,10 +116,11 @@ local function restore()
         client.maximized_vertical = client_get_xproperty(client, "maximized_vertical", "boolean")
         client.sticky = client_get_xproperty(client, "sticky", "boolean")
         client.floating = client_get_xproperty(client, "floating", "boolean")
-        client.x = tonumber(client_get_xproperty(client, "x", "string"))
-        client.y = tonumber(client_get_xproperty(client, "y", "string"))
-        client.width = tonumber(client_get_xproperty(client, "width", "string"))
-        client.height = tonumber(client_get_xproperty(client, "height", "string"))
+
+        client.x = client_get_xproperty(client, "x", "number")
+        client.y = client_get_xproperty(client, "y", "number")
+        client.width = client_get_xproperty(client, "width", "number")
+        client.height = client_get_xproperty(client, "height", "number")
 
         local parent = client
         local bling_tabbed_clients_amount = client_get_xproperty(parent, "bling_tabbed_clients_amount", "number") or 0
