@@ -29,7 +29,6 @@ end
 local function client_get_xproperty(client, name, type)
     local xprop = "bling.client." .. name
     capi.awesome.register_xproperty(xprop, type)
-    -- print(xprop .. "  " .. tostring(client:get_xproperty(xprop)))
     return client:get_xproperty(xprop)
 end
 
