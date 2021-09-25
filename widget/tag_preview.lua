@@ -107,7 +107,7 @@ local function draw_widget(
         end
     end
 
-    return {
+    return wibox.widget {
         {
             {
                 {
@@ -182,23 +182,21 @@ local enable = function(opts)
 
         tag_preview_box.maximum_width = scale * geo.width + margin * 2
         tag_preview_box.maximum_height = scale * geo.height + margin * 2
-        tag_preview_box:setup(
-            draw_widget(
-                t,
-                tag_preview_image,
-                scale,
-                screen_radius,
-                client_radius,
-                client_opacity,
-                client_bg,
-                client_border_color,
-                client_border_width,
-                widget_bg,
-                widget_border_color,
-                widget_border_width,
-                geo,
-                margin
-            )
+        tag_preview_box.widget = draw_widget(
+            t,
+            tag_preview_image,
+            scale,
+            screen_radius,
+            client_radius,
+            client_opacity,
+            client_bg,
+            client_border_color,
+            client_border_width,
+            widget_bg,
+            widget_border_color,
+            widget_border_width,
+            geo,
+            margin
         )
     end)
 
@@ -206,6 +204,11 @@ local enable = function(opts)
         if not placement_fn then
             tag_preview_box.x = s.geometry.x + widget_x
             tag_preview_box.y = s.geometry.y + widget_y
+        end
+
+        if v == false then
+            tag_preview_box.widget = nil
+            collectgarbage("collect")
         end
 
         tag_preview_box.visible = v

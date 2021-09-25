@@ -153,6 +153,9 @@ local enable = function(opts)
                 widget_width,
                 widget_height
             )
+        else
+            task_preview_box.widget = nil
+            collectgarbage("collect")
         end
 
         if not placement_fn then
