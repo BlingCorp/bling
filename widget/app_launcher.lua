@@ -465,7 +465,7 @@ local function new(args)
         }
     }
     ret._private.widget = awful.popup
-    ({
+    {
         type = "dock",
         visible = false,
         ontop = true,
@@ -511,7 +511,7 @@ local function new(args)
                 ret._private.grid
             }
         }
-    })
+    }
 
     -- Private variables to be used to be used by the scrolling and searching functions
     ret._private.all_entries = {}
