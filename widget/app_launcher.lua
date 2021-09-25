@@ -134,6 +134,8 @@ local function search(self, text)
     -- Remove all the grid widgets
     self._private.grid:reset()
 
+    collectgarbage("collect")
+
     for index, entry in pairs(self._private.all_entries) do
         text = text:gsub( "%W", "" )
 
