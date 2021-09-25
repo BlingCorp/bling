@@ -356,6 +356,7 @@ local function new(args)
     args.sort_alphabetically = args.sort_alphabetically or true
     args.select_before_spawn = args.select_before_spawn or true
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
+    args.default_app_icon = args.default_app_icon or nil
 
     args.rubato = args.rubato or nil
     args.shirnk_width = args.shirnk_width or false
@@ -535,6 +536,10 @@ local function new(args)
                 if not has_value(ret.skip_names, entry.name) and not has_value(ret.skip_commands, entry.cmdline) then
                     -- Check if this app should be skipped becuase it's iconless depanding on skip_empty_icons
                     if entry.icon ~= nil or ret.skip_empty_icons == false then
+                        if entry.icon == nil then
+                            entry.icon = ret.default_app_icon
+                        end
+
                         -- Insert a table containing the name, command and icon of the app into the all_entries table
                         table.insert(ret._private.all_entries, #ret._private.all_entries + 1, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
 
