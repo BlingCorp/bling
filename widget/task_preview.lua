@@ -16,15 +16,7 @@ local cairo = require("lgi").cairo
 -- TODO: rename structure to something better?
 local function draw_widget(
     c,
-    widget_template,
-    screen_radius,
-    widget_bg,
-    widget_border_color,
-    widget_border_width,
-    margin,
-    widget_width,
-    widget_height
-)
+    opts)
     if not pcall(function()
         return type(c.content)
     end) then
@@ -40,7 +32,7 @@ local function draw_widget(
     cr:paint()
 
     local widget = wibox.widget({
-        (widget_template or {
+        (opts.widget_template or {
             {
                 {
                     {
@@ -68,30 +60,30 @@ local function draw_widget(
                             {
                                 id = "image_role",
                                 resize = true,
-                                clip_shape = helpers.shape.rrect(screen_radius),
+                                clip_shape = helpers.shape.rrect(opts.widget_border_radius),
                                 widget = wibox.widget.imagebox,
                             },
                             valign = "center",
                             halign = "center",
                             widget = wibox.container.place,
                         },
-                        top = margin * 0.25,
+                        top = opts.margin * 0.25,
                         widget = wibox.container.margin,
                     },
                     fill_space = true,
                     layout = wibox.layout.fixed.vertical,
                 },
-                margins = margin,
+                margins = opts.margin,
                 widget = wibox.container.margin,
             },
-            bg = widget_bg,
-            shape_border_width = widget_border_width,
-            shape_border_color = widget_border_color,
-            shape = helpers.shape.rrect(screen_radius),
+            bg = opts.widget_bg,
+            shape_border_width = opts.widget_border_width,
+            shape_border_color = opts.widget_border_color,
+            shape = helpers.shape.rrect(opts.widget_border_radius),
             widget = wibox.container.background,
         }),
-        width = widget_width,
-        height = widget_height,
+        width = opts.widget_width,
+        height = opts.widget_height,
         widget = wibox.container.constraint,
     })
 
@@ -113,27 +105,27 @@ local function draw_widget(
 end
 
 local enable = function(opts)
-    local opts = opts or {}
+    local opts = helpers.util.retrieveArguments({
+		"task_preview",
+		{ "x" , "y", "height", "width", "placement_fn" },
+		x = dpi(20),
+		y = dpi(20),
+		height = dpi(200),
+		width = dpi(200),
 
-    local widget_x = opts.x or dpi(20)
-    local widget_y = opts.y or dpi(20)
-    local widget_height = opts.height or dpi(200)
-    local widget_width = opts.width or dpi(200)
-    local placement_fn = opts.placement_fn or nil
-
-    local margin = beautiful.task_preview_widget_margin or dpi(0)
-    local screen_radius = beautiful.task_preview_widget_border_radius or dpi(0)
-    local widget_bg = beautiful.task_preview_widget_bg or "#000000"
-    local widget_border_color = beautiful.task_preview_widget_border_color
-        or "#ffffff"
-    local widget_border_width = beautiful.task_preview_widget_border_width
-        or dpi(3)
+		placement_fn = nil,
+		widget_margin = dpi(0),
+		widget_border_radius = dpi(0),
+		widget_bg = "#000000",
+		widget_border_color = "#ffffff",
+		widget_border_width = dpi(3)
+	}, opts)
 
     local task_preview_box = awful.popup({
         type = "dropdown_menu",
         visible = false,
         ontop = true,
-        placement = placement_fn,
+        placement = opts.placement_fn,
         widget = wibox.container.background, -- A dummy widget to make awful.popup not scream
         input_passthrough = true,
         bg = "#00000000",
@@ -144,20 +136,13 @@ local enable = function(opts)
             -- Update task preview contents
             task_preview_box.widget = draw_widget(
                 c,
-                opts.structure,
-                screen_radius,
-                widget_bg,
-                widget_border_color,
-                widget_border_width,
-                margin,
-                widget_width,
-                widget_height
+                opts
             )
         end
 
         if not placement_fn then
-            task_preview_box.x = s.geometry.x + widget_x
-            task_preview_box.y = s.geometry.y + widget_y
+            task_preview_box.x = s.geometry.x + opts.x
+            task_preview_box.y = s.geometry.y + opts.y
         end
 
         task_preview_box.visible = v
