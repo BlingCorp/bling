@@ -54,6 +54,7 @@ return function(c, opts)
         end
 	end)
 
+<<<<<<< HEAD
     local function recreate(group)
         if tbl_contains(group.clients, c) then
             tabbed_icons:reset()
@@ -117,4 +118,79 @@ return function(c, opts)
     awesome.connect_signal("bling::tabbed::changed_focus", recreate)
 
     return tabbed_icons
+=======
+	local function recreate(group)
+		if tbl_contains(group.clients, c) then
+			tabbed_icons:reset()
+			local focused = group.clients[group.focused_idx]
+
+			-- Autohide?
+			if #group.clients == 1 then
+				return
+			end
+
+			for idx, client in ipairs(group.clients) do
+				local widget = wibox.widget(
+					opts.widget_template or {
+					{
+						{
+							{
+								id = "icon_role",
+								forced_width = opts.icon_size,
+								forced_height = opts.icon_size,
+								widget = awful.widget.clienticon,
+							},
+							margins = opts.icon_margin,
+							widget = wibox.container.margin,
+						},
+						shape = opts.icon_shape,
+						id = "bg_role",
+						widget = wibox.container.background,
+					},
+					halign = "center",
+					valign = "center",
+					widget = wibox.container.place,
+				})
+
+				widget._client = client
+
+				-- No creation call back since this would be called on creation & every time the widget updated.
+				if opts.widget_template and opts.widget_template.update_callback then
+					opts.widget_template.update_callback(widget, client, group)
+				end
+
+				-- Add icons & etc
+				for _, w in ipairs(widget:get_children_by_id("icon_role")) do
+					-- TODO: Allow fallback icon?
+					w.image = client.icon
+					w.client = client
+				end
+
+				for _, w in ipairs(widget:get_children_by_id("bg_role")) do
+					w:add_button(awful.button({}, 1, function()
+						tabbed_module.switch_to(group, idx)
+					end))
+					if client == focused then
+						w.bg = opts.bg_color_focus
+						w.fg = opts.fg_color_focus
+					else
+						w.bg = opts.bg_color
+						w.fg = opts.fg_color
+					end
+				end
+
+				for _, w in ipairs(widget:get_children_by_id("text_role")) do
+					w.text = client.name
+				end
+
+				tabbed_icons:add(widget)
+			end
+		end
+	end
+
+	awesome.connect_signal("bling::tabbed::client_added", recreate)
+	awesome.connect_signal("bling::tabbed::changed_focus", recreate)
+
+	return tabbed_icons
+>>>>>>> 848ddd9 (Use grid layout in custom_tasklist)
 end

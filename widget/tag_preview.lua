@@ -36,7 +36,8 @@ local function draw_widget(
     local tag_screen = t.screen
     for i, c in ipairs(t:clients()) do
         if not c.hidden and not c.minimized then
-            local img_box = wibox.widget({
+      
+			local img_box = wibox.widget({
                 image = gears.surface.load(c.icon),
                 resize = true,
                 forced_height = 100 * scale,
@@ -182,24 +183,15 @@ local enable = function(opts)
 
         tag_preview_box.maximum_width = scale * geo.width + margin * 2
         tag_preview_box.maximum_height = scale * geo.height + margin * 2
-        tag_preview_box:setup(
-            draw_widget(
-                t,
-                tag_preview_image,
-                scale,
-                screen_radius,
-                client_radius,
-                client_opacity,
-                client_bg,
-                client_border_color,
-                client_border_width,
-                widget_bg,
-                widget_border_color,
-                widget_border_width,
-                geo,
-                margin
-            )
-        )
+
+		-- TODO: Use a table here
+        tag_preview_box:setup(draw_widget(t, tag_preview_image, scale,
+                                          screen_radius, client_radius,
+                                          client_opacity, client_bg,
+                                          client_border_color,
+                                          client_border_width, widget_bg,
+                                          widget_border_color,
+                                          widget_border_width, geo, margin))
     end)
 
     awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
@@ -212,4 +204,4 @@ local enable = function(opts)
     end)
 end
 
-return { enable = enable }
+return {enable = enable, draw_widget = draw_widget}
