@@ -91,7 +91,7 @@ return function(c, opts)
 				widget._client = client
 
 				-- No creation call back since this would be called on creation & every time the widget updated.
-				if opts.widget_template.update_callback then
+				if opts.widget_template and opts.widget_template.update_callback then
 					opts.widget_template.update_callback(widget, client, group)
 				end
 

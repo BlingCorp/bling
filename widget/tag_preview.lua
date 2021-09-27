@@ -27,6 +27,7 @@ local function draw_widget(t, tag_preview_image, scale, screen_radius,
 
         if not c.hidden and not c.minimized then
 
+			-- TODO: Fallback icon here, this can fail if no icon is set (eg: st)
             local img_box = wibox.widget {
                 image = gears.surface.load(c.icon),
                 resize = true,
@@ -172,6 +173,7 @@ local enable = function(opts)
 
         tag_preview_box.maximum_width = scale * geo.width + margin * 2
         tag_preview_box.maximum_height = scale * geo.height + margin * 2
+		-- TODO: Use a table here
         tag_preview_box:setup(draw_widget(t, tag_preview_image, scale,
                                           screen_radius, client_radius,
                                           client_opacity, client_bg,
@@ -191,4 +193,4 @@ local enable = function(opts)
     end)
 end
 
-return {enable = enable}
+return {enable = enable, draw_widget = draw_widget}
