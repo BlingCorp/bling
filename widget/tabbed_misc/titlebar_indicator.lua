@@ -4,6 +4,7 @@ local gears = require("gears")
 local beautiful = require("beautiful")
 local dpi = require("beautiful.xresources").apply_dpi
 local tabbed_module = require(tostring(...):match(".*bling") .. ".module.tabbed")
+local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 
 -- Just check if a table contains a value.
 local function tbl_contains(tbl, item)
@@ -18,7 +19,8 @@ end
 -- Needs to be run, every time a new titlbear is created
 return function(c, opts)
 	-- Args & Fallback -- Widget templates are in their original loactions
-	opts = gears.table.crush({
+	opts = helpers.util.retrieveArguments({
+		"bling_tabbed_misc_titlebar_indicator",
 		layout_spacing = dpi(4),
 		icon_size = dpi(20),
 		icon_margin = dpi(4),
@@ -29,11 +31,8 @@ return function(c, opts)
 		icon_shape = function(cr, w, h)
 			gears.shape.rounded_rect(cr, w, h, 0)
 		end,
-		layout = wibox.layout.fixed.horizontal,
-	}, gears.table.join(
-		opts,
-		beautiful.bling_tabbed_misc_titlebar_indicator
-	))
+		layout = wibox.layout.fixed.horizontal
+	}, opts)
 
 	-- Container to store icons
 	local tabbed_icons = wibox.widget({

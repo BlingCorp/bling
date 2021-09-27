@@ -3,5 +3,6 @@ return {
     color = require(... .. ".color"),
     filesystem = require(... .. ".filesystem"),
     shape = require(... .. ".shape"),
-    time = require(... .. ".time")
+    time = require(... .. ".time"),
+	util = require(... .. ".util")
 }

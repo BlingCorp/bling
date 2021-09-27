@@ -14,10 +14,7 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local cairo = require("lgi").cairo
 
-local function draw_widget(t, tag_preview_image, scale, screen_radius,
-                           client_radius, client_opacity, client_bg,
-                           client_border_color, client_border_width, widget_bg,
-                           widget_border_color, widget_border_width, geo, margin)
+local function draw_widget(t, o, geo)
 
     local client_list = wibox.layout.manual()
     client_list.forced_height = geo.height
@@ -31,8 +28,8 @@ local function draw_widget(t, tag_preview_image, scale, screen_radius,
 			--
             local img_box = wibox.widget {
                 resize = true,
-                forced_height = 100 * scale,
-                forced_width = 100 * scale,
+                forced_height = 100 * o.scale,
+                forced_width = 100 * o.scale,
                 widget = wibox.widget.imagebox
             }
 
@@ -41,7 +38,7 @@ local function draw_widget(t, tag_preview_image, scale, screen_radius,
 				img_box.image = beautiful.theme_assets.awesome_icon (24, "#222222", "#fafafa")
 			end
 
-            if tag_preview_image then
+            if o.show_client_content then
                 if c.prev_content or t.selected then
                     local content
                     if t.selected then
@@ -61,9 +58,9 @@ local function draw_widget(t, tag_preview_image, scale, screen_radius,
                     img_box = wibox.widget {
                         image = gears.surface.load(img),
                         resize = true,
-                        opacity = client_opacity,
-                        forced_height = math.floor(c.height * scale),
-                        forced_width = math.floor(c.width * scale),
+                        opacity = o.client_opacity,
+                        forced_height = math.floor(c.height * o.scale),
+                        forced_width = math.floor(c.width * o.scale),
                         widget = wibox.widget.imagebox
                     }
                 end
@@ -83,18 +80,18 @@ local function draw_widget(t, tag_preview_image, scale, screen_radius,
                     expand = "outside",
                     widget = wibox.layout.align.vertical
                 },
-                forced_height = math.floor(c.height * scale),
-                forced_width = math.floor(c.width * scale),
-                bg = client_bg,
-                shape_border_color = client_border_color,
-                shape_border_width = client_border_width,
-                shape = helpers.shape.rrect(client_radius),
+                forced_height = math.floor(c.height * o.scale),
+                forced_width = math.floor(c.width * o.scale),
+                bg = o.client_bg,
+                shape_border_color = o.client_border_color,
+                shape_border_width = o.client_border_width,
+                shape = helpers.shape.rrect(o.client_border_radius),
                 widget = wibox.container.background
             }
 
             client_box.point = {
-                x = math.floor((c.x - geo.x) * scale),
-                y = math.floor((c.y - geo.y) * scale)
+                x = math.floor((c.x - geo.x) * o.scale),
+                y = math.floor((c.y - geo.y) * o.scale)
             }
 
             client_list:add(client_box)
@@ -116,43 +113,45 @@ local function draw_widget(t, tag_preview_image, scale, screen_radius,
                 layout = wibox.layout.align.vertical
 
             },
-            margins = margin,
+            margins = o.widget_margin,
             widget = wibox.container.margin
 
         },
-        bg = widget_bg,
-        shape_border_width = widget_border_width,
-        shape_border_color = widget_border_color,
-        shape = helpers.shape.rrect(screen_radius),
+        bg = o.widget_bg,
+        shape_border_width = o.widget_border_width,
+        shape_border_color = o.widget_border_color,
+        shape = helpers.shape.rrect(o.screen_border_radius),
         widget = wibox.container.background
     }
 end
 
 local enable = function(opts)
-    local opts = opts or {}
 
-    local tag_preview_image = opts.show_client_content or false
-    local widget_x = opts.x or dpi(20)
-    local widget_y = opts.y or dpi(20)
-    local scale = opts.scale or 0.2
-    local work_area = opts.honor_workarea or false
-    local padding = opts.honor_padding or false
-    local placement_fn = opts.placement_fn or nil
+	
+									-- TODO:
+									-- For the backgrounds, somehow detect if they are a image!
+									-- and use bgimage
+	local opts = helpers.util.retrieveArguments({
+		"tag_preview",
+		show_client_content = false,
+		x = dpi(20),
+		y = dpi(20),
+		scale = 0.2,
+		honor_workarea = false,
+		honor_padding = false,
+		placement_fn = nil,
 
-    local margin = beautiful.tag_preview_widget_margin or dpi(0)
-    local screen_radius = beautiful.tag_preview_widget_border_radius or dpi(0)
-    local client_radius = beautiful.tag_preview_client_border_radius or dpi(0)
-    local client_opacity = beautiful.tag_preview_client_opacity or 0.5
-    local client_bg = beautiful.tag_preview_client_bg or "#000000"
-    local client_border_color = beautiful.tag_preview_client_border_color or
-                                    "#ffffff"
-    local client_border_width = beautiful.tag_preview_client_border_width or
-                                    dpi(3)
-    local widget_bg = beautiful.tag_preview_widget_bg or "#000000"
-    local widget_border_color = beautiful.tag_preview_widget_border_color or
-                                    "#ffffff"
-    local widget_border_width = beautiful.tag_preview_widget_border_width or
-                                    dpi(3)
+		widget_margin = dpi(0),
+		widget_border_radius = dpi(0),
+		client_border_radius = dpi(0),
+		client_opacity = 0.5,
+		client_bg = "#000000",
+		client_border_color = "#ffffff",
+		client_border_width = dpi(3),
+		widget_bg = "#000000",
+		widget_border_color = "#ffffff",
+		widget_border_width = dpi(3)
+	}, opts) 
 
     local tag_preview_box = awful.popup({
         type = "dropdown_menu",
@@ -172,26 +171,20 @@ local enable = function(opts)
 
     awesome.connect_signal("bling::tag_preview::update", function(t)
         local geo = t.screen:get_bounding_geometry{
-            honor_padding = padding,
-            honor_workarea = work_area
+            honor_padding = o.honor_padding,
+            honor_workarea = o.honor_work_area
         }
 
         tag_preview_box.maximum_width = scale * geo.width + margin * 2
         tag_preview_box.maximum_height = scale * geo.height + margin * 2
 		-- TODO: Use a table here
-        tag_preview_box:setup(draw_widget(t, tag_preview_image, scale,
-                                          screen_radius, client_radius,
-                                          client_opacity, client_bg,
-                                          client_border_color,
-                                          client_border_width, widget_bg,
-                                          widget_border_color,
-                                          widget_border_width, geo, margin))
+        tag_preview_box:setup(draw_widget(tag, opts, margin))
     end)
 
     awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
         if not placement_fn then
-            tag_preview_box.x = s.geometry.x + widget_x
-            tag_preview_box.y = s.geometry.y + widget_y
+            tag_preview_box.x = s.geometry.x + o.x
+            tag_preview_box.y = s.geometry.y + o.y
         end
 
         tag_preview_box.visible = v
