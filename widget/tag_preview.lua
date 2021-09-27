@@ -36,13 +36,18 @@ local function draw_widget(
     local tag_screen = t.screen
     for i, c in ipairs(t:clients()) do
         if not c.hidden and not c.minimized then
-            local img_box = wibox.widget({
-                image = gears.surface.load(c.icon),
+
+            local img_box = wibox.widget ({
                 resize = true,
                 forced_height = 100 * scale,
                 forced_width = 100 * scale,
                 widget = wibox.widget.imagebox,
             })
+
+			-- If fails to set image, fallback to a awesome icon
+			if not pcall(function() img_box.image = gears.surface.load(c.icon) end) then
+				img_box.image = beautiful.theme_assets.awesome_icon (24, "#222222", "#fafafa")
+			end
 
             if tag_preview_image then
                 if c.prev_content or t.selected then
