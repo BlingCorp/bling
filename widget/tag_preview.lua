@@ -28,13 +28,18 @@ local function draw_widget(t, tag_preview_image, scale, screen_radius,
         if not c.hidden and not c.minimized then
 
 			-- TODO: Fallback icon here, this can fail if no icon is set (eg: st)
+			--
             local img_box = wibox.widget {
-                image = gears.surface.load(c.icon),
                 resize = true,
                 forced_height = 100 * scale,
                 forced_width = 100 * scale,
                 widget = wibox.widget.imagebox
             }
+
+			-- If fails to set image, fallback to a awesome icon
+			if not pcall(function() img_box.image = gears.surface.load(c.icon) end) then
+				img_box.image = beautiful.theme_assets.awesome_icon (24, "#222222", "#fafafa")
+			end
 
             if tag_preview_image then
                 if c.prev_content or t.selected then
