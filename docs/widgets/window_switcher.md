@@ -1,6 +1,6 @@
 ## 🎨 Window Switcher <!-- {docsify-ignore} -->
 
-A popup that allows you to switch clients similar to what is known from MacOS or GNOME.
+A popup with client previews that allows you to switch clients similar to the alt-tab menu in MacOS, GNOME, and Windows.
 
 ![](https://user-images.githubusercontent.com/70270606/133311802-8aef1012-346f-4f4c-843d-10d9de54ffeb.png)
 
@@ -27,10 +27,15 @@ bling.widget.window_switcher.enable {
 }
 ```
 
-To run the window swicher you have to run:
+To run the window swicher you have to emit this signal from within your configuration (usually using a keybind).
 
 ```lua
 awesome.emit_signal("bling::window_switcher::turn_on")
 ```
-from within your configuration (usually using a keybind).
 
+For example:
+```lua
+ awful.key({altkey}, "Tab", function()
+            awesome.emit_signal("bling::window_switcher::turn_on")
+        end, {description = "Window Switcher", group = "client"})
+```
