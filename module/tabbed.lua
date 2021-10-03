@@ -23,6 +23,14 @@ local bar = require(
 
 tabbed = {}
 
+-- helper function to connect to the (un)focus signals
+local function update_tabbar_from(c)
+    if not c or not c.bling_tabbed then
+        return
+    end
+    tabbed.update_tabbar(c.bling_tabbed)
+end
+
 -- used to change focused tab relative to the currently focused one
 tabbed.iter = function(idx)
     if not idx then
@@ -50,6 +58,8 @@ tabbed.remove = function(c)
         awful.titlebar.hide(c, bar.position)
     end
     c.bling_tabbed = nil
+    c:disconnect_signal("focus", update_tabbar_from)
+    c:disconnect_signal("unfocus", update_tabbar_from)
     awesome.emit_signal("bling::tabbed::client_removed", tabobj, c)
     tabbed.switch_to(tabobj, 1)
 end
@@ -67,6 +77,8 @@ tabbed.add = function(c, tabobj)
     if c.bling_tabbed then
         tabbed.remove(c)
     end
+    c:connect_signal("focus", update_tabbar_from)
+    c:connect_signal("unfocus", update_tabbar_from)
     helpers.client.sync(c, tabobj.clients[tabobj.focused_idx])
     tabobj.clients[#tabobj.clients + 1] = c
     tabobj.focused_idx = #tabobj.clients
@@ -218,12 +230,15 @@ end
 
 tabbed.update_tabbar = function(tabobj)
     local flexlist = bar.layout()
+    local tabobj_focused_client = tabobj.clients[tabobj.focused_idx]
+    local tabobj_is_focused = (client.focus == tabobj_focused_client)
     -- itearte over all tabbed clients to create the widget tabbed list
     for idx, c in ipairs(tabobj.clients) do
         local buttons = gears.table.join(awful.button({}, 1, function()
             tabbed.switch_to(tabobj, idx)
         end))
-        wid_temp = bar.create(c, (idx == tabobj.focused_idx), buttons)
+        local wid_temp = bar.create(c, (idx == tabobj.focused_idx), buttons,
+            not tabobj_is_focused)
         flexlist:add(wid_temp)
     end
     -- add tabbar to each tabbed client (clients will be hided anyway)
@@ -240,6 +255,8 @@ end
 tabbed.init = function(c)
     local tabobj = {}
     tabobj.clients = { c }
+    c:connect_signal("focus", update_tabbar_from)
+    c:connect_signal("unfocus", update_tabbar_from)
     tabobj.focused_idx = 1
     tabbed.update(tabobj)
 end
