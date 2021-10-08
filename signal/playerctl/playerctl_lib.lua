@@ -35,101 +35,80 @@ local gstring = require("gears.string")
 local beautiful = require("beautiful")
 local setmetatable = setmetatable
 local ipairs = ipairs
+local pairs = pairs
+local type = type
 
 local playerctl = { mt = {} }
 local instance = nil
 
--- Settings
-local ignore = {}
-local priority = {}
-local update_on_activity = true
-local interval = 1
-local debounce_delay = 0.35
-
--- Locals
-local lgi_Playerctl = nil
-local manager = nil
-local metadata_timer = nil
-local position_timer = nil
-
--- Track position callback
-local last_position = -1
-local last_length = -1
-
--- Metadata callback for title, artist, and album art
-local last_player = nil
-local last_title = ""
-local last_artist = ""
-local last_artUrl = ""
-
 function playerctl:pause()
-    if manager.players[1] then
-        manager.players[1].pause(manager.players[1])
+    if self._private.manager.players[1] then
+        self._private.manager.players[1].pause(self._private.manager.players[1])
     end
 end
 
 function playerctl:play()
-    if manager.players[1] then
-        manager.players[1].play(manager.players[1])
+    if self._private.manager.players[1] then
+        self._private.manager.players[1].play(self._private.manager.players[1])
     end
 end
 
 function playerctl:stop()
-    if manager.players[1] then
-        manager.players[1].stop(manager.players[1])
+    if self._private.manager.players[1] then
+        self._private.manager.players[1].stop(self._private.manager.players[1])
     end
 end
 
 function playerctl:play_pause()
-    if manager.players[1] then
-        manager.players[1].play_pause(manager.players[1])
+    if self._private.manager.players[1] then
+        self._private.manager.players[1].play_pause(self._private.manager.players[1])
     end
 end
 
 function playerctl:previous()
-    if manager.players[1] then
-        manager.players[1].previous(manager.players[1])
+    if self._private.manager.players[1] then
+        self._private.manager.players[1].previous(self._private.manager.players[1])
     end
 end
 
 function playerctl:next()
-    if manager.players[1] then
-        manager.players[1].next(manager.players[1])
+    if self._private.manager.players[1] then
+        self._private.manager.players[1].next(self._private.manager.players[1])
     end
 end
 
 function playerctl:set_loop_status(loop_status)
-    if manager.players[1] then
-        manager.players[1].set_loop_status(manager.players[1], loop_status)
+    if self._private.manager.players[1] then
+        self._private.manager.players[1].set_loop_status(self._private.manager.players[1], loop_status)
     end
 end
 
 function playerctl:set_position()
-    if manager.players[1] then
+    if self._private.manager.players[1] then
         -- Disabled as it throws:
         -- (process:115888): GLib-CRITICAL **: 09:53:03.111: g_variant_new_object_path: assertion 'g_variant_is_object_path (object_path)' failed
-        --manager.players[1].set_position(manager.players[1], 1000)
+        --self._private.manager.players[1].set_position(self._private.manager.players[1], 1000)
     end
 end
 
 function playerctl:set_shuffle(shuffle)
-    if manager.players[1] then
-        manager.players[1].set_shuffle(manager.players[1], shuffle)
+    if self._private.manager.players[1] then
+        self._private.manager.players[1].set_shuffle(self._private.manager.players[1], shuffle)
     end
 end
 
 function playerctl:set_volume(volume)
-    if manager.players[1] then
-        manager.players[1].set_volume(manager.players[1], volume)
+    if self._private.manager.players[1] then
+        self._private.manager.players[1].set_volume(self._private.manager.players[1], volume)
     end
 end
 
 function playerctl:get_manager()
-    return manager
+    return self._private.manager
 end
 
 function playerctl:get_active_player()
-    return manager.players[1]
+    return self._private.manager.players[1]
 end
 
 local function emit_metadata_signal(self, title, artist, artUrl, player_name, album, new)
@@ -162,8 +141,8 @@ local function emit_metadata_signal(self, title, artist, artUrl, player_name, al
 end
 
 local function metadata_cb(self, player, metadata)
-    if update_on_activity then
-        manager:move_player_to_top(player)
+    if self.update_on_activity then
+        self._private.manager:move_player_to_top(player)
     end
 
     local data = metadata.value
@@ -176,20 +155,23 @@ local function metadata_cb(self, player, metadata)
     local artUrl = data["mpris:artUrl"] or ""
     local album = data["xesam:album"] or ""
 
-    if player == manager.players[1] then
+    if player == self._private.manager.players[1] then
         -- Callback can be called even though values we care about haven't
         -- changed, so check to see if they have
-        if player ~= last_player or title ~= last_title or
-            artist ~= last_artist or artUrl ~= last_artUrl
+        if
+            player ~= self._private.last_player
+            or title ~= self._private.last_title
+            or artist ~= self._private.last_artist
+            or artUrl ~= self._private.last_artUrl
         then
             if (title == "" and artist == "" and artUrl == "") then return end
 
-            if metadata_timer ~= nil and metadata_timer.started then
-                metadata_timer:stop()
+            if self._private.metadata_timer ~= nil and self._private.metadata_timer.started then
+                self._private.metadata_timer:stop()
             end
 
-            metadata_timer = gtimer {
-                timeout = debounce_delay,
+            self._private.metadata_timer = gtimer {
+                timeout = self.debounce_delay,
                 autostart = true,
                 single_shot = true,
                 callback = function()
@@ -198,34 +180,34 @@ local function metadata_cb(self, player, metadata)
             }
 
             -- Re-sync with position timer when track changes
-            position_timer:again()
-            last_player = player
-            last_title = title
-            last_artist = artist
-            last_artUrl = artUrl
+            self._private.position_timer:again()
+            self._private.last_player = player
+            self._private.last_title = title
+            self._private.last_artist = artist
+            self._private.last_artUrl = artUrl
         end
     end
 end
 
 local function position_cb(self)
-    local player = manager.players[1]
+    local player = self._private.manager.players[1]
     if player then
         local position = player:get_position() / 1000000
         local length = (player.metadata.value["mpris:length"] or 0) / 1000000
-        if position ~= last_position or length ~= last_length then
+        if position ~= self._private.last_position or length ~= self._private.last_length then
             self:emit_signal("position", position, length, player.player_name)
-            last_position = position
-            last_length = length
+            self._private.last_position = position
+            self._private.last_length = length
         end
     end
 end
 
 local function playback_status_cb(self, player, status)
-    if update_on_activity then
-        manager:move_player_to_top(player)
+    if self.update_on_activity then
+        self._private.manager:move_player_to_top(player)
     end
 
-    if player == manager.players[1] then
+    if player == self._private.manager.players[1] then
         -- Reported as PLAYING, PAUSED, or STOPPED
         if status == "PLAYING" then
             self:emit_signal("playback_status", true, player.player_name)
@@ -236,43 +218,43 @@ local function playback_status_cb(self, player, status)
 end
 
 local function volume_cb(self, player, volume)
-    if update_on_activity then
-        manager:move_player_to_top(player)
+    if self.update_on_activity then
+        self._private.manager:move_player_to_top(player)
     end
 
-    if player == manager.players[1] then
+    if player == self._private.manager.players[1] then
         self:emit_signal("volume", volume, player.volume)
     end
 end
 
 local function loop_status_cb(self, player, loop_status)
-    if update_on_activity then
-        manager:move_player_to_top(player)
+    if self.update_on_activity then
+        self._private.manager:move_player_to_top(player)
     end
 
-    if player == manager.players[1] then
+    if player == self._private.manager.players[1] then
         self:emit_signal("loop_status", loop_status, player.volume)
     end
 end
 
 local function shuffle_cb(self, player, shuffle)
-    if update_on_activity then
-        manager:move_player_to_top(player)
+    if self.update_on_activity then
+        self._private.manager:move_player_to_top(player)
     end
 
-    if player == manager.players[1] then
+    if player == self._private.manager.players[1] then
         self:emit_signal("shuffle", shuffle, player.player_name)
     end
 end
 
 -- Determine if player should be managed
-local function name_is_selected(name)
-    if ignore[name.name] then
+local function name_is_selected(self, name)
+    if self.ignore[name.name] then
         return false
     end
 
-    if #priority > 0 then
-        for _, arg in pairs(priority) do
+    if #self.priority > 0 then
+        for _, arg in pairs(self.priority) do
             if arg == name.name or arg == "%any" then
                 return true
             end
@@ -285,9 +267,9 @@ end
 
 -- Create new player and connect it to callbacks
 local function init_player(self, name)
-    if name_is_selected(name) then
-        local player = lgi_Playerctl.Player.new_from_name(name)
-        manager:manage_player(player)
+    if name_is_selected(self, name) then
+        local player = self._private.lgi_Playerctl.Player.new_from_name(name)
+        self._private.manager:manage_player(player)
         player.on_metadata = function(player, metadata)
             metadata_cb(self, player, metadata)
         end
@@ -305,15 +287,15 @@ local function init_player(self, name)
         end
 
         -- Start position timer if its not already running
-        if not position_timer.started then
-            position_timer:again()
+        if not self._private.position_timer.started then
+            self._private.position_timer:again()
         end
     end
 end
 
 -- Determine if a player name comes before or after another according to the
 -- priority order
-local function player_compare_name(name_a, name_b)
+local function player_compare_name(self, name_a, name_b)
     local any_index = math.huge
     local a_match_index = nil
     local b_match_index = nil
@@ -322,7 +304,7 @@ local function player_compare_name(name_a, name_b)
         return 0
     end
 
-    for index, name in ipairs(priority) do
+    for index, name in ipairs(self.priority) do
         if name == "%any" then
             any_index = (any_index == math.huge) and index or any_index
         elseif name == name_a then
@@ -346,17 +328,17 @@ local function player_compare_name(name_a, name_b)
 end
 
 -- Sorting function used by manager if a priority order is specified
-local function player_compare(a, b)
-    local player_a = lgi_Playerctl.Player(a)
-    local player_b = lgi_Playerctl.Player(b)
-    return player_compare_name(player_a.player_name, player_b.player_name)
+local function player_compare(self, a, b)
+    local player_a = self._private.lgi_Playerctl.Player(a)
+    local player_b = self._private.lgi_Playerctl.Player(b)
+    return player_compare_name(self, player_a.player_name, player_b.player_name)
 end
 
 local function get_current_player_info(self, player)
-    local title = lgi_Playerctl.Player.get_title(player) or ""
-    local artist = lgi_Playerctl.Player.get_artist(player) or ""
-    local artUrl = lgi_Playerctl.Player.print_metadata_prop(player, "mpris:artUrl") or ""
-    local album = lgi_Playerctl.Player.get_album(player) or ""
+    local title = self._private.lgi_Playerctl.Player.get_title(player) or ""
+    local artist = self._private.lgi_Playerctl.Player.get_artist(player) or ""
+    local artUrl = self._private.lgi_Playerctl.Player.print_metadata_prop(player, "mpris:artUrl") or ""
+    local album = self._private.lgi_Playerctl.Player.get_album(player) or ""
 
     emit_metadata_signal(self, title, artist, artUrl, player.player_name, album, true)
     playback_status_cb(self, player, player.playback_status)
@@ -366,87 +348,98 @@ local function get_current_player_info(self, player)
 end
 
 local function start_manager(self)
-    manager = lgi_Playerctl.PlayerManager()
+    self._private.manager = self._private.lgi_Playerctl.PlayerManager()
 
-    if #priority > 0 then
-        manager:set_sort_func(player_compare)
+    if #self.priority > 0 then
+        self._private.manager:set_sort_func(function(a, b)
+            return player_compare(self, a, b)
+        end)
     end
 
     -- Timer to update track position at specified interval
-    position_timer = gtimer {
-        timeout = interval,
+    self._private.position_timer = gtimer {
+        timeout = self.interval,
         callback = function()
             position_cb(self)
         end,
     }
 
     -- Manage existing players on startup
-    for _, name in ipairs(manager.player_names) do
+    for _, name in ipairs(self._private.manager.player_names) do
         init_player(self, name)
     end
 
-    if manager.players[1] then
-        get_current_player_info(self, manager.players[1])
+    if self._private.manager.players[1] then
+        get_current_player_info(self, self._private.manager.players[1])
     end
 
     local _self = self
 
     -- Callback to manage new players
-    function manager:on_name_appeared(name)
+    function self._private.manager:on_name_appeared(name)
         init_player(_self, name)
     end
 
     -- Callback to check if all players have exited
-    function manager:on_name_vanished(name)
-        if #manager.players == 0 then
-            metadata_timer:stop()
-            position_timer:stop()
+    function self._private.manager:on_name_vanished(name)
+        if #self._private.manager.players == 0 then
+            self._private.metadata_timer:stop()
+            self._private.position_timer:stop()
             _self:emit_signal("no_players")
         else
-            get_current_player_info(_self, manager.players[1])
+            get_current_player_info(_self, self._private.manager.players[1])
         end
     end
 end
 
-local function parse_args(args)
-    if args then
-        update_on_activity = args.update_on_activity or update_on_activity
-        interval = args.interval or interval
-        debounce_delay = args.debounce_delay or debounce_delay
-
-        if type(args.ignore) == "string" then
-            ignore[args.ignore] = true
-        elseif type(args.ignore) == "table" then
-            for _, name in pairs(args.ignore) do
-                ignore[name] = true
-            end
+local function parse_args(self, args)
+    if type(args.ignore) == "string" then
+        self.ignore[args.ignore] = true
+    elseif type(args.ignore) == "table" then
+        for _, name in pairs(args.ignore) do
+            self.ignore[name] = true
         end
+    end
 
-        if type(args.player) == "string" then
-            priority[1] = args.player
-        elseif type(args.player) == "table" then
-            priority = args.player
-        end
+    if type(args.player) == "string" then
+        self.priority[1] = args.player
+    elseif type(args.player) == "table" then
+        self.priority = args.player
     end
 end
 
 local function new(args)
     args = args or {}
 
-    -- Grab settings from beautiful variables if not set explicitly
-    args.ignore = args.ignore or beautiful.playerctl_ignore
-    args.player = args.player or beautiful.playerctl_player
-    args.update_on_activity = args.update_on_activity or
-                              beautiful.playerctl_update_on_activity
-    args.interval = args.interval or beautiful.playerctl_position_update_interval
-    parse_args(args)
-    args.debounce_delay = args.debounce_delay or beautiful.playerctl_debounce_delay
-
-    -- Grab playerctl library
-    lgi_Playerctl = require("lgi").Playerctl
-
     local ret = gobject{}
     gtable.crush(ret, playerctl, true)
+
+    -- Grab settings from beautiful variables if not set explicitly
+    ret.ignore = args.ignore or beautiful.playerctl_ignore or {}
+    ret.priority = args.player or beautiful.playerctl_player or {}
+    ret.update_on_activity = args.update_on_activity or
+                              beautiful.playerctl_update_on_activity or true
+    ret.interval = args.interval or beautiful.playerctl_position_update_interval or 1
+    ret.debounce_delay = args.debounce_delay or beautiful.playerctl_debounce_delay or 0.35
+    parse_args(ret, args)
+
+    ret._private = {}
+
+    -- Metadata callback for title, artist, and album art
+    ret._private.last_player = nil
+    ret._private.last_title = ""
+    ret._private.last_artist = ""
+    ret._private.last_artUrl = ""
+
+    -- Track position callback
+    ret._private.last_position = -1
+    ret._private.last_length = -1
+
+    -- Grab playerctl library
+    ret._private.lgi_Playerctl = require("lgi").Playerctl
+    ret._private.manager = nil
+    ret._private.metadata_timer = nil
+    ret._private.position_timer = nil
 
     -- Ensure main event loop has started before starting player manager
     gtimer.delayed_call(function()
