@@ -223,7 +223,7 @@ local function volume_cb(self, player, volume)
     end
 
     if player == self._private.manager.players[1] then
-        self:emit_signal("volume", volume, player.volume)
+        self:emit_signal("volume", volume, player.player_name)
     end
 end
 
@@ -233,7 +233,7 @@ local function loop_status_cb(self, player, loop_status)
     end
 
     if player == self._private.manager.players[1] then
-        self:emit_signal("loop_status", loop_status, player.volume)
+        self:emit_signal("loop_status", loop_status, player.player_name)
     end
 end
 
