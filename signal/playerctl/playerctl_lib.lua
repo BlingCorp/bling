@@ -83,6 +83,19 @@ function playerctl:set_loop_status(loop_status)
     end
 end
 
+function playerctl:cycle_loop_status()
+    local player = self._private.manager.players[1]
+    if player then
+        if player.loop_status == "NONE" then
+            player.set_loop_status(player, "TRACK")
+        elseif player.loop_status == "TRACK" then
+            player.set_loop_status(player, "PLAYLIST")
+        elseif player.loop_status == "PLAYLIST" then
+            player.set_loop_status(player, "NONE")
+        end
+    end
+end
+
 function playerctl:set_position()
     if self._private.manager.players[1] then
         -- Disabled as it throws:
@@ -94,6 +107,17 @@ end
 function playerctl:set_shuffle(shuffle)
     if self._private.manager.players[1] then
         self._private.manager.players[1].set_shuffle(self._private.manager.players[1], shuffle)
+    end
+end
+
+function playerctl:cycle_shuffle()
+    local player = self._private.manager.players[1]
+    if player then
+        if player.shuffle == false then
+            player.set_shuffle(player, true)
+        elseif player.shuffle == true then
+            player.set_shuffle(player, false)
+        end
     end
 end
 
