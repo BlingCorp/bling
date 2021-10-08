@@ -15,6 +15,9 @@
 -- playback_status
 --      playing (boolean)
 --      player_name (string)
+-- seeked
+--      position (number)
+--      player_name (string)
 -- volume
 --      volume (number)
 --      player_name (string)
@@ -23,6 +26,8 @@
 --      player_name (string)
 -- shuffle
 --      shuffle (boolean)
+--      player_name (string)
+-- exit
 --      player_name (string)
 -- no_players
 --      (No parameters)
@@ -239,6 +244,16 @@ local function playback_status_cb(self, player, status)
     end
 end
 
+local function seeked_cb(self, player, position)
+    if self.update_on_activity then
+        self._private.manager:move_player_to_top(player)
+    end
+
+    if player == self._private.manager.players[1] then
+        self:emit_signal("seeked", position, player.player_name)
+    end
+end
+
 local function volume_cb(self, player, volume)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
@@ -266,6 +281,12 @@ local function shuffle_cb(self, player, shuffle)
 
     if player == self._private.manager.players[1] then
         self:emit_signal("shuffle", shuffle, player.player_name)
+    end
+end
+
+local function exit_cb(self, player)
+    if player == self._private.manager.players[1] then
+        self:emit_signal("exit", player.player_name)
     end
 end
 
@@ -298,6 +319,9 @@ local function init_player(self, name)
         player.on_playback_status = function(player, playback_status)
             playback_status_cb(self, player, playback_status)
         end
+        player.on_seeked = function(player, position)
+            seeked_cb(self, player, position)
+        end
         player.on_volume = function(player, volume)
             volume_cb(self, player, volume)
         end
@@ -306,6 +330,9 @@ local function init_player(self, name)
         end
         player.on_shuffle = function(player, shuffle_status)
             shuffle_cb(self, player, shuffle_status)
+        end
+        player.on_exit = function(player, shuffle_status)
+            exit_cb(self, player)
         end
 
         -- Start position timer if its not already running
