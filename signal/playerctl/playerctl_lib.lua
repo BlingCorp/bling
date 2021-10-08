@@ -389,7 +389,7 @@ local function get_current_player_info(self, player)
     local artUrl = self._private.lgi_Playerctl.Player.print_metadata_prop(player, "mpris:artUrl") or ""
     local album = self._private.lgi_Playerctl.Player.get_album(player) or ""
 
-    emit_metadata_signal(self, title, artist, artUrl, player.player_name, album, true)
+    emit_metadata_signal(self, title, artist, artUrl, player.player_name, album, false)
     playback_status_cb(self, player, player.playback_status)
     volume_cb(self, player, player.volume)
     loop_status_cb(self, player, player.loop_status)
