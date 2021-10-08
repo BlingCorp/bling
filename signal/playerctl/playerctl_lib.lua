@@ -15,6 +15,12 @@
 -- playback_status
 --      playing (boolean)
 --      player_name (string)
+-- volume
+--      volume (number)
+--      player_name (string)
+-- loop_status
+--      loop_status (boolean)
+--      player_name (string)
 -- shuffle
 --      shuffle (boolean)
 --      player_name (string)
@@ -221,6 +227,26 @@ local function playback_status_cb(self, player, status)
     end
 end
 
+local function volume_cb(self, player, volume)
+    if update_on_activity then
+        manager:move_player_to_top(player)
+    end
+
+    if player == manager.players[1] then
+        self:emit_signal("volume", volume, player.volume)
+    end
+end
+
+local function loop_status_cb(self, player, loop_status)
+    if update_on_activity then
+        manager:move_player_to_top(player)
+    end
+
+    if player == manager.players[1] then
+        self:emit_signal("loop_status", loop_status, player.volume)
+    end
+end
+
 local function shuffle_cb(self, player, shuffle)
     if update_on_activity then
         manager:move_player_to_top(player)
@@ -259,6 +285,12 @@ local function init_player(self, name)
         end
         player.on_playback_status = function(player, playback_status)
             playback_status_cb(self, player, playback_status)
+        end
+        player.on_volume = function(player, volume)
+            volume_cb(self, player, volume)
+        end
+        player.on_loop_status = function(player, loop_status)
+            loop_status_cb(self, player, loop_status)
         end
         player.on_shuffle = function(player, shuffle_status)
             shuffle_cb(self, player, shuffle_status)
@@ -320,6 +352,8 @@ local function get_current_player_info(self, player)
 
     emit_metadata_signal(self, title, artist, artUrl, player.player_name, album, true)
     playback_status_cb(self, player, player.playback_status)
+    volume_cb(self, player, player.volume)
+    loop_status_cb(self, player, player.loop_status)
     shuffle_cb(self, player, player.shuffle)
 end
 
