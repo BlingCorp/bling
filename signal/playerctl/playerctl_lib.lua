@@ -96,11 +96,9 @@ function playerctl:cycle_loop_status()
     end
 end
 
-function playerctl:set_position()
+function playerctl:set_position(position)
     if self._private.manager.players[1] then
-        -- Disabled as it throws:
-        -- (process:115888): GLib-CRITICAL **: 09:53:03.111: g_variant_new_object_path: assertion 'g_variant_is_object_path (object_path)' failed
-        --self._private.manager.players[1].set_position(self._private.manager.players[1], 1000)
+        self._private.manager.players[1].set_position(self._private.manager.players[1], position)
     end
 end
 
