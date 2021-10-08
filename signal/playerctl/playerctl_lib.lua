@@ -439,8 +439,8 @@ local function new(args)
     args.update_on_activity = args.update_on_activity or
                               beautiful.playerctl_update_on_activity
     args.interval = args.interval or beautiful.playerctl_position_update_interval
-    args.debounce_delay = args.debounce_delay or beautiful.playerctl_position_update_debounce_delay
     parse_args(args)
+    args.debounce_delay = args.debounce_delay or beautiful.playerctl_debounce_delay
 
     -- Grab playerctl library
     lgi_Playerctl = require("lgi").Playerctl
