@@ -118,7 +118,7 @@ function playerctl:set_volume(volume)
     end
 end
 
-local function emit_title_artist_album_signal(self, title, artist, artUrl, player_name, album, new)
+local function emit_metadata_signal(self, title, artist, artUrl, player_name, album, new)
     title = gstring.xml_escape(title)
     artist = gstring.xml_escape(artist)
     album = gstring.xml_escape(album)
@@ -128,13 +128,13 @@ local function emit_title_artist_album_signal(self, title, artist, artUrl, playe
         artUrl = artUrl:gsub("open.spotify.com", "i.scdn.co")
     end
 
-    local get_art_script = awful.util.shell .. [[ -c '
-        tmp_cover_path=]] .. os.tmpname() .. [[.png
-        curl -s ']] .. artUrl .. [[' --output $tmp_cover_path
-        echo "$tmp_cover_path"
-    ']]
-
     if artUrl ~= "" then
+        local get_art_script = awful.util.shell .. [[ -c '
+            tmp_cover_path=]] .. os.tmpname() .. [[.png
+            curl -s ']] .. artUrl .. [[' --output $tmp_cover_path
+            echo "$tmp_cover_path"
+        ']]
+
         awful.spawn.with_line_callback(get_art_script, {
             stdout = function(line)
                 self:emit_signal("metadata", title, artist, line, player_name,
@@ -179,7 +179,7 @@ local function metadata_cb(self, player, metadata)
                 autostart = true,
                 single_shot = true,
                 callback = function()
-                    emit_title_artist_album_signal(self, title, artist, artUrl, player.player_name, album, false)
+                    emit_metadata_signal(self, title, artist, artUrl, player.player_name, album, true)
                 end
             }
 
@@ -318,7 +318,7 @@ local function get_current_player_info(self, player)
     local artUrl = lgi_Playerctl.Player.print_metadata_prop(player, "mpris:artUrl") or ""
     local album = lgi_Playerctl.Player.get_album(player) or ""
 
-    emit_title_artist_album_signal(self, title, artist, artUrl, player.player_name, album, true)
+    emit_metadata_signal(self, title, artist, artUrl, player.player_name, album, true)
     playback_status_cb(self, player, player.playback_status)
     shuffle_cb(self, player, player.shuffle)
 end
