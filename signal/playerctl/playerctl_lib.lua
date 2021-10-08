@@ -124,6 +124,14 @@ function playerctl:set_volume(volume)
     end
 end
 
+function playerctl:get_manager()
+    return manager
+end
+
+function playerctl:get_active_player()
+    return manager.players[1]
+end
+
 local function emit_metadata_signal(self, title, artist, artUrl, player_name, album, new)
     title = gstring.xml_escape(title)
     artist = gstring.xml_escape(artist)
