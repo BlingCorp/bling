@@ -104,8 +104,8 @@ By default, this module will output signals from the most recently active player
 | Option              | playerctl_cli      | playerctl_lib      |
 | ------------------- | ------------------ | ------------------ |
 | backend             | :heavy_check_mark: | :heavy_check_mark: |
-| ignore              |                    | :heavy_check_mark: |
-| player              |                    | :heavy_check_mark: |
+| ignore              | :heavy_check_mark: | :heavy_check_mark: |
+| player              | :heavy_check_mark: | :heavy_check_mark: |
 | update_on_activity  |                    | :heavy_check_mark: |
 | interval            | :heavy_check_mark: | :heavy_check_mark: |
 
