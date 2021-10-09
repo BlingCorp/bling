@@ -29,6 +29,8 @@ local gstring = require("gears.string")
 local beautiful = require("beautiful")
 local setmetatable = setmetatable
 local tonumber = tonumber
+local pairs = pairs
+local type = type
 
 local playerctl = { mt = {} }
 local instance = nil
@@ -44,69 +46,64 @@ function playerctl:disable()
 end
 
 local function emit_player_metadata(self)
-    local metadata_cmd = "playerctl metadata --format 'title_{{title}}artist_{{artist}}art_url_{{mpris:artUrl}}player_name_{{playerName}}album_{{album}}' -F"
+    local metadata_cmd = self._private.cmd .. "metadata --format 'title_{{title}}artist_{{artist}}art_url_{{mpris:artUrl}}player_name_{{playerName}}album_{{album}}' -F"
 
-    -- Follow title
-    awful.spawn.easy_async({"pkill", "--full", "--uid", os.getenv("USER"),
-                                        "^playerctl metadata"}, function()
-        awful.spawn.with_line_callback(metadata_cmd, {
-            stdout = function(line)
-                local title = gstring.xml_escape(line:match('title_(.*)artist_')) or ""
-                local artist = gstring.xml_escape(line:match('artist_(.*)art_url_')) or ""
-                local art_url = line:match('art_url_(.*)player_name_') or ""
-                local player_name = line:match('player_name_(.*)album_') or ""
-                local album = gstring.xml_escape(line:match('album_(.*)')) or ""
+    awful.spawn.with_line_callback(metadata_cmd, {
+        stdout = function(line)
+            local title = gstring.xml_escape(line:match('title_(.*)artist_')) or ""
+            local artist = gstring.xml_escape(line:match('artist_(.*)art_url_')) or ""
+            local art_url = line:match('art_url_(.*)player_name_') or ""
+            local player_name = line:match('player_name_(.*)album_') or ""
+            local album = gstring.xml_escape(line:match('album_(.*)')) or ""
 
-                art_url = art_url:gsub('%\n', '')
-                if player_name == "spotify" then
-                    art_url = art_url:gsub("open.spotify.com", "i.scdn.co")
-                end
-
-                if self._private.metadata_timer ~= nil
-                    and self._private.metadata_timer.started
-                then
-                    self._private.metadata_timer:stop()
-                end
-
-                self._private.metadata_timer = gtimer {
-                    timeout = self.debounce_delay,
-                    autostart = true,
-                    single_shot = true,
-                    callback = function()
-                        if title and title ~= "" then
-                            if art_url ~= "" then
-                                local get_art_script = awful.util.shell .. [[ -c '
-                                    tmp_cover_path=]] .. os.tmpname() .. [[.png
-                                    curl -s ']] .. art_url .. [[' --output $tmp_cover_path
-                                    echo "$tmp_cover_path"
-                                ']]
-
-                                awful.spawn.with_line_callback(get_art_script, {
-                                    stdout = function(stdout)
-                                        self:emit_signal("metadata", title, artist,
-                                                        stdout, player_name, album)
-                                    end
-                                })
-                            else
-                                self:emit_signal("metadata", title, artist, "",
-                                                            player_name, album)
-                            end
-                        else
-                            self:emit_signal("no_players")
-                        end
-                    end
-                }
-
-                collectgarbage("collect")
+            art_url = art_url:gsub('%\n', '')
+            if player_name == "spotify" then
+                art_url = art_url:gsub("open.spotify.com", "i.scdn.co")
             end
-        })
-        collectgarbage("collect")
-    end)
+
+            if self._private.metadata_timer ~= nil
+                and self._private.metadata_timer.started
+            then
+                self._private.metadata_timer:stop()
+            end
+
+            self._private.metadata_timer = gtimer {
+                timeout = self.debounce_delay,
+                autostart = true,
+                single_shot = true,
+                callback = function()
+                    if title and title ~= "" then
+                        if art_url ~= "" then
+                            local get_art_script = awful.util.shell .. [[ -c '
+                                tmp_cover_path=]] .. os.tmpname() .. [[.png
+                                curl -s ']] .. art_url .. [[' --output $tmp_cover_path
+                                echo "$tmp_cover_path"
+                            ']]
+
+                            awful.spawn.with_line_callback(get_art_script, {
+                                stdout = function(stdout)
+                                    self:emit_signal("metadata", title, artist,
+                                                    stdout, player_name, album)
+                                end
+                            })
+                        else
+                            self:emit_signal("metadata", title, artist, "",
+                                                        player_name, album)
+                        end
+                    else
+                        self:emit_signal("no_players")
+                    end
+                end
+            }
+
+            collectgarbage("collect")
+        end,
+    })
 end
 
 local function emit_player_position(self)
-    local position_cmd = "playerctl position"
-    local length_cmd = "playerctl metadata mpris:length"
+    local position_cmd = self._private.cmd .. "position"
+    local length_cmd = self._private.cmd .. "metadata mpris:length"
 
     awful.widget.watch(position_cmd, self.interval, function(_, interval)
         awful.spawn.easy_async_with_shell(length_cmd, function(length)
@@ -123,71 +120,66 @@ local function emit_player_position(self)
 end
 
 local function emit_player_playback_status(self)
-    local status_cmd = "playerctl status -F"
+    local status_cmd = self._private.cmd .. "status -F"
 
-    awful.spawn.easy_async({"pkill", "--full", "--uid",  os.getenv("USER"),
-                                                    "^playerctl status"},
-    function()
-        awful.spawn.with_line_callback(status_cmd, {
-            stdout = function(line)
-                if line:find("Playing") then
-                    self:emit_signal("playback_status", true)
-                else
-                    self:emit_signal("playback_status", false)
-                end
-            end,
-        })
-        collectgarbage("collect")
-    end)
+    awful.spawn.with_line_callback(status_cmd, {
+        stdout = function(line)
+            if line:find("Playing") then
+                self:emit_signal("playback_status", true)
+            else
+                self:emit_signal("playback_status", false)
+            end
+        end,
+    })
 end
 
 local function emit_player_volume(self)
-    local volume_cmd = "playerctl volume -F"
+    local volume_cmd = self._private.cmd .. "volume -F"
 
-    awful.spawn.easy_async({"pkill", "--full", "--uid",  os.getenv("USER"),
-                                                    "^playerctl volume"},
-    function()
-        awful.spawn.with_line_callback(volume_cmd, {
-            stdout = function(line)
-                self:emit_signal("volume", tonumber(line))
-            end,
-        })
-        collectgarbage("collect")
-    end)
+    awful.spawn.with_line_callback(volume_cmd, {
+        stdout = function(line)
+            self:emit_signal("volume", tonumber(line))
+        end,
+    })
 end
 
 local function emit_player_loop_status(self)
-    local loop_status_cmd = "playerctl loop -F"
+    local loop_status_cmd = self._private.cmd .. "loop -F"
 
-    awful.spawn.easy_async({"pkill", "--full", "--uid",  os.getenv("USER"),
-                                                    "^playerctl loop"},
-    function()
-        awful.spawn.with_line_callback(loop_status_cmd, {
-            stdout = function(line)
-                self:emit_signal("loop_status", line)
-            end,
-        })
-        collectgarbage("collect")
-    end)
+    awful.spawn.with_line_callback(loop_status_cmd, {
+        stdout = function(line)
+            self:emit_signal("loop_status", line)
+        end,
+    })
 end
 
 local function emit_player_shuffle(self)
-    local shuffle_cmd = "playerctl shuffle -F"
+    local shuffle_cmd = self._private.cmd .. "shuffle -F"
 
-    awful.spawn.easy_async({"pkill", "--full", "--uid",  os.getenv("USER"),
-                                                    "^playerctl shuffle"},
-    function()
-        awful.spawn.with_line_callback(shuffle_cmd, {
-            stdout = function(line)
-                if line:find("On") then
-                    self:emit_signal("shuffle", true)
-                else
-                    self:emit_signal("shuffle", false)
-                end
-            end,
-        })
-        collectgarbage("collect")
-    end)
+    awful.spawn.with_line_callback(shuffle_cmd, {
+        stdout = function(line)
+            if line:find("On") then
+                self:emit_signal("shuffle", true)
+            else
+                self:emit_signal("shuffle", false)
+            end
+        end,
+    })
+end
+
+local function parse_args(self, args)
+    if type(args.player) == "string" then
+        self._private.cmd = self._private.cmd .. args.player .. " "
+    elseif type(args.player) == "table" then
+        for index, player in pairs(args.player) do
+            self._private.cmd = self._private.cmd .. player
+            if index < #args.player then
+                self._private.cmd = self._private.cmd .. ","
+            else
+                self._private.cmd = self._private.cmd .. " "
+            end
+        end
+    end
 end
 
 local function new(args)
@@ -201,6 +193,8 @@ local function new(args)
 
     ret._private = {}
     ret._private.metadata_timer = nil
+    ret._private.cmd = "playerctl --player="
+    parse_args(ret, args)
 
     emit_player_metadata(ret)
     emit_player_position(ret)
@@ -218,5 +212,9 @@ function playerctl.mt:__call(...)
     end
     return instance
 end
+
+-- On startup instead of on playerctl object init to make it
+-- possible to have more than one of these running
+awful.spawn.with_shell("killall playerctl")
 
 return setmetatable(playerctl, playerctl.mt)
