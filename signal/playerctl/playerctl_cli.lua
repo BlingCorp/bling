@@ -7,11 +7,17 @@
 --      album_path (string)
 --      player_name (string)
 --      album (string)
--- playback_status
---      playing (boolean)
 -- position
 --      interval_sec (number)
 --      length_sec (number)
+-- playback_status
+--      playing (boolean)
+-- volume
+--      volume (number)
+-- loop_status
+--      loop_status (string)
+-- shuffle
+--      shuffle (bool)
 -- no_players
 --      (No parameters)
 
@@ -135,6 +141,55 @@ local function emit_player_playback_status(self)
     end)
 end
 
+local function emit_player_volume(self)
+    local volume_cmd = "playerctl volume -F"
+
+    awful.spawn.easy_async({"pkill", "--full", "--uid",  os.getenv("USER"),
+                                                    "^playerctl volume"},
+    function()
+        awful.spawn.with_line_callback(volume_cmd, {
+            stdout = function(line)
+                self:emit_signal("volume", tonumber(line))
+            end,
+        })
+        collectgarbage("collect")
+    end)
+end
+
+local function emit_player_loop_status(self)
+    local loop_status_cmd = "playerctl loop -F"
+
+    awful.spawn.easy_async({"pkill", "--full", "--uid",  os.getenv("USER"),
+                                                    "^playerctl loop"},
+    function()
+        awful.spawn.with_line_callback(loop_status_cmd, {
+            stdout = function(line)
+                self:emit_signal("loop_status", line)
+            end,
+        })
+        collectgarbage("collect")
+    end)
+end
+
+local function emit_player_shuffle(self)
+    local shuffle_cmd = "playerctl shuffle -F"
+
+    awful.spawn.easy_async({"pkill", "--full", "--uid",  os.getenv("USER"),
+                                                    "^playerctl shuffle"},
+    function()
+        awful.spawn.with_line_callback(shuffle_cmd, {
+            stdout = function(line)
+                if line:find("On") then
+                    self:emit_signal("shuffle", true)
+                else
+                    self:emit_signal("shuffle", false)
+                end
+            end,
+        })
+        collectgarbage("collect")
+    end)
+end
+
 local function new(args)
     args = args or {}
 
@@ -150,6 +205,9 @@ local function new(args)
     emit_player_metadata(ret)
     emit_player_position(ret)
     emit_player_playback_status(ret)
+    emit_player_volume(ret)
+    emit_player_loop_status(ret)
+    emit_player_shuffle(ret)
 
     return ret
 end
