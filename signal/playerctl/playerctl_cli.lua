@@ -33,10 +33,8 @@ local pairs = pairs
 local type = type
 
 local playerctl = { mt = {} }
-local instance = nil
 
 function playerctl:disable()
-    instance = nil
     self._private.metadata_timer:stop()
     self._private.metadata_timer = nil
     awful.spawn.with_shell("pkill --full --uid " .. os.getenv("USER") ..
@@ -295,10 +293,7 @@ local function new(args)
 end
 
 function playerctl.mt:__call(...)
-    if not instance then
-        instance = new(...)
-    end
-    return instance
+    return new(...)
 end
 
 -- On startup instead of on playerctl object init to make it

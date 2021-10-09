@@ -44,11 +44,8 @@ local pairs = pairs
 local type = type
 
 local playerctl = { mt = {} }
-local instance = nil
 
 function playerctl:disable()
-    instance = nil
-
     -- Restore default settings
     self.ignore = {}
     self.priority = {}
@@ -527,10 +524,7 @@ local function new(args)
 end
 
 function playerctl.mt:__call(...)
-    if not instance then
-        instance = new(...)
-    end
-    return instance
+    return new(...)
 end
 
 return setmetatable(playerctl, playerctl.mt)
