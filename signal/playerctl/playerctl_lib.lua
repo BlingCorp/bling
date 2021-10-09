@@ -296,7 +296,7 @@ local function loop_status_cb(self, player, loop_status)
     end
 
     if player == self._private.manager.players[1] then
-        self:emit_signal("loop_status", loop_status, player.player_name)
+        self:emit_signal("loop_status", loop_status:lower(), player.player_name)
     end
 end
 
