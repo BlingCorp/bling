@@ -468,6 +468,7 @@ local function start_manager(self)
 end
 
 local function parse_args(self, args)
+    self.ignore = {}
     if type(args.ignore) == "string" then
         self.ignore[args.ignore] = true
     elseif type(args.ignore) == "table" then
@@ -476,6 +477,7 @@ local function parse_args(self, args)
         end
     end
 
+    self.priority = {}
     if type(args.player) == "string" then
         self.priority[1] = args.player
     elseif type(args.player) == "table" then
@@ -490,8 +492,8 @@ local function new(args)
     gtable.crush(ret, playerctl, true)
 
     -- Grab settings from beautiful variables if not set explicitly
-    ret.ignore = args.ignore or beautiful.playerctl_ignore or {}
-    ret.priority = args.player or beautiful.playerctl_player or {}
+    args.ignore = args.ignore or beautiful.playerctl_ignore
+    args.player = args.player or beautiful.playerctl_player
     ret.update_on_activity = args.update_on_activity or
                               beautiful.playerctl_update_on_activity or true
     ret.interval = args.interval or beautiful.playerctl_position_update_interval or 1
