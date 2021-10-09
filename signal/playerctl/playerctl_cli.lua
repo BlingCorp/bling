@@ -45,6 +45,70 @@ function playerctl:disable()
                                " '^playerctl metadata --format'")
 end
 
+function playerctl:pause()
+    awful.spawn.with_shell(self._private.cmd .. "pause")
+end
+
+function playerctl:play()
+    awful.spawn.with_shell(self._private.cmd .. "play")
+end
+
+function playerctl:stop()
+    awful.spawn.with_shell(self._private.cmd .. "stop")
+end
+
+function playerctl:play_pause()
+    awful.spawn.with_shell(self._private.cmd .. "play-pause")
+end
+
+function playerctl:previous()
+    awful.spawn.with_shell(self._private.cmd .. "previous")
+end
+
+function playerctl:next()
+    awful.spawn.with_shell(self._private.cmd .. "next")
+end
+
+function playerctl:set_loop_status(loop_status)
+    awful.spawn.with_shell(self._private.cmd .. "loop " .. loop_status)
+end
+
+function playerctl:cycle_loop_status()
+    if self._private.loop_status == "None" then
+        self:set_loop_status("Track")
+    elseif self._private.loop_status == "Track" then
+        self:set_loop_status("Playlist")
+    elseif self._private.loop_status == "Playlist" then
+        self:set_loop_status("None")
+    end
+end
+
+function playerctl:set_position(position)
+    awful.spawn.with_shell(self._private.cmd .. "position " .. position)
+end
+
+function playerctl:set_shuffle(shuffle)
+    if shuffle == true then
+        shuffle = "on"
+    else
+        shuffle = "off"
+    end
+
+    awful.spawn.with_shell(self._private.cmd .. "shuffle " .. shuffle)
+end
+
+function playerctl:cycle_shuffle()
+    if self._private.shuffle == false then
+        self:set_shuffle(true)
+    elseif self._private.shuffle == true then
+        self:set_shuffle(false)
+    end
+end
+
+function playerctl:set_volume(volume)
+    awful.spawn.with_shell(self._private.cmd .. "next" .. volume)
+end
+
 local function emit_player_metadata(self)
     local metadata_cmd = self._private.cmd .. "metadata --format 'title_{{title}}artist_{{artist}}art_url_{{mpris:artUrl}}player_name_{{playerName}}album_{{album}}' -F"
 
@@ -148,7 +212,8 @@ local function emit_player_loop_status(self)
 
     awful.spawn.with_line_callback(loop_status_cmd, {
         stdout = function(line)
-            self:emit_signal("loop_status", line)
+            self._private.loop_status = line
+            self:emit_signal("loop_status", line:lower())
         end,
     })
 end
@@ -159,8 +224,10 @@ local function emit_player_shuffle(self)
     awful.spawn.with_line_callback(shuffle_cmd, {
         stdout = function(line)
             if line:find("On") then
+                self._private.shuffle = true
                 self:emit_signal("shuffle", true)
             else
+                self._private.shuffle = false
                 self:emit_signal("shuffle", false)
             end
         end,
