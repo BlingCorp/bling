@@ -22,7 +22,7 @@
 --      volume (number)
 --      player_name (string)
 -- loop_status
---      loop_status (boolean)
+--      loop_status (string)
 --      player_name (string)
 -- shuffle
 --      shuffle (boolean)
