@@ -37,10 +37,7 @@ local playerctl = { mt = {} }
 function playerctl:disable()
     self._private.metadata_timer:stop()
     self._private.metadata_timer = nil
-    awful.spawn.with_shell("pkill --full --uid " .. os.getenv("USER") ..
-                               " '^playerctl status -F'")
-    awful.spawn.with_shell("pkill --full --uid " .. os.getenv("USER") ..
-                               " '^playerctl metadata --format'")
+    awful.spawn.with_shell("killall playerctl")
 end
 
 function playerctl:pause()
