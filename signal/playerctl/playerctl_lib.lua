@@ -46,6 +46,30 @@ local type = type
 local playerctl = { mt = {} }
 local instance = nil
 
+function playerctl:disable()
+    -- Restore default settings
+    self.ignore = {}
+    self.priority = {}
+    self.update_on_activity = true
+    self.interval = 1
+    self.debounce_delay = 0.35
+
+    -- Reset timers
+    self._private.manager = nil
+    self._private.metadata_timer:stop()
+    self._private.metadata_timer = nil
+    self._private.position_timer:stop()
+    self._private.position_timer = nil
+
+    -- Reset default values
+    self._private.last_position = -1
+    self._private.last_length = -1
+    self._private.last_player = nil
+    self._private.last_title = ""
+    self._private.last_artist = ""
+    self._private.last_artUrl = ""
+end
+
 function playerctl:pause()
     if self._private.manager.players[1] then
         self._private.manager.players[1].pause(self._private.manager.players[1])
