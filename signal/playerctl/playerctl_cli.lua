@@ -28,6 +28,7 @@ local playerctl = { mt = {} }
 local instance = nil
 
 function playerctl:disable()
+    instance = nil
     self._private.metadata_timer:stop()
     self._private.metadata_timer = nil
     awful.spawn.with_shell("pkill --full --uid " .. os.getenv("USER") ..

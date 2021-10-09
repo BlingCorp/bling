@@ -47,6 +47,8 @@ local playerctl = { mt = {} }
 local instance = nil
 
 function playerctl:disable()
+    instance = nil
+
     -- Restore default settings
     self.ignore = {}
     self.priority = {}
