@@ -184,6 +184,23 @@ local function parse_args(self, args)
             end
         end
     end
+
+    if args.ignore then
+        self._private.cmd = self._private.cmd .. "--ignore-player="
+
+        if type(args.ignore) == "string" then
+            self._private.cmd = self._private.cmd .. args.ignore .. " "
+        elseif type(args.ignore) == "table" then
+            for index, player in pairs(args.ignore) do
+                self._private.cmd = self._private.cmd .. player
+                if index < #args.ignore then
+                    self._private.cmd = self._private.cmd .. ","
+                else
+                    self._private.cmd = self._private.cmd .. " "
+                end
+            end
+        end
+    end
 end
 
 local function new(args)
