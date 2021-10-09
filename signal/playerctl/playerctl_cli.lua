@@ -101,7 +101,7 @@ function playerctl:cycle_shuffle()
 end
 
 function playerctl:set_volume(volume)
-    awful.spawn.with_shell(self._private.cmd .. "next" .. volume)
+    awful.spawn.with_shell(self._private.cmd .. "volume " .. volume)
 end
 
 local function emit_player_metadata(self)
