@@ -168,15 +168,19 @@ local function emit_player_shuffle(self)
 end
 
 local function parse_args(self, args)
-    if type(args.player) == "string" then
-        self._private.cmd = self._private.cmd .. args.player .. " "
-    elseif type(args.player) == "table" then
-        for index, player in pairs(args.player) do
-            self._private.cmd = self._private.cmd .. player
-            if index < #args.player then
-                self._private.cmd = self._private.cmd .. ","
-            else
-                self._private.cmd = self._private.cmd .. " "
+    if args.player then
+        self._private.cmd = self._private.cmd .. "--player="
+
+        if type(args.player) == "string" then
+            self._private.cmd = self._private.cmd .. args.player .. " "
+        elseif type(args.player) == "table" then
+            for index, player in pairs(args.player) do
+                self._private.cmd = self._private.cmd .. player
+                if index < #args.player then
+                    self._private.cmd = self._private.cmd .. ","
+                else
+                    self._private.cmd = self._private.cmd .. " "
+                end
             end
         end
     end
@@ -193,7 +197,7 @@ local function new(args)
 
     ret._private = {}
     ret._private.metadata_timer = nil
-    ret._private.cmd = "playerctl --player="
+    ret._private.cmd = "playerctl "
     parse_args(ret, args)
 
     emit_player_metadata(ret)
