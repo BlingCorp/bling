@@ -49,9 +49,9 @@ bling.widget.task_preview.enable {
                     widget = awful.widget.clienticon, -- The client icon
                 },
                 {
-                    id = 'name_role' -- The client name / title
+                    id = 'name_role', -- The client name / title
                     widget = wibox.widget.textbox,
-                }
+                },
                 layout = wibox.layout.flex.horizontal
             },
             widget = wibox.container.margin,
