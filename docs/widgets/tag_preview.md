@@ -32,9 +32,9 @@ bling.widget.tag_preview.enable {
 Here are the signals available:
 
 ```lua
-bling::tag_preview::update -- first line is the signal
---     t   (tag)           -- indented lines are function parameters
-bling::tag_preview::visibility
+-- bling::tag_preview::update -- first line is the signal
+--     t   (tag)              -- indented lines are function parameters
+-- bling::tag_preview::visibility
 --     s   (screen)
 --     v   (boolean)
 ```

@@ -24,19 +24,19 @@ To disable: `bling.signal.playerctl.disable()`
 Here are the signals available:
 
 ```lua
-bling::playerctl::status      -- first line is the signal
+-- bling::playerctl::status   -- first line is the signal
 --     playing      (boolean) -- indented lines are function parameters
 --     player_name  (string)
-bling::playerctl::title_artist_album
+-- bling::playerctl::title_artist_album
 --     title        (string)
 --     artist       (string)
 --     album_path   (string)
 --     player_name  (string)
-bling::playerctl::position
+-- bling::playerctl::position
 --     interval_sec (number)
 --     length_sec   (number)
 --     player_name  (string)
-bling::playerctl::no_players
+-- bling::playerctl::no_players
 --     (No parameters)
 ```
 

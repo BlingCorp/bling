@@ -72,8 +72,8 @@ bling.widget.task_preview.enable {
 Here are the signals available:
 
 ```lua
-bling::task_preview::visibility  -- first line is the signal
---     s   (screen)              -- indented lines are function parameters
+-- bling::task_preview::visibility  -- first line is the signal
+--     s   (screen)                 -- indented lines are function parameters
 --     v   (boolean)
 --     c   (client)
 ```

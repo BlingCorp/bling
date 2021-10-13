@@ -49,14 +49,14 @@ Modern theme:
 ### Signals
 The tabbed module emits a few signals for the purpose of integration,
 ```lua
-bling::tabbed::update -- triggered whenever a tabbed object is updated
+-- bling::tabbed::update -- triggered whenever a tabbed object is updated
 --             tabobj -- the object that caused the update
-bling::tabbed::client_added -- triggered whenever a new client is added to a tab group
+-- bling::tabbed::client_added -- triggered whenever a new client is added to a tab group
 --             tabobj -- the object that the client was added to
 --             client -- the client that added
-bling::tabbed::client_removed -- triggered whenever a client is removed from a tab group
+-- bling::tabbed::client_removed -- triggered whenever a client is removed from a tab group
 --             tabobj -- the object that the client was removed from
 --             client -- the client that was removed
-bling::tabbed::changed_focus -- triggered whenever a tab group's focus is changed
+-- bling::tabbed::changed_focus -- triggered whenever a tab group's focus is changed
 --             tabobj -- the modified tab group
 ```
