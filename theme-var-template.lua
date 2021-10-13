@@ -98,7 +98,7 @@ theme.window_switcher_name_forced_width = 200 -- The width of one title
 theme.window_switcher_name_font = "Sans 11" -- The font of all titles
 theme.window_switcher_name_normal_color = "#ffffff" -- The color of one title if the client is unfocused
 theme.window_switcher_name_focus_color = "#ff0000" -- The color of one title if the client is focused
-theme.window_switcher_icon_valign = "center" -- How to vertially align the one icon
-theme.window_switcher_icon_width = 40 -- Thw width of one icon
+theme.window_switcher_icon_valign = "center" -- How to vertically align the one icon
+theme.window_switcher_icon_width = 40 -- The width of one icon
 
 -- LuaFormatter on
