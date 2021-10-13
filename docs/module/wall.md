@@ -18,7 +18,7 @@ bling.module.wallpaper.setup {
 bling.module.wallpaper.setup {
     set_function = bling.module.wallpaper.setters.random,
     wallpaper = {"/path/to/a/folder", "/path/to/another/folder"},
-    change_timer = 631,  -- prime numbers are better for timers
+    change_timer = 631, -- prime numbers are better for timers
     position = "fit",
     background = "#424242"
 }
@@ -99,14 +99,14 @@ Here are the defaults:
 ```lua
 -- Default parameters
 bling.module.wallpaper.setup {
-    screen = nil,        -- the screen to apply the wallpaper, as seen in gears.wallpaper functions
-    change_timer = nil,  -- the timer in seconds. If set, call the set_function every change_timer seconds
-    set_function = nil,  -- the setter function
+    screen = nil,       -- the screen to apply the wallpaper, as seen in gears.wallpaper functions
+    change_timer = nil, -- the timer in seconds. If set, call the set_function every change_timer seconds
+    set_function = nil, -- the setter function
 
     -- parameters used by bling.module.wallpaper.prepare_list
-    wallpaper = nil,                                -- the wallpaper object, see simple or simple_schedule documentation
-    image_formats = {"jpg", "jpeg", "png", "bmp"},  -- when searching in folder, consider these files only
-    recursive = true,                               -- when searching in folder, search also in subfolders
+    wallpaper = nil,                               -- the wallpaper object, see simple or simple_schedule documentation
+    image_formats = {"jpg", "jpeg", "png", "bmp"}, -- when searching in folder, consider these files only
+    recursive = true,                              -- when searching in folder, search also in subfolders
 
     -- parameters used by bling.module.wallpaper.apply
     position = nil,                              -- use a function of gears.wallpaper when applicable ("centered", "fit", "maximized", "tiled")
@@ -116,8 +116,8 @@ bling.module.wallpaper.setup {
     scale = 1,                                   -- see gears.wallpaper.centered
 
     -- parameters that only apply to bling.module.wallpaper.setter.awesome (as a setter or as a wallpaper function)
-    colors = {                      -- see beautiful.theme_assets.wallpaper
-        bg = beautiful.bg_color,    -- the actual default is this color but darkened or lightned
+    colors = {                   -- see beautiful.theme_assets.wallpaper
+        bg = beautiful.bg_color,  -- the actual default is this color but darkened or lightned
         fg = beautiful.fg_color,
         alt_fg = beautiful.fg_focus
     }

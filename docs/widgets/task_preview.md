@@ -12,40 +12,40 @@ To enable:
 
 ```lua
 bling.widget.task_preview.enable {
-    x = 20,                       -- The x-coord of the popup
-    y = 20,                       -- The y-coord of the popup
-    height = 200,                 -- The height of the popup
-    width = 200,                  -- The width of the popup
-    placement_fn = function(c)    -- Place the widget using awful.placement (this overrides x & y)
+    x = 20,                    -- The x-coord of the popup
+    y = 20,                    -- The y-coord of the popup
+    height = 200,              -- The height of the popup
+    width = 200,               -- The width of the popup
+    placement_fn = function(c) -- Place the widget using awful.placement (this overrides x & y)
         awful.placement.bottom(c, {
             margins = {
                 bottom = 30
             }
-        }) 
+        })
     end
-}   
+}
 ```
 
 To allow for more customization, there is also a `widget_structure` property (as seen in some default awesome widgets) which is optional. An example is as follows -
 ```lua
 bling.widget.task_preview.enable {
-    x = 20,                       -- The x-coord of the popup
-    y = 20,                       -- The y-coord of the popup
-    height = 200,                 -- The height of the popup
-    width = 200,                  -- The width of the popup
-    placement_fn = function(c)    -- Place the widget using awful.placement (this overrides x & y)
+    x = 20,                    -- The x-coord of the popup
+    y = 20,                    -- The y-coord of the popup
+    height = 200,              -- The height of the popup
+    width = 200,               -- The width of the popup
+    placement_fn = function(c) -- Place the widget using awful.placement (this overrides x & y)
         awful.placement.bottom(c, {
             margins = {
                 bottom = 30
             }
-        }) 
+        })
     end,
     -- Your widget will automatically conform to the given size due to a constraint container.
     widget_structure = {
         {
             {
                 {
-                    id = 'icon_role', 
+                    id = 'icon_role',
                     widget = awful.widget.clienticon, -- The client icon
                 },
                 {
@@ -66,16 +66,16 @@ bling.widget.task_preview.enable {
         },
         layout = wibox.layout.fixed.vertical
     }
-}   
+}
 ```
 
 Here are the signals available:
 
 ```lua
 -- bling::task_preview::visibility  -- first line is the signal
---      s   (screen)                -- indented lines are function parameters
---      v   (boolean)
---      c   (client)
+--     s   (screen)                 -- indented lines are function parameters
+--     v   (boolean)
+--     c   (client)
 ```
 
 By default, the widget is not visible. You must implement when it will update and when it will show.
@@ -124,7 +124,7 @@ s.mytasklist = awful.widget.tasklist {
         nil,
         create_callback = function(self, c, index, objects) --luacheck: no unused args
             self:get_children_by_id('clienticon')[1].client = c
-            
+
             -- BLING: Toggle the popup on hover and disable it off hover
             self:connect_signal('mouse::enter', function()
                     awesome.emit_signal("bling::task_preview::visibility", s,
@@ -142,11 +142,11 @@ s.mytasklist = awful.widget.tasklist {
 
 ### Theme Variables
 ```lua
-theme.task_preview_widget_border_radius = 0          -- Border radius of the widget (With AA)
-theme.task_preview_widget_bg = "#000000"             -- The bg color of the widget
-theme.task_preview_widget_border_color = "#ffffff"   -- The border color of the widget
-theme.task_preview_widget_border_width = 3           -- The border width of the widget
-theme.task_preview_widget_margin = 0                 -- The margin of the widget
+theme.task_preview_widget_border_radius = 0        -- Border radius of the widget (With AA)
+theme.task_preview_widget_bg = "#000000"           -- The bg color of the widget
+theme.task_preview_widget_border_color = "#ffffff" -- The border color of the widget
+theme.task_preview_widget_border_width = 3         -- The border width of the widget
+theme.task_preview_widget_margin = 0               -- The margin of the widget
 ```
 
 NOTE: I recommend to only use the widget border radius theme variable when not using shadows with a compositor, as anti-aliased rounding with the outer widgets made with AwesomeWM rely on the actual bg being transparent. If you want rounding with shadows on the widget, use a compositor like [jonaburg's fork](https://github.com/jonaburg/picom).

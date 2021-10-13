@@ -16,11 +16,11 @@ To use the task list indicator:
 
 ```lua
 bling.widget.tabbed_misc.titlebar_indicator(client, {
-    layout_spacing = dpi(5), -- Set spacing in between items
-    icon_size = dpi(24),
-    icon_margin = 0,
-    bg_color_focus = "#282828", -- Color for the focused items
-    bg_color = "#1d2021", -- Color for normal / unfocused items
+    layout_spacing = dpi(5),        -- Set spacing in between items
+    icon_size = dpi(24),            -- Set icon size
+    icon_margin = 0,                -- Set icon margin
+    bg_color_focus = "#282828",     -- Color for the focused items
+    bg_color = "#1d2021",           -- Color for normal / unfocused items
     icon_shape = gears.shape.circle -- Set icon shape,
 })
 ```
@@ -72,32 +72,32 @@ The module exports a function that can be added to your tasklist as a `update_ca
 ### Usage
 ```lua
 awful.widget.tasklist({
-            screen = s,
-            filter = awful.widget.tasklist.filter.currenttags,
-            layout = {
-                spacing = dpi(10),
-                layout = wibox.layout.fixed.vertical,
-            },
-            style = {
-                bg_normal = "#00000000",
-            },
-            widget_template = {
-                {
-                    {
-                        widget = wibox.widget.imagebox,
-                        id = "icon_role",
-                        align = "center",
-                        valign = "center",
-                    },
-                    width = dpi(24),
-                    height = dpi(24),
-                    widget = wibox.container.constraint,
-                },
-                widget = wibox.container.background, -- IT MUST BE A CONTAINER WIDGET AS THAT IS WHAT THE FUNCTION EXPECTS
-                update_callback = require("bling.widget.tabbed_misc").custom_tasklist,
-                id = "background_role",
-            },
-        })
+     screen = s,
+     filter = awful.widget.tasklist.filter.currenttags,
+     layout = {
+         spacing = dpi(10),
+         layout = wibox.layout.fixed.vertical,
+     },
+     style = {
+         bg_normal = "#00000000",
+     },
+     widget_template = {
+         {
+             {
+                  widget = wibox.widget.imagebox,
+                  id = "icon_role",
+                  align = "center",
+                  valign = "center",
+              },
+              width = dpi(24),
+              height = dpi(24),
+              widget = wibox.container.constraint,
+          },
+          widget = wibox.container.background, -- IT MUST BE A CONTAINER WIDGET AS THAT IS WHAT THE FUNCTION EXPECTS
+          update_callback = require("bling.widget.tabbed_misc").custom_tasklist,
+          id = "background_role",
+    },
+})
 ```
 
 If you need to do something else, it can be used like so

@@ -22,8 +22,8 @@ awful.key({modkey}, "Up",
 
 ### Theme Variables
 ```lua
-theme.flash_focus_start_opacity = 0.6       -- the starting opacity
-theme.flash_focus_step = 0.01               -- the step of animation
+theme.flash_focus_start_opacity = 0.6 -- the starting opacity
+theme.flash_focus_step = 0.01         -- the step of animation
 ```
 
 ### Preview
