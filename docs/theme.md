@@ -26,15 +26,20 @@ theme.tabbed_spawn_in_tab = false           -- whether a new client should spawn
 
 -- tabbar general
 theme.tabbar_ontop  = false
-theme.tabbar_radius = 0                     -- border radius of the tabbar
-theme.tabbar_style = "default"              -- style of the tabbar ("default", "boxes" or "modern")
-theme.tabbar_font = "Sans 11"               -- font of the tabbar
-theme.tabbar_size = 40                      -- size of the tabbar
-theme.tabbar_position = "top"               -- position of the tabbar
-theme.tabbar_bg_normal = "#000000"          -- background color of the focused client on the tabbar
-theme.tabbar_fg_normal = "#ffffff"          -- foreground color of the focused client on the tabbar
-theme.tabbar_bg_focus  = "#1A2026"          -- background color of unfocused clients on the tabbar
-theme.tabbar_fg_focus  = "#ff0000"          -- foreground color of unfocused clients on the tabbar
+theme.tabbar_radius = 0                -- border radius of the tabbar
+theme.tabbar_style = "default"         -- style of the tabbar ("default", "boxes" or "modern")
+theme.tabbar_font = "Sans 11"          -- font of the tabbar
+theme.tabbar_size = 40                 -- size of the tabbar
+theme.tabbar_position = "top"          -- position of the tabbar
+theme.tabbar_bg_normal = "#000000"     -- background color of the focused client on the tabbar
+theme.tabbar_fg_normal = "#ffffff"     -- foreground color of the focused client on the tabbar
+theme.tabbar_bg_focus  = "#1A2026"     -- background color of unfocused clients on the tabbar
+theme.tabbar_fg_focus  = "#ff0000"     -- foreground color of unfocused clients on the tabbar
+theme.tabbar_bg_focus_inactive = nil   -- background color of the focused client on the tabbar when inactive
+theme.tabbar_fg_focus_inactive = nil   -- foreground color of the focused client on the tabbar when inactive
+theme.tabbar_bg_normal_inactive = nil  -- background color of unfocused clients on the tabbar when inactive
+theme.tabbar_fg_normal_inactive = nil  -- foreground color of unfocused clients on the tabbar when inactive
+theme.tabbar_disable = false           -- disable the tab bar entirely
 
 -- mstab
 theme.mstab_bar_ontop = false               -- whether you want to allow the bar to be ontop of clients
