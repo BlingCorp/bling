@@ -1,60 +1,147 @@
-local gears = require("gears")
 local wibox = require("wibox")
-
 local beautiful = require("beautiful")
 
-local bg_normal = beautiful.tabbar_bg_normal or beautiful.bg_normal or "#ffffff"
-local fg_normal = beautiful.tabbar_fg_normal or beautiful.fg_normal or "#000000"
-local bg_focus = beautiful.tabbar_bg_focus or beautiful.bg_focus or "#000000"
-local fg_focus = beautiful.tabbar_fg_focus or beautiful.fg_focus or "#ffffff"
-local bg_focus_inactive = beautiful.tabbar_bg_focus_inactive or bg_focus
-local fg_focus_inactive = beautiful.tabbar_fg_focus_inactive or fg_focus
-local bg_normal_inactive = beautiful.tabbar_bg_normal_inactive or bg_normal
-local fg_normal_inactive = beautiful.tabbar_fg_normal_inactive or fg_normal
-local font = beautiful.tabbar_font or beautiful.font or "Hack 15"
-local size = beautiful.tabbar_size or 20
-local position = beautiful.tabbar_position or "top"
+local dpi = beautiful.xresources.apply_dpi
 
-local function create(c, focused_bool, buttons, inactive_bool)
-    local flexlist = wibox.layout.flex.horizontal()
-    local title_temp = c.name or c.class or "-"
-    local bg_temp = inactive_bool and bg_normal_inactive or bg_normal
-    local fg_temp = inactive_bool and fg_normal_inactive or fg_normal
-    if focused_bool then
-        bg_temp = inactive_bool and bg_focus_inactive or bg_focus
-        fg_temp = inactive_bool and fg_focus_inactive or fg_focus
+local function get_colors(is_tab_focused, is_client_inactive)
+    -- Selected tab when the client is focused
+    if is_tab_focused and not is_client_inactive then
+        return {
+            border_color = (
+                beautiful.tabbar_border_focus or
+                beautiful.bg_focus or
+                "#000000"
+            ),
+            background   = (
+                beautiful.tabbar_bg_focus or
+                beautiful.bg_focus or
+                "#000000"
+            ),
+            foreground = (
+                beautiful.tabbar_fg_focus or
+                beautiful.fg_focus or
+                "#FFFFFF"
+            )
+        }
     end
-    local text_temp = wibox.widget.textbox()
-    text_temp.align = "center"
-    text_temp.valign = "center"
-    text_temp.font = font
-    text_temp.markup = "<span foreground='"
-        .. fg_temp
-        .. "'>"
-        .. title_temp
-        .. "</span>"
-    c:connect_signal("property::name", function(_)
-        local title_temp = c.name or c.class or "-"
-        text_temp.markup = "<span foreground='"
-            .. fg_temp
-            .. "'>"
-            .. title_temp
-            .. "</span>"
-    end)
-    local wid_temp = wibox.widget({
-        text_temp,
+
+    -- Inactive tabs when the client is focused
+    if not is_tab_focused and not is_client_inactive then
+        return {
+            border_color = (
+                beautiful.tabbar_border_normal or
+                beautiful.tabbar_bg_normal or
+                "#FFFFFF"
+            ),
+            background   = (
+                beautiful.tabbar_bg_normal or
+                beautiful.bg_normal or
+                "#FFFFFF"
+            ),
+            foreground = (
+                beautiful.tabbar_fg_normal or
+                beautiful.fg_normal or
+                "#000000"
+            )
+        }
+    end
+
+    -- Selected tab when the client isn't focused
+    if is_tab_focused and is_client_inactive then
+        return {
+            border_color = (
+                beautiful.tabbar_border_inactive or
+                beautiful.tabbar_border_focus or
+                beautiful.bg_minimize or
+                "#000000"
+            ),
+            background   = (
+                beautiful.tabbar_bg_focus_inactive or
+                beautiful.tabbar_bg_focus or
+                beautiful.bg_minimize or
+                "#000000"
+            ),
+            foreground = (
+                beautiful.tabbar_fg_focus_inactive or
+                beautiful.tabbar_fg_focus or
+                beautiful.fg_minimize or
+                "#FFFFFF"
+            )
+        }
+    end
+
+    -- for any other one (not selected tab when the client isn't focused and whatever)
+    return {
+        border_color = (
+            beautiful.tabbar_border_normal or
+            beautiful.border_normal or
+            "#FFFFFF"
+        ),
+        background   = (
+            beautiful.tabbar_bg_normal_inactive or
+            beautiful.tabbar_bg_normal or
+            beautiful.bg_normal or
+            "#FFFFFF"
+        ),
+        foreground   = (
+            beautiful.tabbar_fg_normal_inactive or
+            beautiful.tabbar_fg_normal or
+            beautiful.fg_normal or
+            "#000000"
+        )
+    }
+end
+
+local function colorize_text(text, color)
+    return "<span foreground='" ..
+            color ..
+            "'>" ..
+            text ..
+            "</span>"
+end
+
+local function create(c, is_tab_focused, buttons, is_client_inactive)
+    local colors = get_colors(is_tab_focused, is_client_inactive)
+
+    return wibox.widget {
+        {
+            {
+                {
+                    markup = colorize_text((c.name or c.class or "-"), colors.foreground),
+                    align  = "center",
+                    valign = "center",
+                    widget = wibox.widget.textbox(),
+                },
+                left   = dpi(beautiful.tabbar_margin or dpi(5)) + 5,
+                widget = wibox.container.margin,
+            },
+            bg = colors.background,
+            widget = wibox.container.background,
+        },
         buttons = buttons,
-        bg = bg_temp,
+        bg = colors.border_color,
         widget = wibox.container.background(),
-    })
-    return wid_temp
+    }
 end
 
 return {
     layout = wibox.layout.flex.horizontal,
     create = create,
-    position = position,
-    size = size,
-    bg_normal = bg_normal,
-    bg_focus = bg_focus,
+    position = (
+        beautiful.tabbar_position or
+        "top"
+    ),
+    size = (
+        beautiful.tabbar_size or dpi(20)
+    ),
+    bg_normal = (
+        beautiful.tabbar_bg_normal or
+        beautiful.bg_normal or
+        "#ffffff"
+    ),
+    bg_focus = (
+        beautiful.tabbar_bg_focus or
+        beautiful.bg_focus or
+        "#000000"
+    ),
 }
