@@ -28,7 +28,8 @@ local function draw_widget(
     widget_border_color,
     widget_border_width,
     geo,
-    margin
+    margin,
+    background_image
 )
     local client_list = wibox.layout.manual()
     client_list.forced_height = geo.height
@@ -109,20 +110,24 @@ local function draw_widget(
 
     return wibox.widget {
         {
+            background_image,
             {
                 {
                     {
-                        client_list,
-                        forced_height = geo.height,
-                        forced_width = geo.width,
-                        widget = wibox.container.place,
+                        {
+                            client_list,
+                            forced_height = geo.height,
+                            forced_width = geo.width,
+                            widget = wibox.container.place,
+                        },
+                        layout = wibox.layout.align.horizontal,
                     },
-                    layout = wibox.layout.align.horizontal,
+                    layout = wibox.layout.align.vertical,
                 },
-                layout = wibox.layout.align.vertical,
+                margins = margin,
+                widget = wibox.container.margin,
             },
-            margins = margin,
-            widget = wibox.container.margin,
+            layout = wibox.layout.stack
         },
         bg = widget_bg,
         shape_border_width = widget_border_width,
@@ -142,6 +147,7 @@ local enable = function(opts)
     local work_area = opts.honor_workarea or false
     local padding = opts.honor_padding or false
     local placement_fn = opts.placement_fn or nil
+    local background_image = opts.background_image or nil
 
     local margin = beautiful.tag_preview_widget_margin or dpi(0)
     local screen_radius = beautiful.tag_preview_widget_border_radius or dpi(0)
@@ -196,7 +202,8 @@ local enable = function(opts)
             widget_border_color,
             widget_border_width,
             geo,
-            margin
+            margin,
+            background_image
         )
     end)
 
