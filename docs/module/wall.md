@@ -48,6 +48,14 @@ bling.module.wallpaper.setup {
     recursive = false,
     change_timer = 600
 }
+
+-- setup for all screens at once
+bling.module.wallpaper.setup {
+    set_function = bling.module.wallpaper.setters.random,
+    screens = screen, -- The awesome 'screen' variable is an array of all screen objects
+    wallpaper = {"/path/to/a/folder", "/path/to/another/folder"},
+    change_timer = 631
+}
 ```
 ### Details
 
@@ -72,6 +80,10 @@ A wallpaper is one of the following elements:
 * a function that sets a wallpaper
 * everything gears.wallpaper functions can manage (cairo surface, cairo pattern string)
 * a list containing any of the elements above
+
+To set up for multiple screens, two possible methods are:
+* Call the `setup` function for each screen, passing the appropriate configuration and `screen` arg
+* Call the `setup` function once, passing an array of screens as the `screens` arg. This applies the same configuration to all screens
 
 ```lua
 -- This is a valid wallpaper definition
@@ -100,6 +112,7 @@ Here are the defaults:
 -- Default parameters
 bling.module.wallpaper.setup {
     screen = nil,       -- the screen to apply the wallpaper, as seen in gears.wallpaper functions
+    screens = nil,      -- an array of screens to apply the wallpaper on. If 'screen' is also provided, this is overridden
     change_timer = nil, -- the timer in seconds. If set, call the set_function every change_timer seconds
     set_function = nil, -- the setter function
 
