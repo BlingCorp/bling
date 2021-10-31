@@ -2,7 +2,7 @@
 
 This is a popup widget that will show a preview of a specified tag that illustrates the position, size, content, and icon of all clients.
 
-![](https://imgur.com/3nYe1e8.gif)
+![](https://imgur.com/zFdvs4K.gif)
 
 *gif by [javacafe](https://github.com/JavaCafe01)*
 
