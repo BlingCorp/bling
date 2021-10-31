@@ -25,7 +25,13 @@ bling.widget.tag_preview.enable {
                 left = 30
             }
         })
-    end
+    end,
+	background_image = wibox.widget {	-- Set a background image (like a wallpaper) for the widget 
+        image = beautiful.wallpaper,
+        horizontal_fit_policy = "fit",
+        vertical_fit_policy   = "fit",
+        widget = wibox.widget.imagebox
+    }
 }
 ```
 
