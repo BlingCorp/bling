@@ -26,7 +26,7 @@ bling.widget.tag_preview.enable {
             }
         })
     end,
-	background_image = wibox.widget {	-- Set a background image (like a wallpaper) for the widget 
+	background_widget = wibox.widget {	-- Set a background image (like a wallpaper) for the widget 
         image = beautiful.wallpaper,
         horizontal_fit_policy = "fit",
         vertical_fit_policy   = "fit",
@@ -124,7 +124,7 @@ s.mytaglist = awful.widget.taglist {
             self:connect_signal('mouse::leave', function()
 
                 -- BLING: Turn the widget off
-                awesome.emit_signal("bling::tag_preview::visibility", s, false
+                awesome.emit_signal("bling::tag_preview::visibility", s, false)
 
                 if self.has_backup then self.bg = self.backup end
             end)
