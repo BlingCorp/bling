@@ -147,7 +147,7 @@ local enable = function(opts)
     local work_area = opts.honor_workarea or false
     local padding = opts.honor_padding or false
     local placement_fn = opts.placement_fn or nil
-    local background_image = opts.background_image or nil
+    local background_image = opts.background_widget or nil
 
     local margin = beautiful.tag_preview_widget_margin or dpi(0)
     local screen_radius = beautiful.tag_preview_widget_border_radius or dpi(0)
