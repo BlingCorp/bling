@@ -2,7 +2,6 @@ local Gio = require("lgi").Gio
 local Gtk = require("lgi").Gtk
 local gobject = require("gears.object")
 local gtable = require("gears.table")
-local beautiful = require("beautiful")
 local helpers = require("helpers")
 local setmetatable = setmetatable
 local ipairs = ipairs

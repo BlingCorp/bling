@@ -5,7 +5,7 @@ local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
-local icon_theme = require(tostring(...):match(".*bling") .. ".module.icon_theme")()
+local icon_theme = require(tostring(...):match(".*bling") .. ".helpers.icon_theme")()
 local dpi = beautiful.xresources.apply_dpi
 
 local string = string
