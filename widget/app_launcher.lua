@@ -1,6 +1,7 @@
 local awful = require("awful")
-local gears = require("gears")
+local gobject = require("gears.object")
 local gtable = require("gears.table")
+local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local menu_gen   = require("menubar.menu_gen")
@@ -410,7 +411,7 @@ local function new(args)
     args.app_name_normal_color = args.app_name_normal_color or beautiful.fg_normal or "#FFFFFF"
     args.app_name_selected_color = args.app_name_selected_color or beautiful.bg_normal or "#000000"
 
-    local ret = gears.object({})
+    local ret = gobject({})
     ret._private = {}
 
     gtable.crush(ret, app_launcher)
@@ -533,7 +534,7 @@ local function new(args)
     ret._private.current_page = 1
 
     -- Delay to prevent the app list from being empty on some occasions
-    gears.timer.delayed_call(function()
+    gtimer.delayed_call(function()
         menu_gen.generate(function(entries)
             -- Sort the table alphabetically
             if ret.sort_alphabetically then
