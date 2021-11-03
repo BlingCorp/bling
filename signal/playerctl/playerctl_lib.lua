@@ -273,7 +273,7 @@ local function seeked_cb(self, player, position)
     end
 
     if player == self._private.manager.players[1] then
-        self:emit_signal("seeked", position, player.player_name)
+        self:emit_signal("seeked", position / 1000000, player.player_name)
     end
 end
 
