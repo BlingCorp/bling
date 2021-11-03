@@ -1,17 +1,11 @@
 local awful = require("awful")
-local gears = require("gears")
-
-local capi =
-{
-    awesome = awesome,
-    root = root,
-    screen = screen,
-    client = client
-}
-local ipairs = ipairs
-local table = table
+local gtimer = require("gears.timer")
 local tonumber = tonumber
 local tostring = tostring
+local ipairs = ipairs
+local table = table
+local type = type
+local capi = { awesome = awesome, root = root, screen = screen, client = client }
 
 local persistent = { mt = {} }
 local instance = nil
@@ -49,24 +43,16 @@ local function save()
         set_xproperty(layout_property, "number", awful.layout.get_tag_layout_index(entry))
     end
 
-    for index, client in ipairs(capi.client.get()) do
-        client_set_xproperty(client, "screen", "number", client.screen.index)
-        client_set_xproperty(client, "hidden", "boolean", client.hidden)
-        client_set_xproperty(client, "minimized", "boolean", client.minimized)
-        client_set_xproperty(client, "above", "boolean", client.above)
-        client_set_xproperty(client, "ontop", "boolean", client.ontop)
-        client_set_xproperty(client, "below", "boolean", client.below)
-        client_set_xproperty(client, "fullscreen", "boolean", client.fullscreen)
-        client_set_xproperty(client, "maximized", "boolean", client.maximized)
-        client_set_xproperty(client, "maximized_horizontal", "boolean", client.maximized_horizontal)
-        client_set_xproperty(client, "maximized_vertical", "boolean", client.maximized_vertical)
-        client_set_xproperty(client, "sticky", "boolean", client.sticky)
-        client_set_xproperty(client, "floating", "boolean", client.floating)
-        client_set_xproperty(client, "x", "number", client.x)
-        client_set_xproperty(client, "y", "number", client.y)
-        client_set_xproperty(client, "width", "number", client.width)
-        client_set_xproperty(client, "height", "number", client.height)
+    local properties = { "hidden", "minimized", "above", "ontop", "below", "fullscreen",
+                        "maximized", "maximized_horizontal", "maximized_vertical", "sticky",
+                        "floating", "x", "y", "width", "height"}
 
+    for index, client in ipairs(capi.client.get()) do
+        for _, property in ipairs(properties) do
+            client_set_xproperty(client, property, type(client[property]), client[property])
+        end
+
+        client_set_xproperty(client, "screen", "number", client.screen.index)
         client_set_xproperty(client, "tags_count", "number", #client:tags())
         for index, client_tag in ipairs(client:tags()) do
             client_set_xproperty(client, "tag_" .. index, "number", client_tag.index)
@@ -102,23 +88,14 @@ local function restore()
     end
 
     for index, client in ipairs(capi.client.get()) do
-        client.screen = client_get_xproperty(client, "screen", "number")
-        client.hidden = client_get_xproperty(client, "hidden", "boolean")
-        client.minimized = client_get_xproperty(client, "minimized", "boolean")
-        client.above = client_get_xproperty(client, "above", "boolean")
-        client.ontop = client_get_xproperty(client, "ontop", "boolean")
-        client.below = client_get_xproperty(client, "below", "boolean")
-        client.fullscreen = client_get_xproperty(client, "fullscreen", "boolean")
-        client.maximized = client_get_xproperty(client, "maximized", "boolean")
-        client.maximized_horizontal = client_get_xproperty(client, "maximized_horizontal", "boolean")
-        client.maximized_vertical = client_get_xproperty(client, "maximized_vertical", "boolean")
-        client.sticky = client_get_xproperty(client, "sticky", "boolean")
-        client.floating = client_get_xproperty(client, "floating", "boolean")
+        local properties = { "hidden", "minimized", "above", "ontop", "below", "fullscreen",
+                            "maximized", "maximized_horizontal", "maximized_vertical", "sticky",
+                            "floating", "x", "y", "width", "height"}
 
-        client.x = client_get_xproperty(client, "x", "number")
-        client.y = client_get_xproperty(client, "y", "number")
-        client.width = client_get_xproperty(client, "width", "number")
-        client.height = client_get_xproperty(client, "height", "number")
+        for _, property in ipairs(properties) do
+            client[property] = client_get_xproperty(client, property, type(client[property]))
+        end
+        client:move_to_screen(client_get_xproperty(client, "screen", "number"))
 
         local parent = client
         local bling_tabbed_clients_amount = client_get_xproperty(parent, "bling_tabbed_clients_amount", "number") or 0
@@ -130,28 +107,28 @@ local function restore()
                     if not parent.bling_tabbed and not child.bling_tabbed then
                         tabbed.init(parent)
                         tabbed.add(child, parent.bling_tabbed)
-                        gears.timer.delayed_call(function()
+                        gtimer.delayed_call(function()
                             tabbed.switch_to(parent.bling_tabbed, tab_index)
                         end)
                     end
                     if not parent.bling_tabbed and child.bling_tabbed then
                         tabbed.add(parent, child.bling_tabbed)
-                        gears.timer.delayed_call(function()
+                        gtimer.delayed_call(function()
                             tabbed.switch_to(child.bling_tabbed, tab_index)
                         end)
                     end
                     if parent.bling_tabbed and not child.bling_tabbed then
                         tabbed.add(child, parent.bling_tabbed)
-                        gears.timer.delayed_call(function()
+                        gtimer.delayed_call(function()
                             tabbed.switch_to(parent.bling_tabbed, tab_index)
                         end)
                     end
-                   child:tags({})
+                    child:tags({})
                 end
             end
         end
 
-        gears.timer.delayed_call(function()
+        gtimer.delayed_call(function()
             local tags_count = client_get_xproperty(client, "tags_count", "number") or 0
             local tags = {}
             for i = 1, tags_count, 1 do
@@ -165,9 +142,8 @@ local function restore()
     end
 end
 
-local function new(args)
-    local ret = gears.object{}
-    gears.table.crush(ret, persistent, true)
+local function new()
+    local ret = {}
 
     capi.awesome.connect_signal("exit", function(reason_restart)
         if reason_restart == true then
@@ -175,7 +151,7 @@ local function new(args)
         end
     end)
 
-    gears.timer.delayed_call(function()
+    gtimer.delayed_call(function()
         restore()
     end)
 
