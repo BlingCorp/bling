@@ -1,10 +1,11 @@
+local Gio = require("lgi").Gio
 local awful = require("awful")
 local gobject = require("gears.object")
 local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
-local menu_gen   = require("menubar.menu_gen")
+local icon_theme = require(tostring(...):match(".*bling") .. ".module").icon_theme
 local dpi = beautiful.xresources.apply_dpi
 
 local string = string
@@ -533,33 +534,34 @@ local function new(args)
     ret._private.current_index = 1
     ret._private.current_page = 1
 
-    -- Delay to prevent the app list from being empty on some occasions
-    gtimer.delayed_call(function()
-        menu_gen.generate(function(entries)
-            -- Sort the table alphabetically
-            if ret.sort_alphabetically then
-                table.sort(entries, function(a, b) return a.name:lower() < b.name:lower() end)
-            end
+    local app_info = Gio.AppInfo
+    local apps = app_info.get_all()
+    if ret.sort_alphabetically then
+            table.sort(apps, function(a, b) return app_info.get_name(a):lower() < app_info.get_name(b):lower() end)
+        end
 
-            -- Loop over the app entries
-            for index, entry in pairs(entries) do
-                -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
-                if not has_value(ret.skip_names, entry.name) and not has_value(ret.skip_commands, entry.cmdline) then
-                    -- Check if this app should be skipped becuase it's iconless depanding on skip_empty_icons
-                    if entry.icon ~= nil or ret.skip_empty_icons == false then
-                        if entry.icon == nil then
-                            entry.icon = ret.default_app_icon
+    for _, app in ipairs(apps) do
+        if app.should_show(app) then
+            -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
+            local name = app_info.get_name(app)
+            local commandline = app_info.get_commandline(app)
+            local icon = icon_theme:get_gicon_path(app_info.get_icon(app))
+
+            if not has_value(ret.skip_names, name) and not has_value(ret.skip_commands, commandline) then
+                -- Check if this app should be skipped becuase it's iconless depanding on skip_empty_icons
+                    if icon ~= nil or ret.skip_empty_icons == false then
+                        if icon == nil then
+                            icon = ret.default_app_icon
                         end
 
                         -- Insert a table containing the name, command and icon of the app into the all_entries table
-                        table.insert(ret._private.all_entries, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
+                        table.insert(ret._private.all_entries, { name = name, cmdline = commandline, icon = icon })
 
                         -- Only add the app widgets that are part of the first page
                         if #ret._private.all_entries <= ret._private.apps_per_page then
-                            ret._private.grid:add(create_app_widget(ret, entry.name, entry.cmdline, entry.icon, #ret._private.all_entries))
+                            ret._private.grid:add(create_app_widget(ret, name, commandline, icon, #ret._private.all_entries))
                         end
                     end
-                end
             end
 
             -- Matched entries contains all the apps initially
@@ -568,8 +570,8 @@ local function new(args)
 
             -- Mark the first app on startup
             mark_app(ret, 1)
-        end)
-    end)
+        end
+    end
 
     if ret.rubato and ret.rubato.x then
         ret.rubato.x:subscribe(function(pos)
