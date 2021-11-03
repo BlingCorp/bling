@@ -434,7 +434,18 @@ local function new(args)
         fg = ret.prompt_text_color,
         bg_cursor = ret.prompt_cursor_color,
         changed_callback = function(text)
-            search(ret, text)
+            if ret._private.search_timer ~= nil and ret._private.search_timer.started then
+                ret._private.search_timer:stop()
+            end
+
+            ret._private.search_timer = gtimer {
+                timeout = 0.05,
+                autostart = true,
+                single_shot = true,
+                callback = function()
+                    search(ret, text)
+                end
+            }
         end,
         keypressed_callback = function(mod, key, cmd)
             if key == "Return" then
