@@ -141,7 +141,7 @@ local function search(self, text)
         if string.find(entry.name, case_insensitive_pattern(text)) ~= nil or
             self.search_commands and string.find(entry.cmdline, case_insensitive_pattern(text)) ~= nil
         then
-            table.insert(self._private.matched_entries, #self._private.matched_entries + 1, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
+            table.insert(self._private.matched_entries, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
 
             -- Only add the widgets for apps that are part of the first page
             if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
@@ -540,7 +540,7 @@ local function new(args)
                         end
 
                         -- Insert a table containing the name, command and icon of the app into the all_entries table
-                        table.insert(ret._private.all_entries, #ret._private.all_entries + 1, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
+                        table.insert(ret._private.all_entries, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
 
                         -- Only add the app widgets that are part of the first page
                         if #ret._private.all_entries <= ret._private.apps_per_page then
