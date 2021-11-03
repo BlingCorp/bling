@@ -134,7 +134,6 @@ local function search(self, text)
     -- Remove all the grid widgets
     self._private.grid:reset()
 
-
     for index, entry in pairs(self._private.all_entries) do
         text = text:gsub( "%W", "" )
 
@@ -439,14 +438,15 @@ local function new(args)
         end,
         keypressed_callback = function(mod, key, cmd)
             if key == "Return" then
-                ret._private.grid.children[ret._private.current_index].spawn()
+                if ret._private.grid.children[ret._private.current_index] ~= nil then
+                    ret._private.grid.children[ret._private.current_index].spawn()
+                end
             end
         end,
         done_callback = function()
             ret:hide()
         end
     }
-
     ret._private.grid = wibox.widget
     {
         layout = wibox.layout.grid,
