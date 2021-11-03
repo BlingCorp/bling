@@ -175,9 +175,22 @@ local enable = function(opts)
     })
 
     tag.connect_signal("property::selected", function(t)
-        for _, c in ipairs(t:clients()) do
-            c.prev_content = gears.surface.duplicate_surface(c.content)
-        end
+        -- Awesome switches up tags on startup really fast it seems, probably depends on what rules you have set
+        -- which can cause the c.content to not show the correct image
+        gears.timer
+        {
+            timeout = 0.1,
+            call_now  = false,
+            autostart = true,
+            single_shot = true,
+            callback = function()
+                if t.selected == true then
+                    for _, c in ipairs(t:clients()) do
+                        c.prev_content = gears.surface.duplicate_surface(c.content)
+                    end
+                end
+            end
+        }
     end)
 
     awesome.connect_signal("bling::tag_preview::update", function(t)
