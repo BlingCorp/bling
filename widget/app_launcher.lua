@@ -5,7 +5,7 @@ local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
-local icon_theme = require(tostring(...):match(".*bling") .. ".module").icon_theme
+local icon_theme = require(tostring(...):match(".*bling") .. ".module.icon_theme")()
 local dpi = beautiful.xresources.apply_dpi
 
 local string = string
@@ -356,7 +356,8 @@ local function new(args)
     args.sort_alphabetically = args.sort_alphabetically or true
     args.select_before_spawn = args.select_before_spawn or true
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
-    args.default_app_icon = args.default_app_icon or nil
+    args.default_app_icon_name = args.default_app_icon_name or nil
+    args.default_app_icon_path = args.default_app_icon_path or nil
 
     args.rubato = args.rubato or nil
     args.shirnk_width = args.shirnk_width or false
@@ -455,6 +456,7 @@ local function new(args)
                     ret._private.grid.children[ret._private.current_index].spawn()
                 end
             end
+            print(key)
         end,
         done_callback = function()
             ret:hide()
@@ -549,9 +551,13 @@ local function new(args)
 
             if not has_value(ret.skip_names, name) and not has_value(ret.skip_commands, commandline) then
                 -- Check if this app should be skipped becuase it's iconless depanding on skip_empty_icons
-                    if icon ~= nil or ret.skip_empty_icons == false then
-                        if icon == nil then
-                            icon = ret.default_app_icon
+                    if icon ~= "" or ret.skip_empty_icons == false then
+                        if icon == "" then
+                            if ret.default_app_icon_name ~= nil then
+                                icon = icon_theme:get_icon_path("app")
+                            elseif ret.default_app_icon_path ~= nil then
+                                icon = ret.default_app_icon_path
+                            end
                         end
 
                         -- Insert a table containing the name, command and icon of the app into the all_entries table
