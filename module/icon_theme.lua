@@ -18,11 +18,8 @@ function icon_theme:get_client_icon_path(client)
         for _, app in ipairs(Gio.AppInfo.get_all()) do
             local id = Gio.AppInfo.get_id(app)
             if id:match(helpers.misc.case_insensitive_pattern(class)) then
-                local gicon = Gio.AppInfo.get_icon(app)
-                if gicon ~= nil then
-                    self._private.client_icon_cache[class] = self:get_gicon_path(gicon)
-                    return self._private.client_icon_cache[class]
-                end
+                self._private.client_icon_cache[class] = self:get_gicon_path(Gio.AppInfo.get_icon(app))
+                return self._private.client_icon_cache[class]
             end
         end
 
@@ -60,6 +57,10 @@ function icon_theme:get_client_icon_path(client)
 end
 
 function icon_theme:get_gicon_path(gicon)
+    if gicon == nil then
+        return ""
+    end
+
     if self._private.icon_cache[gicon] ~= nil then
         return self._private.icon_cache[gicon]
     end
