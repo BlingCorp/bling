@@ -291,7 +291,6 @@ local function scroll_up(self)
 end
 
 local function scroll_left(self)
-    local rows, columns = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local is_bigger_than_first_column = pos.col > 1
     local is_not_first_page = self._private.current_page > 1
@@ -315,7 +314,8 @@ local function scroll_left(self)
            end
        end
 
-       -- If we scrolled up a page, selected app should be the last one
+       -- Keep the same row from last page
+       local rows, columns = self._private.grid:get_dimension()
        mark_app(self, pos.row, columns)
 
        -- Current page should be decremented
