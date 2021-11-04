@@ -180,21 +180,25 @@ local function search(self, text)
     -- Remove all the grid widgets
     self._private.grid:reset()
 
-    for index, entry in pairs(self._private.all_entries) do
-        text = text:gsub( "%W", "" )
+    if text == "" then
+        self._private.matched_entries = self._private.all_entries
+    else
+        for index, entry in pairs(self._private.all_entries) do
+            text = text:gsub( "%W", "" )
 
-        -- Check if there's a match by the app name or app command
-        if string.find(entry.name, case_insensitive_pattern(text)) ~= nil or
-            self.search_commands and string.find(entry.cmdline, case_insensitive_pattern(text)) ~= nil
-        then
-            table.insert(self._private.matched_entries, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
+            -- Check if there's a match by the app name or app command
+            if string.find(entry.name, case_insensitive_pattern(text)) ~= nil or
+                self.search_commands and string.find(entry.cmdline, case_insensitive_pattern(text)) ~= nil
+            then
+                table.insert(self._private.matched_entries, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
+            end
         end
-    end
 
-    -- Sort by string similarity
-    table.sort(self._private.matched_entries, function(a, b)
-        return string_levenshtein(text, a.name) < string_levenshtein(text, b.name)
-    end)
+        -- Sort by string similarity
+        table.sort(self._private.matched_entries, function(a, b)
+            return string_levenshtein(text, a.name) < string_levenshtein(text, b.name)
+        end)
+    end
     for index, entry in pairs(self._private.matched_entries) do
         -- Only add the widgets for apps that are part of the first page
         if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
