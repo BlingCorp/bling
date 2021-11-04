@@ -119,7 +119,9 @@ local function create_app_widget(self, name, cmdline, icon)
         forced_height = self.app_height,
         shape = self.app_shape,
         bg = self.app_normal_color,
-        spawn = function() awful.spawn(cmdline) end,
+        spawn = function()
+            awful.spawn("gtk-launch " .. cmdline)
+        end,
         {
             widget = wibox.container.place,
             valign = self.app_content_valign,
@@ -165,7 +167,6 @@ local function create_app_widget(self, name, cmdline, icon)
             app:get_children_by_id("background")[1].bg = self.app_normal_color
         end
     end)
-
 
     app:connect_signal('button::press', function(_self, lx, ly, button, mods, find_widgets_result)
         if button == 1 then
