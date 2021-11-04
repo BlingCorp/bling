@@ -527,6 +527,7 @@ local function new(args)
     args.skip_empty_icons = args.skip_empty_icons or false
     args.sort_alphabetically = args.sort_alphabetically or true
     args.select_before_spawn = args.select_before_spawn or true
+    args.hide_on_clicked_outside = args.hide_on_clicked_outside or true
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
     args.default_app_icon_name = args.default_app_icon_name or nil
     args.default_app_icon_path = args.default_app_icon_path or nil
@@ -786,6 +787,32 @@ local function new(args)
         ret.rubato.y:subscribe(function(pos)
             ret._private.widget.y = pos
         end)
+    end
+
+    if ret.hide_on_clicked_outside then
+        awful.mouse.append_client_mousebinding(
+            awful.button({ }, 1, function (c)
+                ret:hide()
+            end)
+        )
+
+        awful.mouse.append_global_mousebinding(
+            awful.button({ }, 1, function (c)
+                ret:hide()
+            end)
+        )
+
+        awful.mouse.append_client_mousebinding(
+            awful.button({ }, 3, function (c)
+                ret:hide()
+            end)
+        )
+
+        awful.mouse.append_global_mousebinding(
+            awful.button({ }, 3, function (c)
+                ret:hide()
+            end)
+        )
     end
 
     return ret
