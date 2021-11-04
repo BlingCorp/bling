@@ -16,6 +16,47 @@ local root = root
 
 local app_launcher  = { mt = {} }
 
+local function string_levenshtein(str1, str2)
+	local len1 = string.len(str1)
+	local len2 = string.len(str2)
+	local matrix = {}
+	local cost = 0
+
+    -- quick cut-offs to save time
+	if (len1 == 0) then
+		return len2
+	elseif (len2 == 0) then
+		return len1
+	elseif (str1 == str2) then
+		return 0
+	end
+
+    -- initialise the base matrix values
+	for i = 0, len1, 1 do
+		matrix[i] = {}
+		matrix[i][0] = i
+	end
+	for j = 0, len2, 1 do
+		matrix[0][j] = j
+	end
+
+    -- actual Levenshtein algorithm
+	for i = 1, len1, 1 do
+		for j = 1, len2, 1 do
+			if (str1:byte(i) == str2:byte(j)) then
+				cost = 0
+			else
+				cost = 1
+			end
+
+			matrix[i][j] = math.min(matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + cost)
+		end
+	end
+
+    -- return the last value - this is the Levenshtein distance
+	return matrix[len1][len2]
+end
+
 local function mark_app(self, x, y)
     self._private.active_widget = self._private.grid:get_widgets_at(x, y)[1]
     if self._private.active_widget ~= nil then
@@ -147,11 +188,17 @@ local function search(self, text)
             self.search_commands and string.find(entry.cmdline, case_insensitive_pattern(text)) ~= nil
         then
             table.insert(self._private.matched_entries, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
+        end
+    end
 
-            -- Only add the widgets for apps that are part of the first page
-            if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
-                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
-            end
+    -- Sort by string similarity
+    table.sort(self._private.matched_entries, function(a, b)
+        return string_levenshtein(text, a.name) < string_levenshtein(text, b.name)
+    end)
+    for index, entry in pairs(self._private.matched_entries) do
+        -- Only add the widgets for apps that are part of the first page
+        if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
+            self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
         end
     end
 
