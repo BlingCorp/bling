@@ -356,8 +356,8 @@ local function new(args)
     args.sort_alphabetically = args.sort_alphabetically or true
     args.select_before_spawn = args.select_before_spawn or true
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
-    args.default_app_icon_name = args.default_app_icon_name or nil
     args.default_app_icon_path = args.default_app_icon_path or nil
+    args.default_app_icon_name = args.default_app_icon_name or (args.default_app_icon_path == nil) and "app" or nil
 
     args.rubato = args.rubato or nil
     args.shirnk_width = args.shirnk_width or false
