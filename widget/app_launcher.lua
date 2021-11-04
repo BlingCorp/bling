@@ -7,38 +7,37 @@ local wibox = require("wibox")
 local beautiful = require("beautiful")
 local icon_theme = require(tostring(...):match(".*bling") .. ".helpers.icon_theme")()
 local dpi = beautiful.xresources.apply_dpi
-
 local string = string
 local table = table
 local math = math
+local ipairs = ipairs
 local pairs = pairs
 local root = root
 
 local app_launcher  = { mt = {} }
 
-local function mark_app(self, index)
-    local app = self._private.grid.children[index]
-    if app ~= nil then
-        app:get_children_by_id("background")[1].bg = self.app_selected_color
-        local text_widget = app:get_children_by_id("text")[1]
+local function mark_app(self, x, y)
+    self._private.active_widget = self._private.grid:get_widgets_at(x, y)[1]
+    if self._private.active_widget ~= nil then
+        self._private.active_widget:get_children_by_id("background")[1].bg = self.app_selected_color
+        local text_widget = self._private.active_widget:get_children_by_id("text")[1]
         if text_widget ~= nil then
             text_widget.markup = "<span foreground='" .. self.app_name_selected_color .. "'>" .. text_widget.text .. "</span>"
         end
     end
 end
 
-local function unmark_app(self, index)
-    local app = self._private.grid.children[index]
-    if app ~= nil then
-        app:get_children_by_id("background")[1].bg = self.app_normal_color
-        local text_widget = app:get_children_by_id("text")[1]
+local function unmark_app(self)
+    if self._private.active_widget ~= nil then
+        self._private.active_widget:get_children_by_id("background")[1].bg = self.app_normal_color
+        local text_widget = self._private.active_widget:get_children_by_id("text")[1]
         if text_widget ~= nil then
             text_widget.markup = "<span foreground='" .. self.app_name_normal_color .. "'>" .. text_widget.text .. "</span>"
         end
     end
 end
 
-local function create_app_widget(self, name, cmdline, icon, index)
+local function create_app_widget(self, name, cmdline, icon)
     local icon = self.app_show_icon == true
         and
         {
@@ -67,7 +66,8 @@ local function create_app_widget(self, name, cmdline, icon, index)
         }
         or nil
 
-    return wibox.widget
+    local app = {}
+    app = wibox.widget
     {
         widget = wibox.container.background,
         id = "background",
@@ -79,17 +79,16 @@ local function create_app_widget(self, name, cmdline, icon, index)
         buttons =
         {
             awful.button({}, 1, function()
-                if index == self._private.current_index or not self.select_before_spawn then
+                if self._private.active_widget == app or not self.select_before_spawn then
                     awful.spawn(cmdline)
                     self:hide()
                 else
                     -- Unmark the previous app
-                    unmark_app(self, self._private.current_index)
-
-                    self._private.current_index = index
+                    unmark_app(self)
 
                     -- Mark this app
-                    mark_app(self, self._private.current_index)
+                    local pos = self._private.grid:get_widget_position(app)
+                    mark_app(self, pos.row, pos.col)
                 end
             end),
         },
@@ -104,6 +103,8 @@ local function create_app_widget(self, name, cmdline, icon, index)
             }
         }
     }
+
+    return app
 end
 
 local function has_value(tab, val)
@@ -131,6 +132,8 @@ local function case_insensitive_pattern(pattern)
 end
 
 local function search(self, text)
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+
     -- Reset all the matched entries
     self._private.matched_entries = {}
     -- Remove all the grid widgets
@@ -147,7 +150,7 @@ local function search(self, text)
 
             -- Only add the widgets for apps that are part of the first page
             if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
-                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon,  #self._private.grid.children + 1))
+                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
             end
         end
     end
@@ -158,90 +161,205 @@ local function search(self, text)
     -- Recalculate the pages count based on the current apps per page
     self._private.pages_count = math.ceil(math.max(1, #self._private.matched_entries) / math.max(1, self._private.apps_per_page))
 
+    -- Page should be 1 after a search
+    self._private.current_page = 1
+
     -- This is an option to mimic rofi behaviour where after a search
     -- it will reselect the app whose index is the same as the app index that was previously selected
     -- and if matched_entries.length < current_index it will instead select the app with the greatest index
     if self.try_to_keep_index_after_searching then
-        self._private.current_index = math.max(math.min(self._private.current_index, #self._private.matched_entries), 1)
-
+        if self._private.grid:get_widgets_at(pos.row, pos.col) == nil then
+            local app = self._private.grid.children[#self._private.grid.children]
+            pos = self._private.grid:get_widget_position(app)
+        end
+        mark_app(self, pos.row, pos.col)
     -- Otherwise select the first app on the list
     else
-        self._private.current_index = 1
+        mark_app(self, 1, 1)
     end
-    self._private.current_page = 1
-
-    mark_app(self, self._private.current_index)
 end
 
 local function scroll_up(self)
+    local rows, columns = self._private.grid:get_dimension()
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+
     -- Check if the current marked app is not the first
-    if self._private.current_index > 1 then
-        unmark_app(self, self._private.current_index)
-
-        -- Current index should be decremented
-        self._private.current_index = self._private.current_index - 1
-
-        -- Mark the new app
-        mark_app(self, self._private.current_index)
-
+    if pos.col > 1 or pos.row > 1 then
+        unmark_app(self)
+        if pos.row == 1 then
+            mark_app(self, rows, pos.col - 1)
+        else
+            mark_app(self, pos.row - 1, pos.col)
+        end
     -- Check if the current page is not the first
     elseif self._private.current_page > 1 then
-        -- Remove the current page apps from the grid
-        self._private.grid:reset()
+       -- Remove the current page apps from the grid
+       self._private.grid:reset()
 
-        local max_app_index_to_include = (self._private.current_page - 1) * self._private.apps_per_page
-        local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
+       local max_app_index_to_include = (self._private.current_page - 1) * self._private.apps_per_page
+       local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
 
+       for index, entry in pairs(self._private.matched_entries) do
+           -- Only add widgets that are between this range (part of the current page)
+           if index > min_app_index_to_include and index <= max_app_index_to_include then
+               self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
+           end
+       end
 
-        for index, entry in pairs(self._private.matched_entries) do
-            -- Only add widgets that are between this range (part of the current page)
-            if index > min_app_index_to_include and index <= max_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, #self._private.grid.children + 1))
-            end
-        end
+       -- If we scrolled up a page, selected app should be the last one
+       mark_app(self, rows, columns)
 
-        -- If we scrolled up a page, selected app should be the last one
-        self._private.current_index = self._private.apps_per_page
-        mark_app(self, self._private.current_index)
-
-        -- Current page should be decremented
-        self._private.current_page = self._private.current_page - 1
+       -- Current page should be decremented
+       self._private.current_page = self._private.current_page - 1
     end
 end
 
 local function scroll_down(self)
-    local is_less_than_max_app = self._private.current_index < #self._private.grid.children
+    local rows, columns = self._private.grid:get_dimension()
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+
+    local is_less_than_max_app = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
     local is_less_than_max_page = self._private.current_page < self._private.pages_count
 
     -- Check if we can scroll down the app list
     if is_less_than_max_app then
         -- Unmark the previous app
-        unmark_app(self, self._private.current_index)
+        unmark_app(self)
+        if pos.row == rows then
+            mark_app(self, 1, pos.col + 1)
+        else
+            mark_app(self, pos.row + 1, pos.col)
+        end
+    -- If we can't scroll down the app list, check if we can scroll down a page
+    elseif is_less_than_max_page then
+        -- Remove the current page apps from the grid
+        self._private.grid:reset()
 
-        -- Current index should be incremented
-        self._private.current_index = self._private.current_index + 1
+        local min_app_index_to_include = self._private.apps_per_page * self._private.current_page
+        local max_app_index_to_include = min_app_index_to_include + self._private.apps_per_page
 
-        -- Mark the new app
-        mark_app(self, self._private.current_index)
+        for index, entry in pairs(self._private.matched_entries) do
+            -- Only add widgets that are between this range (part of the current page)
+            if index > min_app_index_to_include and index <= max_app_index_to_include then
+                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
+            end
+        end
+
+        -- Select app 1 when scrolling to the next page
+        mark_app(self, 1, 1)
+
+        -- Current page should be incremented
+        self._private.current_page = self._private.current_page + 1
+    end
+end
+
+local function scroll_up(self)
+    local rows, columns = self._private.grid:get_dimension()
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+
+    local is_bigger_than_first_app = pos.col > 1 or pos.row > 1
+
+    -- Check if the current marked app is not the first
+    if is_bigger_than_first_app then
+        unmark_app(self)
+        if pos.row == 1 then
+            mark_app(self, rows, pos.col - 1)
+        else
+            mark_app(self, pos.row - 1, pos.col)
+        end
+    -- Check if the current page is not the first
+    elseif self._private.current_page > 1 then
+       -- Remove the current page apps from the grid
+       self._private.grid:reset()
+
+       local max_app_index_to_include = (self._private.current_page - 1) * self._private.apps_per_page
+       local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
+
+       for index, entry in pairs(self._private.matched_entries) do
+           -- Only add widgets that are between this range (part of the current page)
+           if index > min_app_index_to_include and index <= max_app_index_to_include then
+               self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
+           end
+       end
+
+       -- If we scrolled up a page, selected app should be the last one
+       mark_app(self, rows, columns)
+
+       -- Current page should be decremented
+       self._private.current_page = self._private.current_page - 1
+    end
+end
+
+local function scroll_left(self)
+    local rows, columns = self._private.grid:get_dimension()
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+    local is_bigger_than_first_column = pos.col > 1
+    local is_not_first_page = self._private.current_page > 1
+
+    -- Check if the current marked app is not the first
+    if is_bigger_than_first_column then
+        unmark_app(self)
+        mark_app(self, pos.row, pos.col - 1)
+    -- Check if the current page is not the first
+    elseif is_not_first_page then
+       -- Remove the current page apps from the grid
+       self._private.grid:reset()
+
+       local max_app_index_to_include = (self._private.current_page - 1) * self._private.apps_per_page
+       local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
+
+       for index, entry in pairs(self._private.matched_entries) do
+           -- Only add widgets that are between this range (part of the current page)
+           if index > min_app_index_to_include and index <= max_app_index_to_include then
+               self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
+           end
+       end
+
+       -- If we scrolled up a page, selected app should be the last one
+       mark_app(self, pos.row, columns)
+
+       -- Current page should be decremented
+       self._private.current_page = self._private.current_page - 1
+    end
+end
+
+local function scroll_right(self)
+    local rows, columns = self._private.grid:get_dimension()
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+    local is_less_than_max_column = pos.col < columns
+    local is_less_than_max_page = self._private.current_page < self._private.pages_count
+
+    -- Check if we can scroll down the app list
+    if is_less_than_max_column then
+        -- Unmark the previous app
+        unmark_app(self)
+
+        -- Scroll up to the max app if there are directly to the right of previous app
+        if self._private.grid:get_widgets_at(pos.row, pos.col + 1) == nil then
+            local app = self._private.grid.children[#self._private.grid.children]
+            pos = self._private.grid:get_widget_position(app)
+            mark_app(self, pos.row, pos.col)
+        else
+            mark_app(self, pos.row, pos.col + 1)
+        end
 
     -- If we can't scroll down the app list, check if we can scroll down a page
     elseif is_less_than_max_page then
         -- Remove the current page apps from the grid
         self._private.grid:reset()
 
-        local min_app_index_to_include = self._private.current_index * self._private.current_page
+        local min_app_index_to_include = self._private.apps_per_page * self._private.current_page
         local max_app_index_to_include = min_app_index_to_include + self._private.apps_per_page
 
         for index, entry in pairs(self._private.matched_entries) do
             -- Only add widgets that are between this range (part of the current page)
             if index > min_app_index_to_include and index <= max_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, #self._private.grid.children + 1))
+                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
             end
         end
 
-        -- Current app is 1 if we scroll to the next page
-        self._private.current_index = 1
-        mark_app(self, self._private.current_index)
+        -- Keep the last row
+        mark_app(self, pos.row, 1)
 
         -- Current page should be incremented
         self._private.current_page = self._private.current_page + 1
@@ -313,7 +431,6 @@ function app_launcher:hide(args)
     self._private.apps_per_page = self._private.max_apps_per_page
     self._private.pages_count = math.ceil(#self._private.all_entries / self._private.apps_per_page)
     self._private.matched_entries = self._private.all_entries
-    self._private.current_index = 1
     self._private.current_page = 1
     self._private.grid:reset()
 
@@ -321,14 +438,14 @@ function app_launcher:hide(args)
     for index, entry in pairs(self._private.all_entries) do
         -- Only add the apps that are part of the first page
         if index <= self._private.apps_per_page then
-            self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon, index))
+            self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
         else
             break
         end
     end
 
     -- Select the first app for the next time
-    mark_app(self, self._private.current_index)
+    mark_app(self, 1, 1)
 
     self:emit_signal("bling::app_launcher::visibility", false)
 end
@@ -355,7 +472,7 @@ local function new(args)
     args.skip_empty_icons = args.skip_empty_icons or false
     args.sort_alphabetically = args.sort_alphabetically or true
     args.select_before_spawn = args.select_before_spawn or true
-    args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
+    args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or true
     args.default_app_icon_path = args.default_app_icon_path or nil
     args.default_app_icon_name = args.default_app_icon_name or (args.default_app_icon_path == nil) and
         icon_theme:get_example_icon_path() or nil
@@ -416,6 +533,7 @@ local function new(args)
 
     local ret = gobject({})
     ret._private = {}
+    ret._private.text = ""
 
     gtable.crush(ret, app_launcher)
     gtable.crush(ret, args)
@@ -437,7 +555,18 @@ local function new(args)
         bg = ret.prompt_color,
         fg = ret.prompt_text_color,
         bg_cursor = ret.prompt_cursor_color,
+        hooks =
+        {
+            -- Disable historyu scrolling with arrow keys
+            -- TODO: implement this as other keybind? tab?
+            {{}, "Up", function(command) return true, false end},
+            {{}, "Down", function(command) return true, false end},
+        },
         changed_callback = function(text)
+            if text == ret._private.text then
+                return
+            end
+
             if ret._private.search_timer ~= nil and ret._private.search_timer.started then
                 ret._private.search_timer:stop()
             end
@@ -450,14 +579,27 @@ local function new(args)
                     search(ret, text)
                 end
             }
+
+            ret._private.text = text
         end,
         keypressed_callback = function(mod, key, cmd)
             if key == "Return" then
-                if ret._private.grid.children[ret._private.current_index] ~= nil then
-                    ret._private.grid.children[ret._private.current_index].spawn()
+                if ret._private.active_widget ~= nil then
+                    ret._private.active_widget.spawn()
                 end
             end
-            print(key)
+            if key == "Up" then
+                scroll_up(ret)
+            end
+            if key == "Down" then
+                scroll_down(ret)
+            end
+            if key == "Left" then
+                scroll_left(ret)
+            end
+            if key == "Right" then
+                scroll_right(ret)
+            end
         end,
         done_callback = function()
             ret:hide()
@@ -534,51 +676,50 @@ local function new(args)
     ret._private.apps_per_page = ret.apps_per_column * ret.apps_per_row
     ret._private.max_apps_per_page = ret._private.apps_per_page
     ret._private.pages_count = 0
-    ret._private.current_index = 1
     ret._private.current_page = 1
 
     local app_info = Gio.AppInfo
     local apps = app_info.get_all()
     if ret.sort_alphabetically then
-            table.sort(apps, function(a, b) return app_info.get_name(a):lower() < app_info.get_name(b):lower() end)
-        end
+        table.sort(apps, function(a, b) return app_info.get_name(a):lower() < app_info.get_name(b):lower() end)
+    end
 
     for _, app in ipairs(apps) do
         if app.should_show(app) then
-            -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
             local name = app_info.get_name(app)
             local commandline = app_info.get_commandline(app)
             local icon = icon_theme:get_gicon_path(app_info.get_icon(app))
 
+            -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
             if not has_value(ret.skip_names, name) and not has_value(ret.skip_commands, commandline) then
                 -- Check if this app should be skipped becuase it's iconless depanding on skip_empty_icons
-                    if icon ~= "" or ret.skip_empty_icons == false then
-                        if icon == "" then
-                            if ret.default_app_icon_name ~= nil then
-                                icon = icon_theme:get_icon_path("app")
-                            elseif ret.default_app_icon_path ~= nil then
-                                icon = ret.default_app_icon_path
-                            end
-                        end
-
-                        -- Insert a table containing the name, command and icon of the app into the all_entries table
-                        table.insert(ret._private.all_entries, { name = name, cmdline = commandline, icon = icon })
-
-                        -- Only add the app widgets that are part of the first page
-                        if #ret._private.all_entries <= ret._private.apps_per_page then
-                            ret._private.grid:add(create_app_widget(ret, name, commandline, icon, #ret._private.all_entries))
+                if icon ~= "" or ret.skip_empty_icons == false then
+                    if icon == "" then
+                        if ret.default_app_icon_name ~= nil then
+                            icon = icon_theme:get_icon_path("app")
+                        elseif ret.default_app_icon_path ~= nil then
+                            icon = ret.default_app_icon_path
                         end
                     end
+
+                    -- Insert a table containing the name, command and icon of the app into the all_entries table
+                    table.insert(ret._private.all_entries, { name = name, cmdline = commandline, icon = icon })
+
+                    -- Only add the app widgets that are part of the first page
+                    if #ret._private.all_entries <= ret._private.apps_per_page then
+                        ret._private.grid:add(create_app_widget(ret, name, commandline, icon))
+                    end
+                end
             end
 
             -- Matched entries contains all the apps initially
             ret._private.matched_entries = ret._private.all_entries
             ret._private.pages_count = math.ceil(#ret._private.all_entries / ret._private.apps_per_page)
-
-            -- Mark the first app on startup
-            mark_app(ret, 1)
         end
     end
+
+    -- Mark the first app on startup
+    mark_app(ret, 1, 1)
 
     if ret.rubato and ret.rubato.x then
         ret.rubato.x:subscribe(function(pos)
