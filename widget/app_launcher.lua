@@ -67,9 +67,7 @@ local function mark_app(self, x, y)
             self._private.active_widget.selected = true
             self._private.active_widget:get_children_by_id("background")[1].bg = self.app_selected_color
             local text_widget = self._private.active_widget:get_children_by_id("text")[1]
-            if text_widget ~= nil then
-                text_widget.markup = "<span foreground='" .. self.app_name_selected_color .. "'>" .. text_widget.text .. "</span>"
-            end
+            text_widget.markup = "<span foreground='" .. self.app_name_selected_color .. "'>" .. text_widget.text .. "</span>"
         end
     end
 end
@@ -79,9 +77,7 @@ local function unmark_app(self)
         self._private.active_widget.selected = false
         self._private.active_widget:get_children_by_id("background")[1].bg = self.app_normal_color
         local text_widget = self._private.active_widget:get_children_by_id("text")[1]
-        if text_widget ~= nil then
-            text_widget.markup = "<span foreground='" .. self.app_name_normal_color .. "'>" .. text_widget.text .. "</span>"
-        end
+        text_widget.markup = "<span foreground='" .. self.app_name_normal_color .. "'>" .. text_widget.text .. "</span>"
     end
 end
 
