@@ -182,9 +182,10 @@ end
 local function scroll_up(self)
     local rows, columns = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
+    local is_bigger_than_first_app = pos.col > 1 or pos.row > 1
 
     -- Check if the current marked app is not the first
-    if pos.col > 1 or pos.row > 1 then
+    if is_bigger_than_first_app then
         unmark_app(self)
         if pos.row == 1 then
             mark_app(self, rows, pos.col - 1)
@@ -250,43 +251,6 @@ local function scroll_down(self)
 
         -- Current page should be incremented
         self._private.current_page = self._private.current_page + 1
-    end
-end
-
-local function scroll_up(self)
-    local rows, columns = self._private.grid:get_dimension()
-    local pos = self._private.grid:get_widget_position(self._private.active_widget)
-
-    local is_bigger_than_first_app = pos.col > 1 or pos.row > 1
-
-    -- Check if the current marked app is not the first
-    if is_bigger_than_first_app then
-        unmark_app(self)
-        if pos.row == 1 then
-            mark_app(self, rows, pos.col - 1)
-        else
-            mark_app(self, pos.row - 1, pos.col)
-        end
-    -- Check if the current page is not the first
-    elseif self._private.current_page > 1 then
-       -- Remove the current page apps from the grid
-       self._private.grid:reset()
-
-       local max_app_index_to_include = (self._private.current_page - 1) * self._private.apps_per_page
-       local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
-
-       for index, entry in pairs(self._private.matched_entries) do
-           -- Only add widgets that are between this range (part of the current page)
-           if index > min_app_index_to_include and index <= max_app_index_to_include then
-               self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
-           end
-       end
-
-       -- If we scrolled up a page, selected app should be the last one
-       mark_app(self, rows, columns)
-
-       -- Current page should be decremented
-       self._private.current_page = self._private.current_page - 1
     end
 end
 
