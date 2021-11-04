@@ -35,7 +35,12 @@ bling.widget.tabbed_misc.titlebar_indicator(client, {
         },
         widget = wibox.container.margin,
         margins = 2,
-        id = 'click_role'
+        id = 'click_role',
+        update_callback = function(self, client, group)
+            if client == group.clients[group.focused_idx] then
+                self.margins = 5
+            end
+        end
     }
 })
 ```

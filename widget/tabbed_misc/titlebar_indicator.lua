@@ -40,16 +40,11 @@ return function(c, opts)
         spacing = opts.layout_spacing,
     })
 
-    awesome.connect_signal(
-        "bling::tabbed::client_removed",
-        function(_, removed_c)
-            -- Remove from list
-            for idx, icon in ipairs(tabbed_icons.children) do
-                if
-                    icon:get_children_by_id("icon_role")[1].client == removed_c
-                then
-                    tabbed_icons:remove(idx)
-                end
+    awesome.connect_signal("bling::tabbed::client_removed", function(_, removed_c)
+        -- Remove from list
+        for idx, icon in ipairs(tabbed_icons.children) do
+            if icon._client == removed_c then
+                tabbed_icons:remove(idx)
             end
 
             -- Empty list
@@ -57,7 +52,7 @@ return function(c, opts)
                 tabbed_icons:reset()
             end
         end
-    )
+	end)
 
     local function recreate(group)
         if tbl_contains(group.clients, c) then
@@ -92,6 +87,13 @@ return function(c, opts)
                     valign = "center",
                     widget = wibox.container.place,
                 })
+
+                widget._client = client
+
+                -- No creation call back since this would be called on creation & every time the widget updated.
+                if opts.widget_template.update_callback then
+                    opts.widget_template.update_callback(widget, client, group)
+                end
 
                 -- Add icons & etc
                 for _, w in ipairs(widget:get_children_by_id("icon_role")) do
