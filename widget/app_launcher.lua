@@ -208,6 +208,7 @@ local function scroll_up(self)
        end
 
        -- If we scrolled up a page, selected app should be the last one
+       rows, columns = self._private.grid:get_dimension()
        mark_app(self, rows, columns)
 
        -- Current page should be decremented
