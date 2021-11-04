@@ -82,7 +82,7 @@ local function unmark_app(self)
     end
 end
 
-local function create_app_widget(self, name, cmdline, icon)
+local function create_app_widget(self, name, executable, icon)
     local icon = self.app_show_icon == true
         and
         {
@@ -120,7 +120,11 @@ local function create_app_widget(self, name, cmdline, icon)
         shape = self.app_shape,
         bg = self.app_normal_color,
         spawn = function()
-            awful.spawn("gtk-launch " .. cmdline)
+            awful.spawn.easy_async("gtk-launch " .. executable, function(stdout, stderr)
+                if stderr then
+                    awful.spawn(executable)
+                end
+            end)
         end,
         {
             widget = wibox.container.place,
@@ -228,9 +232,9 @@ local function search(self, text)
 
             -- Check if there's a match by the app name or app command
             if string.find(entry.name, case_insensitive_pattern(text)) ~= nil or
-                self.search_commands and string.find(entry.cmdline, case_insensitive_pattern(text)) ~= nil
+                self.search_commands and string.find(entry.commandline, case_insensitive_pattern(text)) ~= nil
             then
-                table.insert(self._private.matched_entries, { name = entry.name, cmdline = entry.cmdline, icon = entry.icon })
+                table.insert(self._private.matched_entries, { name = entry.name, commandline = entry.commandline, executable = entry.executable, icon = entry.icon })
             end
         end
 
@@ -242,7 +246,7 @@ local function search(self, text)
     for index, entry in pairs(self._private.matched_entries) do
         -- Only add the widgets for apps that are part of the first page
         if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
-            self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
+            self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
         end
     end
 
@@ -294,7 +298,7 @@ local function scroll_up(self)
        for index, entry in pairs(self._private.matched_entries) do
            -- Only add widgets that are between this range (part of the current page)
            if index > min_app_index_to_include and index <= max_app_index_to_include then
-               self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
+               self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
            end
        end
 
@@ -334,7 +338,7 @@ local function scroll_down(self)
         for index, entry in pairs(self._private.matched_entries) do
             -- Only add widgets that are between this range (part of the current page)
             if index > min_app_index_to_include and index <= max_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
+                self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
             end
         end
 
@@ -366,7 +370,7 @@ local function scroll_left(self)
        for index, entry in pairs(self._private.matched_entries) do
            -- Only add widgets that are between this range (part of the current page)
            if index > min_app_index_to_include and index <= max_app_index_to_include then
-               self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
+               self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
            end
        end
 
@@ -410,7 +414,7 @@ local function scroll_right(self)
         for index, entry in pairs(self._private.matched_entries) do
             -- Only add widgets that are between this range (part of the current page)
             if index > min_app_index_to_include and index <= max_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
+                self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
             end
         end
 
@@ -494,7 +498,7 @@ function app_launcher:hide(args)
     for index, entry in pairs(self._private.all_entries) do
         -- Only add the apps that are part of the first page
         if index <= self._private.apps_per_page then
-            self._private.grid:add(create_app_widget(self, entry.name, entry.cmdline, entry.icon))
+            self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
         else
             break
         end
@@ -749,7 +753,8 @@ local function new(args)
     for _, app in ipairs(apps) do
         if app.should_show(app) then
             local name = app_info.get_name(app)
-            local commandline = app_info.get_executable(app)
+            local commandline = app_info.get_commandline(app)
+            local executable = app_info.get_executable(app)
             local icon = icon_theme:get_gicon_path(app_info.get_icon(app))
 
             -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
@@ -767,11 +772,11 @@ local function new(args)
                     end
 
                     -- Insert a table containing the name, command and icon of the app into the all_entries table
-                    table.insert(ret._private.all_entries, { name = name, cmdline = commandline, icon = icon })
+                    table.insert(ret._private.all_entries, { name = name, commandline = commandline, executable = executable, icon = icon })
 
                     -- Only add the app widgets that are part of the first page
                     if #ret._private.all_entries <= ret._private.apps_per_page then
-                        ret._private.grid:add(create_app_widget(ret, name, commandline, icon))
+                        ret._private.grid:add(create_app_widget(ret, name, executable, icon))
                     end
                 end
             end
