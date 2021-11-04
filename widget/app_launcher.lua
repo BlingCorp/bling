@@ -168,17 +168,19 @@ local function create_app_widget(self, name, cmdline, icon)
 
 
     app:connect_signal('button::press', function(_self, lx, ly, button, mods, find_widgets_result)
-        local app = _self
-        if self._private.active_widget == app or not self.select_before_spawn then
-            awful.spawn(cmdline)
-            self:hide()
-        else
-            -- Unmark the previous app
-            unmark_app(self)
+        if button == 1 then
+            local app = _self
+            if self._private.active_widget == app or not self.select_before_spawn then
+                awful.spawn(cmdline)
+                self:hide()
+            else
+                -- Unmark the previous app
+                unmark_app(self)
 
-            -- Mark this app
-            local pos = self._private.grid:get_widget_position(app)
-            mark_app(self, pos.row, pos.col)
+                -- Mark this app
+                local pos = self._private.grid:get_widget_position(app)
+                mark_app(self, pos.row, pos.col)
+            end
         end
     end)
 
