@@ -324,7 +324,7 @@ local function scroll_right(self)
         end
 
         -- Keep the last row
-        mark_app(self, pos.row, 1)
+        mark_app(self, math.min(pos.row, #self._private.grid.children), 1)
 
         -- Current page should be incremented
         self._private.current_page = self._private.current_page + 1
