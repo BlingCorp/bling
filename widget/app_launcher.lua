@@ -474,8 +474,7 @@ local function new(args)
     args.select_before_spawn = args.select_before_spawn or true
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or true
     args.default_app_icon_name = args.default_app_icon_name or nil
-    args.default_app_icon_path = args.default_app_icon_path or
-        (args.default_app_icon_name == nil) and icon_theme:get_example_icon_path() or nil
+    args.default_app_icon_path = args.default_app_icon_path or nil
 
     args.rubato = args.rubato or nil
     args.shirnk_width = args.shirnk_width or false
@@ -699,6 +698,8 @@ local function new(args)
                             icon = icon_theme:get_icon_path(ret.default_app_icon_name)
                         elseif ret.default_app_icon_path ~= nil then
                             icon = ret.default_app_icon_path
+                        else
+                            icon = icon_theme:choose_icon({ "application-all", "application", "application-default-icon", "app" })
                         end
                     end
 
