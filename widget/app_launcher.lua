@@ -6,6 +6,7 @@ local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local icon_theme = require(tostring(...):match(".*bling") .. ".helpers.icon_theme")()
+local color = require(tostring(...):match(".*bling") .. ".helpers.color")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
 local table = table
@@ -13,6 +14,7 @@ local math = math
 local ipairs = ipairs
 local pairs = pairs
 local root = root
+local capi = { mouse = mouse }
 
 local app_launcher  = { mt = {} }
 
@@ -60,6 +62,7 @@ end
 local function mark_app(self, x, y)
     self._private.active_widget = self._private.grid:get_widgets_at(x, y)[1]
     if self._private.active_widget ~= nil then
+        self._private.active_widget.selected = true
         self._private.active_widget:get_children_by_id("background")[1].bg = self.app_selected_color
         local text_widget = self._private.active_widget:get_children_by_id("text")[1]
         if text_widget ~= nil then
@@ -70,6 +73,7 @@ end
 
 local function unmark_app(self)
     if self._private.active_widget ~= nil then
+        self._private.active_widget.selected = false
         self._private.active_widget:get_children_by_id("background")[1].bg = self.app_normal_color
         local text_widget = self._private.active_widget:get_children_by_id("text")[1]
         if text_widget ~= nil then
@@ -107,8 +111,7 @@ local function create_app_widget(self, name, cmdline, icon)
         }
         or nil
 
-    local app = {}
-    app = wibox.widget
+    local app = wibox.widget
     {
         widget = wibox.container.background,
         id = "background",
@@ -117,22 +120,6 @@ local function create_app_widget(self, name, cmdline, icon)
         shape = self.app_shape,
         bg = self.app_normal_color,
         spawn = function() awful.spawn(cmdline) end,
-        buttons =
-        {
-            awful.button({}, 1, function()
-                if self._private.active_widget == app or not self.select_before_spawn then
-                    awful.spawn(cmdline)
-                    self:hide()
-                else
-                    -- Unmark the previous app
-                    unmark_app(self)
-
-                    -- Mark this app
-                    local pos = self._private.grid:get_widget_position(app)
-                    mark_app(self, pos.row, pos.col)
-                end
-            end),
-        },
         {
             widget = wibox.container.place,
             valign = self.app_content_valign,
@@ -144,6 +131,56 @@ local function create_app_widget(self, name, cmdline, icon)
             }
         }
     }
+
+    app:connect_signal("mouse::enter", function(_self)
+        local widget = capi.mouse.current_wibox
+        if widget then
+            widget.cursor = "hand2"
+        end
+
+        local app = _self
+        if app.selected then
+            app:get_children_by_id("background")[1].bg = color.lighten(self.app_selected_color, 50)
+        else
+            local is_opaque = color.is_opaque(self.app_normal_color)
+            local is_dark = color.is_dark(self.app_normal_color)
+            local app_normal_color = color.hex_to_rgba(self.app_normal_color)
+            local hover_color = (is_dark or is_opaque) and
+                color.rgba_to_hex(color.multiply(app_normal_color, 2.5)) or
+                color.rgba_to_hex(color.multiply(app_normal_color, 0.5))
+            app:get_children_by_id("background")[1].bg = hover_color
+        end
+    end)
+
+    app:connect_signal("mouse::leave", function(_self)
+        local widget = capi.mouse.current_wibox
+        if widget then
+            widget.cursor = "left_ptr"
+        end
+
+        local app = _self
+        if app.selected then
+            app:get_children_by_id("background")[1].bg = self.app_selected_color
+        else
+            app:get_children_by_id("background")[1].bg = self.app_normal_color
+        end
+    end)
+
+
+    app:connect_signal('button::press', function(_self, lx, ly, button, mods, find_widgets_result)
+        local app = _self
+        if self._private.active_widget == app or not self.select_before_spawn then
+            awful.spawn(cmdline)
+            self:hide()
+        else
+            -- Unmark the previous app
+            unmark_app(self)
+
+            -- Mark this app
+            local pos = self._private.grid:get_widget_position(app)
+            mark_app(self, pos.row, pos.col)
+        end
+    end)
 
     return app
 end
