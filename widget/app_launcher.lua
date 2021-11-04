@@ -142,7 +142,7 @@ local function create_app_widget(self, name, cmdline, icon)
 
         local app = _self
         if app.selected then
-            app:get_children_by_id("background")[1].bg = color.lighten(self.app_selected_color, 50)
+            app:get_children_by_id("background")[1].bg = self.app_selected_hover_color
         else
             local is_opaque = color.is_opaque(self.app_normal_color)
             local is_dark = color.is_dark(self.app_normal_color)
@@ -150,7 +150,7 @@ local function create_app_widget(self, name, cmdline, icon)
             local hover_color = (is_dark or is_opaque) and
                 color.rgba_to_hex(color.multiply(app_normal_color, 2.5)) or
                 color.rgba_to_hex(color.multiply(app_normal_color, 0.5))
-            app:get_children_by_id("background")[1].bg = hover_color
+            app:get_children_by_id("background")[1].bg = self.app_normal_hover_color
         end
     end)
 
@@ -574,7 +574,13 @@ local function new(args)
     args.app_height = args.app_height or dpi(100)
     args.app_shape = args.app_shape or nil
     args.app_normal_color = args.app_normal_color or beautiful.bg_normal or "#000000"
+    args.app_normal_hover_color = args.app_normal_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
+        color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_normal_color), 2.5)) or
+        color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_normal_color), 0.5))
     args.app_selected_color = args.app_selected_color or beautiful.fg_normal or "#FFFFFF"
+    args.app_selected_hover_color = args.app_selected_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
+        color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 2.5)) or
+        color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 0.5))
     args.app_content_valign = args.app_content_valign or "center"
     args.app_content_spacing = args.app_content_spacing or dpi(10)
     args.app_show_icon = args.app_show_icon == nil and true or args.app_show_icon
