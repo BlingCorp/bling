@@ -60,13 +60,16 @@ local function string_levenshtein(str1, str2)
 end
 
 local function mark_app(self, x, y)
-    self._private.active_widget = self._private.grid:get_widgets_at(x, y)[1]
-    if self._private.active_widget ~= nil then
-        self._private.active_widget.selected = true
-        self._private.active_widget:get_children_by_id("background")[1].bg = self.app_selected_color
-        local text_widget = self._private.active_widget:get_children_by_id("text")[1]
-        if text_widget ~= nil then
-            text_widget.markup = "<span foreground='" .. self.app_name_selected_color .. "'>" .. text_widget.text .. "</span>"
+    local widgets = self._private.grid:get_widgets_at(x, y)
+    if widgets then
+        self._private.active_widget = widgets[1]
+        if self._private.active_widget ~= nil then
+            self._private.active_widget.selected = true
+            self._private.active_widget:get_children_by_id("background")[1].bg = self.app_selected_color
+            local text_widget = self._private.active_widget:get_children_by_id("text")[1]
+            if text_widget ~= nil then
+                text_widget.markup = "<span foreground='" .. self.app_name_selected_color .. "'>" .. text_widget.text .. "</span>"
+            end
         end
     end
 end
@@ -275,6 +278,10 @@ local function search(self, text)
 end
 
 local function scroll_up(self)
+    if #self._private.grid.children < 1 then
+        return
+    end
+
     local rows, columns = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local is_bigger_than_first_app = pos.col > 1 or pos.row > 1
@@ -312,9 +319,12 @@ local function scroll_up(self)
 end
 
 local function scroll_down(self)
+    if #self._private.grid.children < 1 then
+        return
+    end
+
     local rows, columns = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
-
     local is_less_than_max_app = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
     local is_less_than_max_page = self._private.current_page < self._private.pages_count
 
@@ -351,6 +361,10 @@ local function scroll_down(self)
 end
 
 local function scroll_left(self)
+    if #self._private.grid.children < 1 then
+        return
+    end
+
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local is_bigger_than_first_column = pos.col > 1
     local is_not_first_page = self._private.current_page > 1
@@ -384,6 +398,10 @@ local function scroll_left(self)
 end
 
 local function scroll_right(self)
+    if #self._private.grid.children < 1 then
+        return
+    end
+
     local rows, columns = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local is_less_than_max_column = pos.col < columns
