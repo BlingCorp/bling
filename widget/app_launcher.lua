@@ -619,7 +619,7 @@ local function new(args)
     gtable.crush(ret, args)
 
     -- Determines the grid width
-    local grid_width =  ret.shirnk_width == false
+    local grid_width = ret.shirnk_width == false
         and dpi((ret.app_width * ret.apps_per_column) + ((ret.apps_per_column - 1) * ret.apps_spacing))
         or nil
     local grid_height = ret.shrink_height == false
