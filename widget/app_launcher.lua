@@ -18,6 +18,14 @@ local path = ...
 
 local app_launcher  = { mt = {} }
 
+local terminal_commands_lookup =
+{
+    alacritty = "alacritty -e",
+    termite = "termite -e",
+    rxvt = "rxvt -e",
+    terminator = "terminator -e"
+}
+
 local function string_levenshtein(str1, str2)
 	local len1 = string.len(str1)
 	local len2 = string.len(str2)
@@ -119,11 +127,20 @@ local function create_app_widget(self, entry)
         shape = self.app_shape,
         bg = self.app_normal_color,
         spawn = function()
-            awful.spawn.easy_async("gtk-launch " .. executable, function(stdout, stderr)
-                if stderr then
-                    awful.spawn(executable)
+            if entry.terminal == true then
+                if self.terminal ~= nil then
+                    local terminal_command = terminal_commands_lookup[self.terminal] or self.terminal
+                    awful.spawn(terminal_command .. " " .. entry.executable)
+                else
+                    awful.spawn.easy_async("gtk-launch " .. entry.executable, function(stdout, stderr)
+                        if stderr then
+                            awful.spawn(entry.executable)
+                        end
+                    end)
                 end
-            end)
+            else
+                awful.spawn(entry.executable)
+            end
         end,
         {
             widget = wibox.container.place,
@@ -233,7 +250,7 @@ local function search(self, text)
             if string.find(entry.name, case_insensitive_pattern(text)) ~= nil or
                 self.search_commands and string.find(entry.commandline, case_insensitive_pattern(text)) ~= nil
             then
-                table.insert(self._private.matched_entries, { name = entry.name, commandline = entry.commandline, executable = entry.executable, icon = entry.icon })
+                table.insert(self._private.matched_entries, { name = entry.name, commandline = entry.commandline, executable = entry.executable, terminal = entry.terminal, icon = entry.icon })
             end
         end
 
@@ -566,6 +583,7 @@ end
 local function new(args)
     args = args or {}
 
+    args.terminal = args.terminal or nil
     args.search_commands = args.search_commands or true
     args.skip_names = args.skip_names or {}
     args.skip_commands = args.skip_commands or {}
@@ -815,8 +833,9 @@ local function new(args)
                         end
                     end
 
-                    -- Insert a table containing the name, command and icon of the app into the all_entries table
-                    table.insert(ret._private.all_entries, { name = name, commandline = commandline, executable = executable, icon = icon })
+                    local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
+                    local terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true" and true or false
+                    table.insert(ret._private.all_entries, { name = name, commandline = commandline, executable = executable, terminal = terminal, icon = icon })
 
                     -- Only add the app widgets that are part of the first page
                     if #ret._private.all_entries <= ret._private.apps_per_page then
