@@ -82,7 +82,7 @@ return function(c, opts)
 							widget = wibox.container.margin,
 						},
 						shape = opts.icon_shape,
-						id = "background_role",
+						id = "bg_role",
 						widget = wibox.container.background,
 					},
 					halign = "center",
