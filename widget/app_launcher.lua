@@ -5,7 +5,6 @@ local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
-local icon_theme = require(tostring(...):match(".*bling") .. ".helpers.icon_theme")()
 local color = require(tostring(...):match(".*bling") .. ".helpers.color")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
@@ -15,6 +14,7 @@ local ipairs = ipairs
 local pairs = pairs
 local root = root
 local capi = { screen = screen, mouse = mouse }
+local path = ...
 
 local app_launcher  = { mt = {} }
 
@@ -574,8 +574,11 @@ local function new(args)
     args.select_before_spawn = args.select_before_spawn or true
     args.hide_on_clicked_outside = args.hide_on_clicked_outside or true
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
+
     args.default_app_icon_name = args.default_app_icon_name or nil
     args.default_app_icon_path = args.default_app_icon_path or nil
+    args.icon_theme = args.icon_theme or nil
+    args.icons_size = args.icons_size or nil
 
     args.show_on_focused_screen = args.show_on_focused_screen or true
     args.screen = args.screen or capi.screen.primary
@@ -788,6 +791,8 @@ local function new(args)
     if ret.sort_alphabetically then
         table.sort(apps, function(a, b) return app_info.get_name(a):lower() < app_info.get_name(b):lower() end)
     end
+
+    local icon_theme = require(tostring(path):match(".*bling") .. ".helpers.icon_theme")(ret.icon_theme, ret.icon_size)
 
     for _, app in ipairs(apps) do
         if app.should_show(app) then
