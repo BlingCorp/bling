@@ -694,6 +694,7 @@ local function new(args)
             -- TODO: implement this as other keybind? tab?
             {{}, "Up", function(command) return true, false end},
             {{}, "Down", function(command) return true, false end},
+            {{}, "Return", function(command) return true, false end},
         },
         changed_callback = function(text)
             if text == ret._private.text then
@@ -736,9 +737,6 @@ local function new(args)
             if key == "Right" then
                 scroll_right(ret)
             end
-        end,
-        -- Override the default exe_callback which tries to spawn the entered command
-        exe_callback = function(command)
         end
     }
     ret._private.grid = wibox.widget
