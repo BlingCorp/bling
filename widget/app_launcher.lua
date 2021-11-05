@@ -459,6 +459,25 @@ local function scroll_right(self)
     end
 end
 
+local function init(self)
+    self._private.grid:reset()
+    self._private.matched_entries = self._private.all_entries
+    self._private.apps_per_page = self._private.max_apps_per_page
+    self._private.pages_count = math.ceil(#self._private.all_entries / self._private.apps_per_page)
+    self._private.current_page = 1
+
+    for index, entry in pairs(self._private.all_entries) do
+        -- Only add the apps that are part of the first page
+        if index <= self._private.apps_per_page then
+            self._private.grid:add(create_app_widget(self, entry))
+        else
+            break
+        end
+    end
+
+    select_app(self, 1, 1)
+end
+
 --- Shows the app launcher
 function app_launcher:show()
     local screen = self.screen
@@ -527,42 +546,24 @@ function app_launcher:hide()
 
         if turn_off_on_anim_x_end then
             animation.x.ended:subscribe(function()
+                init(self)
                 screen.app_launcher.visible = false
                 screen.app_launcher = nil
                 animation.x.ended:unsubscribe()
             end)
         else
             animation.y.ended:subscribe(function()
+                init(self)
                 screen.app_launcher.visible = false
                 screen.app_launcher = nil
                 animation.y.ended:unsubscribe()
             end)
         end
-
     else
+        init(self)
         screen.app_launcher.visible = false
         screen.app_launcher = nil
     end
-
-    -- Reset back to initial values
-    self._private.apps_per_page = self._private.max_apps_per_page
-    self._private.pages_count = math.ceil(#self._private.all_entries / self._private.apps_per_page)
-    self._private.matched_entries = self._private.all_entries
-    self._private.current_page = 1
-    self._private.grid:reset()
-
-    -- Add the app widgets for the next time
-    for index, entry in pairs(self._private.all_entries) do
-        -- Only add the apps that are part of the first page
-        if index <= self._private.apps_per_page then
-            self._private.grid:add(create_app_widget(self, entry))
-        else
-            break
-        end
-    end
-
-    -- Select the first app for the next time
-    select_app(self, 1, 1)
 
     self:emit_signal("bling::app_launcher::visibility", false)
 end
@@ -801,8 +802,8 @@ local function new(args)
     -- Private variables to be used to be used by the scrolling and searching functions
     ret._private.all_entries = {}
     ret._private.matched_entries = {}
-    ret._private.apps_per_page = ret.apps_per_column * ret.apps_per_row
-    ret._private.max_apps_per_page = ret._private.apps_per_page
+    ret._private.max_apps_per_page = ret.apps_per_column * ret.apps_per_row
+    ret._private.apps_per_page = ret._private.max_apps_per_page
     ret._private.pages_count = 0
     ret._private.current_page = 1
 
@@ -838,22 +839,12 @@ local function new(args)
                     local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
                     local terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true" and true or false
                     table.insert(ret._private.all_entries, { name = name, commandline = commandline, executable = executable, terminal = terminal, icon = icon })
-
-                    -- Only add the app widgets that are part of the first page
-                    if #ret._private.all_entries <= ret._private.apps_per_page then
-                        ret._private.grid:add(create_app_widget(ret, ret._private.all_entries[#ret._private.all_entries]))
-                    end
                 end
             end
-
-            -- Matched entries contains all the apps initially
-            ret._private.matched_entries = ret._private.all_entries
-            ret._private.pages_count = math.ceil(#ret._private.all_entries / ret._private.apps_per_page)
         end
     end
 
-    -- Mark the first app on startup
-    select_app(ret, 1, 1)
+    init(ret)
 
     if ret.rubato and ret.rubato.x then
         ret.rubato.x:subscribe(function(pos)
