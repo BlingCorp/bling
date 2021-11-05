@@ -81,7 +81,7 @@ local function unmark_app(self)
     end
 end
 
-local function create_app_widget(self, name, executable, icon)
+local function create_app_widget(self, entry)
     local icon = self.app_show_icon == true
         and
         {
@@ -91,7 +91,7 @@ local function create_app_widget(self, name, executable, icon)
                 widget = wibox.widget.imagebox,
                 forced_width = self.app_icon_width,
                 forced_height = self.app_icon_height,
-                image = icon
+                image = entry.icon
             }
         }
         or nil
@@ -105,7 +105,7 @@ local function create_app_widget(self, name, executable, icon)
                 id = "text",
                 align = "center",
                 font = self.app_name_font,
-                markup = name
+                markup = entry.name
             }
         }
         or nil
@@ -245,7 +245,7 @@ local function search(self, text)
     for index, entry in pairs(self._private.matched_entries) do
         -- Only add the widgets for apps that are part of the first page
         if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
-            self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
+            self._private.grid:add(create_app_widget(self, entry))
         end
     end
 
@@ -301,7 +301,7 @@ local function scroll_up(self)
        for index, entry in pairs(self._private.matched_entries) do
            -- Only add widgets that are between this range (part of the current page)
            if index > min_app_index_to_include and index <= max_app_index_to_include then
-               self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
+               self._private.grid:add(create_app_widget(self, entry))
            end
        end
 
@@ -344,7 +344,7 @@ local function scroll_down(self)
         for index, entry in pairs(self._private.matched_entries) do
             -- Only add widgets that are between this range (part of the current page)
             if index > min_app_index_to_include and index <= max_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
+                self._private.grid:add(create_app_widget(self, entry))
             end
         end
 
@@ -380,7 +380,7 @@ local function scroll_left(self)
        for index, entry in pairs(self._private.matched_entries) do
            -- Only add widgets that are between this range (part of the current page)
            if index > min_app_index_to_include and index <= max_app_index_to_include then
-               self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
+               self._private.grid:add(create_app_widget(self, entry))
            end
        end
 
@@ -428,7 +428,7 @@ local function scroll_right(self)
         for index, entry in pairs(self._private.matched_entries) do
             -- Only add widgets that are between this range (part of the current page)
             if index > min_app_index_to_include and index <= max_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
+                self._private.grid:add(create_app_widget(self, entry))
             end
         end
 
@@ -536,7 +536,7 @@ function app_launcher:hide()
     for index, entry in pairs(self._private.all_entries) do
         -- Only add the apps that are part of the first page
         if index <= self._private.apps_per_page then
-            self._private.grid:add(create_app_widget(self, entry.name, entry.executable, entry.icon))
+            self._private.grid:add(create_app_widget(self, entry))
         else
             break
         end
@@ -820,7 +820,7 @@ local function new(args)
 
                     -- Only add the app widgets that are part of the first page
                     if #ret._private.all_entries <= ret._private.apps_per_page then
-                        ret._private.grid:add(create_app_widget(ret, name, executable, icon))
+                        ret._private.grid:add(create_app_widget(ret, ret._private.all_entries[#ret._private.all_entries]))
                     end
                 end
             end
