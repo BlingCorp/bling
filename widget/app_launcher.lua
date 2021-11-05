@@ -67,6 +67,30 @@ local function string_levenshtein(str1, str2)
 	return matrix[len1][len2]
 end
 
+local function has_value(tab, val)
+    for index, value in pairs(tab) do
+        if val:find(value) then
+            return true
+        end
+    end
+    return false
+end
+
+local function case_insensitive_pattern(pattern)
+    -- find an optional '%' (group 1) followed by any character (group 2)
+    local p = pattern:gsub("(%%?)(.)", function(percent, letter)
+      if percent ~= "" or not letter:match("%a") then
+        -- if the '%' matched, or `letter` is not a letter, return "as is"
+        return percent .. letter
+      else
+        -- else, return a case-insensitive character class of the matched letter
+        return string.format("[%s%s]", letter:lower(), letter:upper())
+      end
+    end)
+
+    return p
+end
+
 local function mark_app(self, x, y)
     local widgets = self._private.grid:get_widgets_at(x, y)
     if widgets then
@@ -126,22 +150,6 @@ local function create_app_widget(self, entry)
         forced_height = self.app_height,
         shape = self.app_shape,
         bg = self.app_normal_color,
-        spawn = function()
-            if entry.terminal == true then
-                if self.terminal ~= nil then
-                    local terminal_command = terminal_commands_lookup[self.terminal] or self.terminal
-                    awful.spawn(terminal_command .. " " .. entry.executable)
-                else
-                    awful.spawn.easy_async("gtk-launch " .. entry.executable, function(stdout, stderr)
-                        if stderr then
-                            awful.spawn(entry.executable)
-                        end
-                    end)
-                end
-            else
-                awful.spawn(entry.executable)
-            end
-        end,
         {
             widget = wibox.container.place,
             valign = self.app_content_valign,
@@ -153,6 +161,23 @@ local function create_app_widget(self, entry)
             }
         }
     }
+
+    function app.spawn()
+        if entry.terminal == true then
+            if self.terminal ~= nil then
+                local terminal_command = terminal_commands_lookup[self.terminal] or self.terminal
+                awful.spawn(terminal_command .. " " .. entry.executable)
+            else
+                awful.spawn.easy_async("gtk-launch " .. entry.executable, function(stdout, stderr)
+                    if stderr then
+                        awful.spawn(entry.executable)
+                    end
+                end)
+            end
+        else
+            awful.spawn(entry.executable)
+        end
+    end
 
     app:connect_signal("mouse::enter", function(_self)
         local widget = capi.mouse.current_wibox
@@ -206,30 +231,6 @@ local function create_app_widget(self, entry)
     end)
 
     return app
-end
-
-local function has_value(tab, val)
-    for index, value in pairs(tab) do
-        if val:find(value) then
-            return true
-        end
-    end
-    return false
-end
-
-local function case_insensitive_pattern(pattern)
-    -- find an optional '%' (group 1) followed by any character (group 2)
-    local p = pattern:gsub("(%%?)(.)", function(percent, letter)
-      if percent ~= "" or not letter:match("%a") then
-        -- if the '%' matched, or `letter` is not a letter, return "as is"
-        return percent .. letter
-      else
-        -- else, return a case-insensitive character class of the matched letter
-        return string.format("[%s%s]", letter:lower(), letter:upper())
-      end
-    end)
-
-    return p
 end
 
 local function search(self, text)
