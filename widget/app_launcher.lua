@@ -485,6 +485,48 @@ local function reset(self)
     select_app(self, 1, 1)
 end
 
+local function generate_apps(self)
+    self._private.all_entries = {}
+    self._private.matched_entries = {}
+
+    local app_info = Gio.AppInfo
+    local apps = app_info.get_all()
+    if self.sort_alphabetically then
+        table.sort(apps, function(a, b) return app_info.get_name(a):lower() < app_info.get_name(b):lower() end)
+    end
+
+    local icon_theme = require(tostring(path):match(".*bling") .. ".helpers.icon_theme")(self.icon_theme, self.icon_size)
+
+    for _, app in ipairs(apps) do
+        if app.should_show(app) then
+            local name = app_info.get_name(app)
+            local commandline = app_info.get_commandline(app)
+            local executable = app_info.get_executable(app)
+            local icon = icon_theme:get_gicon_path(app_info.get_icon(app))
+
+            -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
+            if not has_value(self.skip_names, name) and not has_value(self.skip_commands, commandline) then
+                -- Check if this app should be skipped becuase it's iconless depanding on skip_empty_icons
+                if icon ~= "" or self.skip_empty_icons == false then
+                    if icon == "" then
+                        if self.default_app_icon_name ~= nil then
+                            icon = icon_theme:get_icon_path(self.default_app_icon_name)
+                        elseif self.default_app_icon_path ~= nil then
+                            icon = self.default_app_icon_path
+                        else
+                            icon = icon_theme:choose_icon({ "application-all", "application", "application-default-icon", "app" })
+                        end
+                    end
+
+                    local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
+                    local terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true" and true or false
+                    table.insert(self._private.all_entries, { name = name, commandline = commandline, executable = executable, terminal = terminal, icon = icon })
+                end
+            end
+        end
+    end
+end
+
 --- Shows the app launcher
 function app_launcher:show()
     local screen = self.screen
@@ -808,50 +850,12 @@ local function new(args)
     }
 
     -- Private variables to be used to be used by the scrolling and searching functions
-    ret._private.all_entries = {}
-    ret._private.matched_entries = {}
     ret._private.max_apps_per_page = ret.apps_per_column * ret.apps_per_row
     ret._private.apps_per_page = ret._private.max_apps_per_page
     ret._private.pages_count = 0
     ret._private.current_page = 1
 
-    local app_info = Gio.AppInfo
-    local apps = app_info.get_all()
-    if ret.sort_alphabetically then
-        table.sort(apps, function(a, b) return app_info.get_name(a):lower() < app_info.get_name(b):lower() end)
-    end
-
-    local icon_theme = require(tostring(path):match(".*bling") .. ".helpers.icon_theme")(ret.icon_theme, ret.icon_size)
-
-    for _, app in ipairs(apps) do
-        if app.should_show(app) then
-            local name = app_info.get_name(app)
-            local commandline = app_info.get_commandline(app)
-            local executable = app_info.get_executable(app)
-            local icon = icon_theme:get_gicon_path(app_info.get_icon(app))
-
-            -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
-            if not has_value(ret.skip_names, name) and not has_value(ret.skip_commands, commandline) then
-                -- Check if this app should be skipped becuase it's iconless depanding on skip_empty_icons
-                if icon ~= "" or ret.skip_empty_icons == false then
-                    if icon == "" then
-                        if ret.default_app_icon_name ~= nil then
-                            icon = icon_theme:get_icon_path(ret.default_app_icon_name)
-                        elseif ret.default_app_icon_path ~= nil then
-                            icon = ret.default_app_icon_path
-                        else
-                            icon = icon_theme:choose_icon({ "application-all", "application", "application-default-icon", "app" })
-                        end
-                    end
-
-                    local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
-                    local terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true" and true or false
-                    table.insert(ret._private.all_entries, { name = name, commandline = commandline, executable = executable, terminal = terminal, icon = icon })
-                end
-            end
-        end
-    end
-
+    generate_apps(ret)
     reset(ret)
 
     if ret.rubato and ret.rubato.x then
@@ -890,6 +894,15 @@ local function new(args)
             end)
         )
     end
+
+    local kill_old_inotify_process_script = [[ ps x | grep "inotifywait -e modify /usr/share/applications" | grep -v grep | awk '{print $1}' | xargs kill ]]
+    local subscribe_script = [[ bash -c "while (inotifywait -e modify /usr/share/applications -qq) do echo; done" ]]
+
+    awful.spawn.easy_async_with_shell(kill_old_inotify_process_script, function()
+        awful.spawn.with_line_callback(subscribe_script, {stdout = function(_)
+            generate_apps(ret)
+        end})
+    end)
 
     return ret
 end
