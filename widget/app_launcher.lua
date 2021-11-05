@@ -294,6 +294,7 @@ end
 
 local function scroll_up(self)
     if #self._private.grid.children < 1 then
+        self._private.active_widget = nil
         return
     end
 
@@ -335,6 +336,7 @@ end
 
 local function scroll_down(self)
     if #self._private.grid.children < 1 then
+        self._private.active_widget = nil
         return
     end
 
@@ -377,6 +379,7 @@ end
 
 local function scroll_left(self)
     if #self._private.grid.children < 1 then
+        self._private.active_widget = nil
         return
     end
 
@@ -414,6 +417,7 @@ end
 
 local function scroll_right(self)
     if #self._private.grid.children < 1 then
+        self._private.active_widget = nil
         return
     end
 
