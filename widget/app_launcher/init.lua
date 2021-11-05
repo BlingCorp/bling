@@ -69,15 +69,6 @@ local function string_levenshtein(str1, str2)
 	return matrix[len1][len2]
 end
 
-local function has_value(tab, val)
-    for index, value in pairs(tab) do
-        if val:find(value) then
-            return true
-        end
-    end
-    return false
-end
-
 local function case_insensitive_pattern(pattern)
     -- find an optional '%' (group 1) followed by any character (group 2)
     local p = pattern:gsub("(%%?)(.)", function(percent, letter)
@@ -91,6 +82,15 @@ local function case_insensitive_pattern(pattern)
     end)
 
     return p
+end
+
+local function has_value(tab, val)
+    for index, value in pairs(tab) do
+        if val:find(case_insensitive_pattern(value)) then
+            return true
+        end
+    end
+    return false
 end
 
 local function select_app(self, x, y)
