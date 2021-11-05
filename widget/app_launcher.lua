@@ -177,6 +177,8 @@ local function create_app_widget(self, entry)
         else
             awful.spawn(entry.executable)
         end
+
+        self:hide()
     end
 
     app:connect_signal("mouse::enter", function(_self)
@@ -217,8 +219,7 @@ local function create_app_widget(self, entry)
         if button == 1 then
             local app = _self
             if self._private.active_widget == app or not self.select_before_spawn then
-                awful.spawn(cmdline)
-                self:hide()
+                app.spawn()
             else
                 -- Unmark the previous app
                 unselect_app(self)
@@ -727,9 +728,6 @@ local function new(args)
             if key == "Right" then
                 scroll_right(ret)
             end
-        end,
-        done_callback = function()
-            ret:hide()
         end
     }
     ret._private.grid = wibox.widget
