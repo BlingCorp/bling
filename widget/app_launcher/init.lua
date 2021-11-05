@@ -675,14 +675,14 @@ local function new(args)
     args = args or {}
 
     args.terminal = args.terminal or nil
-    args.search_commands = args.search_commands or true
+    args.search_commands = args.search_commands == nil and true or args.search_commands
     args.skip_names = args.skip_names or {}
     args.skip_commands = args.skip_commands or {}
-    args.skip_empty_icons = args.skip_empty_icons or false
-    args.sort_alphabetically = args.sort_alphabetically or true
-    args.select_before_spawn = args.select_before_spawn or true
-    args.hide_on_clicked_outside = args.hide_on_clicked_outside or true
-    args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
+    args.skip_empty_icons = args.skip_empty_icons == nil and false or args.skip_empty_icons
+    args.sort_alphabetically = args.sort_alphabetically == nil and true or args.sort_alphabetically
+    args.select_before_spawn = args.select_before_spawn == nil and true or args.select_before_spawn
+    args.hide_on_clicked_outside = args.hide_on_clicked_outside == nil and true or args.hide_on_clicked_outside
+    args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching == nil and false or args.try_to_keep_index_after_searching
     args.reset_on_hide = args.reset_on_hide == nil and true or args.reset_on_hide
     args.save_history = args.save_history == nil and true or args.save_history
 
@@ -691,12 +691,12 @@ local function new(args)
     args.icon_theme = args.icon_theme or nil
     args.icons_size = args.icons_size or nil
 
-    args.show_on_focused_screen = args.show_on_focused_screen or true
+    args.show_on_focused_screen = args.show_on_focused_screen == nil and true or args.show_on_focused_screen
     args.screen = args.screen or capi.screen.primary
     args.placement = args.placement or awful.placement.centered
     args.rubato = args.rubato or nil
-    args.shirnk_width = args.shirnk_width or false
-    args.shrink_height = args.shrink_height or false
+    args.shirnk_width = args.shirnk_width == nil and false or args.shirnk_width
+    args.shrink_height = args.shrink_height == nil and false or args.shrink_height
     args.background = args.background or "#000000"
     args.shape = args.shape or nil
 
@@ -726,7 +726,7 @@ local function new(args)
     args.apps_margin = args.apps_margin or dpi(30)
     args.apps_spacing = args.apps_spacing or dpi(30)
 
-    args.expand_apps = args.expand_apps or true
+    args.expand_apps = args.expand_apps == nil and true or args.expand_apps
     args.app_width = args.app_width or dpi(300)
     args.app_height = args.app_height or dpi(100)
     args.app_shape = args.app_shape or nil
@@ -750,7 +750,7 @@ local function new(args)
     args.app_name_font = args.app_name_font or beautiful.font
     args.app_name_normal_color = args.app_name_normal_color or beautiful.fg_normal or "#FFFFFF"
     args.app_name_selected_color = args.app_name_selected_color or beautiful.bg_normal or "#000000"
-    args.app_show_generic_name = args.app_show_generic_name or false
+    args.app_show_generic_name = args.app_show_generic_name == nil and false or args.app_show_generic_name
 
     local ret = gobject({})
     ret._private = {}
