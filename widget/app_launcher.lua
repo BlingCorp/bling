@@ -91,7 +91,7 @@ local function case_insensitive_pattern(pattern)
     return p
 end
 
-local function mark_app(self, x, y)
+local function select_app(self, x, y)
     local widgets = self._private.grid:get_widgets_at(x, y)
     if widgets then
         self._private.active_widget = widgets[1]
@@ -104,7 +104,7 @@ local function mark_app(self, x, y)
     end
 end
 
-local function unmark_app(self)
+local function unselect_app(self)
     if self._private.active_widget ~= nil then
         self._private.active_widget.selected = false
         self._private.active_widget:get_children_by_id("background")[1].bg = self.app_normal_color
@@ -221,11 +221,11 @@ local function create_app_widget(self, entry)
                 self:hide()
             else
                 -- Unmark the previous app
-                unmark_app(self)
+                unselect_app(self)
 
                 -- Mark this app
                 local pos = self._private.grid:get_widget_position(app)
-                mark_app(self, pos.row, pos.col)
+                select_app(self, pos.row, pos.col)
             end
         end
     end)
@@ -284,10 +284,10 @@ local function search(self, text)
             local app = self._private.grid.children[#self._private.grid.children]
             pos = self._private.grid:get_widget_position(app)
         end
-        mark_app(self, pos.row, pos.col)
+        select_app(self, pos.row, pos.col)
     -- Otherwise select the first app on the list
     else
-        mark_app(self, 1, 1)
+        select_app(self, 1, 1)
     end
 end
 
@@ -302,11 +302,11 @@ local function scroll_up(self)
 
     -- Check if the current marked app is not the first
     if is_bigger_than_first_app then
-        unmark_app(self)
+        unselect_app(self)
         if pos.row == 1 then
-            mark_app(self, rows, pos.col - 1)
+            select_app(self, rows, pos.col - 1)
         else
-            mark_app(self, pos.row - 1, pos.col)
+            select_app(self, pos.row - 1, pos.col)
         end
     -- Check if the current page is not the first
     elseif self._private.current_page > 1 then
@@ -325,7 +325,7 @@ local function scroll_up(self)
 
        -- If we scrolled up a page, selected app should be the last one
        rows, columns = self._private.grid:get_dimension()
-       mark_app(self, rows, columns)
+       select_app(self, rows, columns)
 
        -- Current page should be decremented
        self._private.current_page = self._private.current_page - 1
@@ -345,11 +345,11 @@ local function scroll_down(self)
     -- Check if we can scroll down the app list
     if is_less_than_max_app then
         -- Unmark the previous app
-        unmark_app(self)
+        unselect_app(self)
         if pos.row == rows then
-            mark_app(self, 1, pos.col + 1)
+            select_app(self, 1, pos.col + 1)
         else
-            mark_app(self, pos.row + 1, pos.col)
+            select_app(self, pos.row + 1, pos.col)
         end
     -- If we can't scroll down the app list, check if we can scroll down a page
     elseif is_less_than_max_page then
@@ -367,7 +367,7 @@ local function scroll_down(self)
         end
 
         -- Select app 1 when scrolling to the next page
-        mark_app(self, 1, 1)
+        select_app(self, 1, 1)
 
         -- Current page should be incremented
         self._private.current_page = self._private.current_page + 1
@@ -385,8 +385,8 @@ local function scroll_left(self)
 
     -- Check if the current marked app is not the first
     if is_bigger_than_first_column then
-        unmark_app(self)
-        mark_app(self, pos.row, pos.col - 1)
+        unselect_app(self)
+        select_app(self, pos.row, pos.col - 1)
     -- Check if the current page is not the first
     elseif is_not_first_page then
        -- Remove the current page apps from the grid
@@ -404,7 +404,7 @@ local function scroll_left(self)
 
        -- Keep the same row from last page
        local rows, columns = self._private.grid:get_dimension()
-       mark_app(self, pos.row, columns)
+       select_app(self, pos.row, columns)
 
        -- Current page should be decremented
        self._private.current_page = self._private.current_page - 1
@@ -424,15 +424,15 @@ local function scroll_right(self)
     -- Check if we can scroll down the app list
     if is_less_than_max_column then
         -- Unmark the previous app
-        unmark_app(self)
+        unselect_app(self)
 
         -- Scroll up to the max app if there are directly to the right of previous app
         if self._private.grid:get_widgets_at(pos.row, pos.col + 1) == nil then
             local app = self._private.grid.children[#self._private.grid.children]
             pos = self._private.grid:get_widget_position(app)
-            mark_app(self, pos.row, pos.col)
+            select_app(self, pos.row, pos.col)
         else
-            mark_app(self, pos.row, pos.col + 1)
+            select_app(self, pos.row, pos.col + 1)
         end
 
     -- If we can't scroll down the app list, check if we can scroll down a page
@@ -451,7 +451,7 @@ local function scroll_right(self)
         end
 
         -- Keep the last row
-        mark_app(self, math.min(pos.row, #self._private.grid.children), 1)
+        select_app(self, math.min(pos.row, #self._private.grid.children), 1)
 
         -- Current page should be incremented
         self._private.current_page = self._private.current_page + 1
@@ -561,7 +561,7 @@ function app_launcher:hide()
     end
 
     -- Select the first app for the next time
-    mark_app(self, 1, 1)
+    select_app(self, 1, 1)
 
     self:emit_signal("bling::app_launcher::visibility", false)
 end
@@ -852,7 +852,7 @@ local function new(args)
     end
 
     -- Mark the first app on startup
-    mark_app(ret, 1, 1)
+    select_app(ret, 1, 1)
 
     if ret.rubato and ret.rubato.x then
         ret.rubato.x:subscribe(function(pos)
