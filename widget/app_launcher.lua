@@ -236,6 +236,8 @@ local function create_app_widget(self, entry)
 end
 
 local function search(self, text)
+    unselect_app(self)
+
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
 
     -- Reset all the matched entries
