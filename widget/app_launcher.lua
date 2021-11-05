@@ -216,7 +216,7 @@ local function create_app_widget(self, entry)
         end
     end)
 
-    app:connect_signal('button::press', function(_self, lx, ly, button, mods, find_widgets_result)
+    app:connect_signal("button::press", function(_self, lx, ly, button, mods, find_widgets_result)
         if button == 1 then
             local app = _self
             if self._private.active_widget == app or not self.select_before_spawn then
@@ -535,8 +535,8 @@ function app_launcher:hide()
     end
 
     -- There's no other way to stop the prompt?
-    root.fake_input('key_press', "Escape")
-    root.fake_input('key_release', "Escape")
+    root.fake_input("key_press", "Escape")
+    root.fake_input("key_release", "Escape")
 
     local animation = self.rubato
     if animation ~= nil then
