@@ -115,33 +115,23 @@ local function unselect_app(self)
 end
 
 local function create_app_widget(self, entry)
-    local icon = self.app_show_icon == true
-        and
-        {
-            widget = wibox.container.place,
-            halign = self.app_name_halign,
-            {
-                widget = wibox.widget.imagebox,
-                forced_width = self.app_icon_width,
-                forced_height = self.app_icon_height,
-                image = entry.icon
-            }
-        }
-        or nil
-    local name = self.app_show_name == true
-        and
-        {
-            widget = wibox.container.place,
-            halign = self.app_icon_halign,
-            {
-                widget = wibox.widget.textbox,
-                id = "text",
-                align = "center",
-                font = self.app_name_font,
-                markup = entry.name
-            }
-        }
-        or nil
+    local icon = self.app_show_icon == true and
+    {
+        widget = wibox.widget.imagebox,
+        halign = self.app_icon_halign,
+        forced_width = self.app_icon_width,
+        forced_height = self.app_icon_height,
+        image = entry.icon
+    } or nil
+
+    local name = self.app_show_name == true and
+    {
+        widget = wibox.widget.textbox,
+        id = "text",
+        align = self.app_name_halign,
+        font = self.app_name_font,
+        markup = entry.name
+    } or nil
 
     local app = wibox.widget
     {
@@ -152,13 +142,20 @@ local function create_app_widget(self, entry)
         shape = self.app_shape,
         bg = self.app_normal_color,
         {
-            widget = wibox.container.place,
-            valign = self.app_content_valign,
+            widget = wibox.container.margin,
+            margins = self.app_content_margin,
             {
-                layout = wibox.layout.fixed.vertical,
-                spacing = self.app_content_spacing,
-                icon,
-                name
+                -- Using this hack instead of container.place because that will fuck with the name/icon halign
+                layout = wibox.layout.align.vertical,
+                expand = "outside",
+                nil,
+                {
+                    layout = wibox.layout.fixed.vertical,
+                    spacing = self.app_content_spacing,
+                    icon,
+                    name
+                },
+                nil
             }
         }
     }
@@ -697,7 +694,7 @@ local function new(args)
     args.app_selected_hover_color = args.app_selected_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 2.5)) or
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 0.5))
-    args.app_content_valign = args.app_content_valign or "center"
+    args.app_content_margin = args.app_content_margin or dpi(10)
     args.app_content_spacing = args.app_content_spacing or dpi(10)
     args.app_show_icon = args.app_show_icon == nil and true or args.app_show_icon
     args.app_icon_halign = args.app_icon_halign or "center"
