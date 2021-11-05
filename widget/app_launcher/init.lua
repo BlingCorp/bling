@@ -619,26 +619,15 @@ function app_launcher:show()
     screen.app_launcher.visible = true
     self._private.prompt:start()
 
-    local placement = self.placement
-    if placement then
-        local pos = placement(self.screen.app_launcher, {pretend = true})
-        local animation = self.rubato
-        if animation ~= nil then
-            if animation.x then
-                animation.x.ended:unsubscribe()
-                animation.x:set(pos.x)
-            else
-                self._private.widget.x = pos.x
-            end
-            if animation.y then
-                animation.y.ended:unsubscribe()
-                animation.y:set(pos.y)
-            else
-                self._private.widget.y = pos.y
-            end
-        else
-            self._private.widget.x = pos.x
-            self._private.widget.y = pos.y
+    local animation = self.rubato
+    if animation ~= nil then
+        if animation.x then
+            animation.x.ended:unsubscribe()
+            animation.x:set(self._private.widget.x)
+        end
+        if animation.y then
+            animation.y.ended:unsubscribe()
+            animation.y:set(self._private.widget.y)
         end
     end
 
@@ -884,6 +873,7 @@ local function new(args)
         type = "dock",
         visible = false,
         ontop = true,
+        placement = ret.placement,
         shape = ret.shape,
         bg =  ret.background,
         widget =
