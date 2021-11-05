@@ -736,6 +736,9 @@ local function new(args)
             if key == "Right" then
                 scroll_right(ret)
             end
+        end,
+        -- Override the default exe_callback which tries to spawn the entered command
+        exe_callback = function(command)
         end
     }
     ret._private.grid = wibox.widget
