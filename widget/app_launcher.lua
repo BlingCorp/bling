@@ -14,7 +14,7 @@ local math = math
 local ipairs = ipairs
 local pairs = pairs
 local root = root
-local capi = { mouse = mouse }
+local capi = { screen = screen, mouse = mouse }
 
 local app_launcher  = { mt = {} }
 
@@ -441,65 +441,89 @@ local function scroll_right(self)
 end
 
 --- Shows the app launcher
-function app_launcher:show(args)
-    local args = args or {}
+function app_launcher:show()
+    local screen = self.screen
+    if self.show_on_focused_screen then
+        screen = awful.screen.focused()
+    end
 
-    self.screen = args.screen or self.screen
-    self.screen.app_launcher = self._private.widget
-    self.screen.app_launcher.screen = self.screen
-    self.screen.app_launcher.visible = true
+    screen.app_launcher = self._private.widget
+    screen.app_launcher.screen = screen
+    screen.app_launcher.visible = true
     self._private.prompt:run()
 
-    local x = args.x or self.x or nil
-    if self.rubato and self.rubato.x and x then
-        self.rubato.x:set(x)
-    elseif x then
-        self.screen.app_launcher.x = x
-    end
-
-    local y = args.y or self.y or nil
-    if self.rubato and self.rubato.y and y then
-        self.rubato.y:set(y)
-    elseif y then
-        self.screen.app_launcher.y = y
-    end
-
-    local placement = args.placement or self.placement or nil
+    local placement = self.placement
     if placement then
-        self.screen.app_launcher.placement = placement
+        local pos = placement(self.screen.app_launcher, {pretend = true})
+        local animation = self.rubato
+        if animation ~= nil then
+            if animation.x then
+                animation.x.ended:unsubscribe()
+                animation.x:set(pos.x)
+            else
+                self._private.widget.x = pos.x
+            end
+            if animation.y then
+                animation.y.ended:unsubscribe()
+                animation.y:set(pos.y)
+            else
+                self._private.widget.y = pos.y
+            end
+        else
+            self._private.widget.x = pos.x
+            self._private.widget.y = pos.y
+        end
     end
 
     self:emit_signal("bling::app_launcher::visibility", true)
 end
 
 --- Hides the app launcher
-function app_launcher:hide(args)
-    local args = args or {}
+function app_launcher:hide()
+    local screen = self.screen
+    if self.show_on_focused_screen then
+        screen = awful.screen.focused()
+    end
+
+    if screen.app_launcher == nil or screen.app_launcher.visible == false then
+        return
+    end
 
     -- There's no other way to stop the prompt?
     root.fake_input('key_press', "Escape")
     root.fake_input('key_release', "Escape")
 
-    if self.rubato and self.rubato.x then
-        self.rubato.x:set(self.rubato.x:initial())
-        self.rubato.x.ended:subscribe(function()
-            self.screen.app_launcher.visible = false
-        end)
-    end
+    local animation = self.rubato
+    if animation ~= nil then
+        if animation.x then
+            animation.x:set(animation.x:initial())
+        end
+        if animation.y then
+            animation.y:set(animation.y:initial())
+        end
 
-    if self.rubato and self.rubato.y then
-        self.rubato.y:set(self.rubato.y:initial())
-        self.rubato.y.ended:subscribe(function()
-            self.screen.app_launcher.visible = false
-        end)
-    end
+        local anim_x_duration = (animation.x and animation.x.duration) or 0
+        local anim_y_duration = (animation.y and animation.y.duration) or 0
+        local turn_off_on_anim_x_end = (anim_x_duration >= anim_y_duration) and true or false
 
-    if not self.rubato then
-        self.screen.app_launcher.visible = false
-    end
+        if turn_off_on_anim_x_end then
+            animation.x.ended:subscribe(function()
+                screen.app_launcher.visible = false
+                screen.app_launcher = nil
+                animation.x.ended:unsubscribe()
+            end)
+        else
+            animation.y.ended:subscribe(function()
+                screen.app_launcher.visible = false
+                screen.app_launcher = nil
+                animation.y.ended:unsubscribe()
+            end)
+        end
 
-    self.screen = args.screen or self.screen
-    self.screen.app_launcher = {}
+    else
+        screen.app_launcher.visible = false
+        screen.app_launcher = nil
+    end
 
     -- Reset back to initial values
     self._private.apps_per_page = self._private.max_apps_per_page
@@ -525,14 +549,16 @@ function app_launcher:hide(args)
 end
 
 --- Toggles the app launcher
-function app_launcher:toggle(args)
-    local args = args or {}
+function app_launcher:toggle()
+    local screen = self.screen
+    if self.show_on_focused_screen then
+        screen = awful.screen.focused()
+    end
 
-    self.screen = args.screen or self.screen
-    if self.screen.app_launcher and self.screen.app_launcher.visible then
-        self:hide(self.screen)
+    if screen.app_launcher and screen.app_launcher.visible then
+        self:hide()
     else
-        self:show(self.screen)
+        self:show()
     end
 end
 
@@ -551,14 +577,13 @@ local function new(args)
     args.default_app_icon_name = args.default_app_icon_name or nil
     args.default_app_icon_path = args.default_app_icon_path or nil
 
+    args.show_on_focused_screen = args.show_on_focused_screen or true
+    args.screen = args.screen or capi.screen.primary
+    args.placement = args.placement or awful.placement.centered
     args.rubato = args.rubato or nil
     args.shirnk_width = args.shirnk_width or false
     args.shrink_height = args.shrink_height or false
     args.background = args.background or "#000000"
-    args.screen = args.screen or screen.primary
-    args.x = args.x or nil
-    args.y = args.y or nil
-    args.placement = args.placement or (args.x == nil and args.y == nil) and awful.placement.centered or nil
     args.shape = args.shape or nil
 
     args.prompt_height = args.prompt_height or dpi(100)
