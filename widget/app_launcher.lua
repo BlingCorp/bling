@@ -711,6 +711,9 @@ local function new(args)
             ret._private.text = text
         end,
         keypressed_callback = function(mod, key, cmd)
+            if key == "Escape" then
+                ret:hide()
+            end
             if key == "Return" then
                 if ret._private.active_widget ~= nil then
                     ret._private.active_widget.spawn()
