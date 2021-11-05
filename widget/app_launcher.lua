@@ -743,7 +743,7 @@ local function new(args)
     args.app_icon_width = args.app_icon_width or dpi(70)
     args.app_icon_height = args.app_icon_height or dpi(70)
     args.app_show_name = args.app_show_name == nil and true or args.app_show_name
-    args.app_name_generic_name_spacing = args.app_name_generic_name_spacing or dpi(5)
+    args.app_name_generic_name_spacing = args.app_name_generic_name_spacing or dpi(0)
     args.app_name_halign = args.app_name_halign or "center"
     args.app_name_font = args.app_name_font or beautiful.font
     args.app_name_normal_color = args.app_name_normal_color or beautiful.fg_normal or "#FFFFFF"
