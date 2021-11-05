@@ -525,6 +525,8 @@ local function generate_apps(self)
     local apps = app_info.get_all()
     if self.sort_alphabetically then
         table.sort(apps, function(a, b) return app_info.get_name(a):lower() < app_info.get_name(b):lower() end)
+    elseif self.reverse_sort_alphabetically then
+        table.sort(apps, function(a, b) return app_info.get_name(a):lower() > app_info.get_name(b):lower() end)
     end
 
     local icon_theme = require(tostring(path):match(".*bling") .. ".helpers.icon_theme")(self.icon_theme, self.icon_size)
@@ -680,6 +682,7 @@ local function new(args)
     args.skip_commands = args.skip_commands or {}
     args.skip_empty_icons = args.skip_empty_icons == nil and false or args.skip_empty_icons
     args.sort_alphabetically = args.sort_alphabetically == nil and true or args.sort_alphabetically
+    args.reverse_sort_alphabetically = args.reverse_sort_alphabetically == nil and false or args.reverse_sort_alphabetically
     args.select_before_spawn = args.select_before_spawn == nil and true or args.select_before_spawn
     args.hide_on_clicked_outside = args.hide_on_clicked_outside == nil and true or args.hide_on_clicked_outside
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching == nil and false or args.try_to_keep_index_after_searching
