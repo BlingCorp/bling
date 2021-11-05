@@ -524,9 +524,46 @@ local function generate_apps(self)
     local app_info = Gio.AppInfo
     local apps = app_info.get_all()
     if self.sort_alphabetically then
-        table.sort(apps, function(a, b) return app_info.get_name(a):lower() < app_info.get_name(b):lower() end)
+        table.sort(apps, function(a, b)
+            local app_a_score = app_info.get_name(a):lower()
+            if has_value(self.favorites, app_info.get_name(a)) then
+                app_a_score = "aaaaaaaaaaa" .. app_a_score
+            end
+            local app_b_score = app_info.get_name(b):lower()
+            if has_value(self.favorites, app_info.get_name(b)) then
+                app_b_score = "aaaaaaaaaaa" .. app_b_score
+            end
+
+            return app_a_score < app_b_score
+        end)
     elseif self.reverse_sort_alphabetically then
-        table.sort(apps, function(a, b) return app_info.get_name(a):lower() > app_info.get_name(b):lower() end)
+        table.sort(apps, function(a, b)
+            local app_a_score = app_info.get_name(a):lower()
+            if has_value(self.favorites, app_info.get_name(a)) then
+                app_a_score = "zzzzzzzzzzz" .. app_a_score
+            end
+            local app_b_score = app_info.get_name(b):lower()
+            if has_value(self.favorites, app_info.get_name(b)) then
+                app_b_score = "zzzzzzzzzzz" .. app_b_score
+            end
+
+            return app_a_score > app_b_score
+        end)
+    else
+        table.sort(apps, function(a, b)
+            local app_a_favorite = has_value(self.favorites, app_info.get_name(a))
+            local app_b_favorite = has_value(self.favorites, app_info.get_name(b))
+
+            if app_a_favorite and not app_b_favorite then
+                return true
+            elseif app_b_favorite and not app_a_favorite then
+                return false
+            elseif app_a_favorite and app_b_favorite then
+                return app_info.get_name(a):lower() < app_info.get_name(b):lower()
+            else
+                return false
+            end
+        end)
     end
 
     local icon_theme = require(tostring(path):match(".*bling") .. ".helpers.icon_theme")(self.icon_theme, self.icon_size)
@@ -677,6 +714,7 @@ local function new(args)
     args = args or {}
 
     args.terminal = args.terminal or nil
+    args.favorites = args.favorites or {}
     args.search_commands = args.search_commands == nil and true or args.search_commands
     args.skip_names = args.skip_names or {}
     args.skip_commands = args.skip_commands or {}
