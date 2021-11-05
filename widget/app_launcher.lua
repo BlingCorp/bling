@@ -110,6 +110,7 @@ local function unselect_app(self)
         self._private.active_widget:get_children_by_id("background")[1].bg = self.app_normal_color
         local text_widget = self._private.active_widget:get_children_by_id("text")[1]
         text_widget.markup = "<span foreground='" .. self.app_name_normal_color .. "'>" .. text_widget.text .. "</span>"
+        self._private.active_widget = nil
     end
 end
 
