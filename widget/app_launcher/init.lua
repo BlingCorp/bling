@@ -684,7 +684,8 @@ local function new(args)
     args.sort_alphabetically = args.sort_alphabetically == nil and true or args.sort_alphabetically
     args.reverse_sort_alphabetically = args.reverse_sort_alphabetically == nil and false or args.reverse_sort_alphabetically
     args.select_before_spawn = args.select_before_spawn == nil and true or args.select_before_spawn
-    args.hide_on_clicked_outside = args.hide_on_clicked_outside == nil and true or args.hide_on_clicked_outside
+    args.hide_on_left_clicked_outside = args.hide_on_left_clicked_outside == nil and true or args.hide_on_left_clicked_outside
+    args.hide_on_right_clicked_outside = args.hide_on_right_clicked_outside == nil and true or args.hide_on_right_clicked_outside
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching == nil and false or args.try_to_keep_index_after_searching
     args.reset_on_hide = args.reset_on_hide == nil and true or args.reset_on_hide
     args.save_history = args.save_history == nil and true or args.save_history
@@ -909,7 +910,7 @@ local function new(args)
         end)
     end
 
-    if ret.hide_on_clicked_outside then
+    if ret.hide_on_left_clicked_outside then
         awful.mouse.append_client_mousebinding(
             awful.button({ }, 1, function (c)
                 ret:hide()
@@ -921,7 +922,8 @@ local function new(args)
                 ret:hide()
             end)
         )
-
+    end
+    if ret.hide_on_right_clicked_outside then
         awful.mouse.append_client_mousebinding(
             awful.button({ }, 3, function (c)
                 ret:hide()
