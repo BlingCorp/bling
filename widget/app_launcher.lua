@@ -466,7 +466,7 @@ local function scroll_right(self)
     end
 end
 
-local function init(self)
+local function reset(self)
     self._private.grid:reset()
     self._private.matched_entries = self._private.all_entries
     self._private.apps_per_page = self._private.max_apps_per_page
@@ -553,21 +553,21 @@ function app_launcher:hide()
 
         if turn_off_on_anim_x_end then
             animation.x.ended:subscribe(function()
-                init(self)
+                reset(self)
                 screen.app_launcher.visible = false
                 screen.app_launcher = nil
                 animation.x.ended:unsubscribe()
             end)
         else
             animation.y.ended:subscribe(function()
-                init(self)
+                reset(self)
                 screen.app_launcher.visible = false
                 screen.app_launcher = nil
                 animation.y.ended:unsubscribe()
             end)
         end
     else
-        init(self)
+        reset(self)
         screen.app_launcher.visible = false
         screen.app_launcher = nil
     end
@@ -852,7 +852,7 @@ local function new(args)
         end
     end
 
-    init(ret)
+    reset(ret)
 
     if ret.rubato and ret.rubato.x then
         ret.rubato.x:subscribe(function(pos)
