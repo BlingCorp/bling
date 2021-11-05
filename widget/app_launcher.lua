@@ -3,9 +3,11 @@ local awful = require("awful")
 local gobject = require("gears.object")
 local gtable = require("gears.table")
 local gtimer = require("gears.timer")
+local gfilesystem = require("gears.filesystem")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local color = require(tostring(...):match(".*bling") .. ".helpers.color")
+local prompt = require(... .. ".prompt")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
 local table = table
@@ -576,7 +578,7 @@ function app_launcher:show()
     screen.app_launcher = self._private.widget
     screen.app_launcher.screen = screen
     screen.app_launcher.visible = true
-    self._private.prompt:run()
+    self._private.prompt:start()
 
     local placement = self.placement
     if placement then
@@ -615,9 +617,7 @@ function app_launcher:hide()
         return
     end
 
-    -- There's no other way to stop the prompt?
-    root.fake_input("key_press", "Escape")
-    root.fake_input("key_release", "Escape")
+    self._private.prompt:stop()
 
     local animation = self.rubato
     if animation ~= nil then
@@ -634,21 +634,21 @@ function app_launcher:hide()
 
         if turn_off_on_anim_x_end then
             animation.x.ended:subscribe(function()
-                reset(self)
+                if self.reset_on_hide == true then reset(self) end
                 screen.app_launcher.visible = false
                 screen.app_launcher = nil
                 animation.x.ended:unsubscribe()
             end)
         else
             animation.y.ended:subscribe(function()
-                reset(self)
+                if self.reset_on_hide == true then reset(self) end
                 screen.app_launcher.visible = false
                 screen.app_launcher = nil
                 animation.y.ended:unsubscribe()
             end)
         end
     else
-        reset(self)
+        if self.reset_on_hide == true then reset(self) end
         screen.app_launcher.visible = false
         screen.app_launcher = nil
     end
@@ -683,6 +683,8 @@ local function new(args)
     args.select_before_spawn = args.select_before_spawn or true
     args.hide_on_clicked_outside = args.hide_on_clicked_outside or true
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
+    args.reset_on_hide = args.reset_on_hide == nil and true or args.reset_on_hide
+    args.save_history = args.save_history == nil and true or args.save_history
 
     args.default_app_icon_name = args.default_app_icon_name or nil
     args.default_app_icon_path = args.default_app_icon_path or nil
@@ -758,30 +760,24 @@ local function new(args)
     gtable.crush(ret, args)
 
     -- Determines the grid width
-    local grid_width = ret.shirnk_width == false
-        and dpi((ret.app_width * ret.apps_per_column) + ((ret.apps_per_column - 1) * ret.apps_spacing))
+    local grid_width = ret.shirnk_width == false and
+    dpi((ret.app_width * ret.apps_per_column) + ((ret.apps_per_column - 1) * ret.apps_spacing))
         or nil
     local grid_height = ret.shrink_height == false
         and dpi((ret.app_height * ret.apps_per_row) + ((ret.apps_per_row - 1) * ret.apps_spacing))
         or nil
 
     -- These widgets need to be later accessed
-    ret._private.prompt = awful.widget.prompt
+    ret._private.prompt = prompt
     {
         prompt = ret.prompt_text,
         text = ret.prompt_start_text,
         font = ret.prompt_font,
+        reset_on_stop = ret.reset_on_hide,
         bg = ret.prompt_color,
         fg = ret.prompt_text_color,
         bg_cursor = ret.prompt_cursor_color,
-        hooks =
-        {
-            -- Disable historyu scrolling with arrow keys
-            -- TODO: implement this as other keybind? tab?
-            {{}, "Up", function(command) return true, false end},
-            {{}, "Down", function(command) return true, false end},
-            {{}, "Return", function(command) return true, false end},
-        },
+        history_path = ret.save_history == true and gfilesystem.get_cache_dir() .. "/history" or nil,
         changed_callback = function(text)
             if text == ret._private.text then
                 return
@@ -876,7 +872,7 @@ local function new(args)
                                     font = ret.prompt_icon_font,
                                     markup = ret.prompt_icon_markup
                                 },
-                                ret._private.prompt
+                                ret._private.prompt.textbox
                             }
                         }
                     }
