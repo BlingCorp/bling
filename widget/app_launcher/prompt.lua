@@ -330,7 +330,18 @@ function prompt:start()
         -- Control cases
         if mod.Control then
             self.select_all = nil
-            if key == "a" then
+            if key == "v" then
+                local selection = capi.selection()
+                if selection then
+                    -- Remove \n
+                    local n = selection:find("\n")
+                    if n then
+                        selection = selection:sub(1, n - 1)
+                    end
+                    self.command = self.command:sub(1, self._private_cur_pos - 1) .. selection .. self.command:sub(self._private_cur_pos)
+                    self._private_cur_pos = self._private_cur_pos + #selection
+                end
+            elseif key == "a" then
                 self._private_cur_pos = 1
             elseif key == "b" then
                 if self._private_cur_pos > 1 then
