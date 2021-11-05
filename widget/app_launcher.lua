@@ -98,8 +98,14 @@ local function select_app(self, x, y)
         if self._private.active_widget ~= nil then
             self._private.active_widget.selected = true
             self._private.active_widget:get_children_by_id("background")[1].bg = self.app_selected_color
-            local text_widget = self._private.active_widget:get_children_by_id("text")[1]
-            text_widget.markup = "<span foreground='" .. self.app_name_selected_color .. "'>" .. text_widget.text .. "</span>"
+            local name_widget = self._private.active_widget:get_children_by_id("name")[1]
+            if name_widget then
+                name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_selected_color, name_widget.text)
+            end
+            local generic_name_widget = self._private.active_widget:get_children_by_id("generic_name")[1]
+            if generic_name_widget then
+                generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", self.app_name_selected_color, generic_name_widget.text)
+            end
         end
     end
 end
@@ -108,8 +114,14 @@ local function unselect_app(self)
     if self._private.active_widget ~= nil then
         self._private.active_widget.selected = false
         self._private.active_widget:get_children_by_id("background")[1].bg = self.app_normal_color
-        local text_widget = self._private.active_widget:get_children_by_id("text")[1]
-        text_widget.markup = "<span foreground='" .. self.app_name_normal_color .. "'>" .. text_widget.text .. "</span>"
+        local name_widget = self._private.active_widget:get_children_by_id("name")[1]
+        if name_widget then
+            name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, name_widget.text)
+        end
+        local generic_name_widget = self._private.active_widget:get_children_by_id("generic_name")[1]
+        if generic_name_widget then
+            generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", self.app_name_normal_color, generic_name_widget.text)
+        end
         self._private.active_widget = nil
     end
 end
@@ -127,10 +139,19 @@ local function create_app_widget(self, entry)
     local name = self.app_show_name == true and
     {
         widget = wibox.widget.textbox,
-        id = "text",
+        id = "name",
         align = self.app_name_halign,
         font = self.app_name_font,
         markup = entry.name
+    } or nil
+
+    local generic_name = entry.generic_name ~= nil and self.app_show_generic_name == true and
+    {
+        widget = wibox.widget.textbox,
+        id = "generic_name",
+        align = self.app_name_halign,
+        font = self.app_name_font,
+        markup = entry.generic_name ~= "" and "<span weight='300'> <i>(" .. entry.generic_name .. ")</i></span>" or ""
     } or nil
 
     local app = wibox.widget
@@ -153,7 +174,12 @@ local function create_app_widget(self, entry)
                     layout = wibox.layout.fixed.vertical,
                     spacing = self.app_content_spacing,
                     icon,
-                    name
+                    {
+                        layout = wibox.layout.fixed.horizontal,
+                        spacing = self.app_name_generic_name_spacing,
+                        name,
+                        generic_name
+                    }
                 },
                 nil
             }
@@ -252,7 +278,14 @@ local function search(self, text)
             if string.find(entry.name, case_insensitive_pattern(text)) ~= nil or
                 self.search_commands and string.find(entry.commandline, case_insensitive_pattern(text)) ~= nil
             then
-                table.insert(self._private.matched_entries, { name = entry.name, commandline = entry.commandline, executable = entry.executable, terminal = entry.terminal, icon = entry.icon })
+                table.insert(self._private.matched_entries, {
+                    name = entry.name,
+                    generic_name = entry.generic_name,
+                    commandline = entry.commandline,
+                    executable = entry.executable,
+                    terminal = entry.terminal,
+                    icon = entry.icon
+                })
             end
         end
 
@@ -511,13 +544,22 @@ local function generate_apps(self)
                         elseif self.default_app_icon_path ~= nil then
                             icon = self.default_app_icon_path
                         else
-                            icon = icon_theme:choose_icon({ "application-all", "application", "application-default-icon", "app" })
+                            icon = icon_theme:choose_icon({"application-all", "application", "application-default-icon", "app"})
                         end
                     end
 
                     local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
                     local terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true" and true or false
-                    table.insert(self._private.all_entries, { name = name, commandline = commandline, executable = executable, terminal = terminal, icon = icon })
+                    local generic_name = Gio.DesktopAppInfo.get_string(desktop_app_info, "GenericName") or nil
+
+                    table.insert(self._private.all_entries, {
+                        name = name,
+                        generic_name = generic_name,
+                        commandline = commandline,
+                        executable = executable,
+                        terminal = terminal,
+                        icon = icon
+                    })
                 end
             end
         end
@@ -701,10 +743,12 @@ local function new(args)
     args.app_icon_width = args.app_icon_width or dpi(70)
     args.app_icon_height = args.app_icon_height or dpi(70)
     args.app_show_name = args.app_show_name == nil and true or args.app_show_name
+    args.app_name_generic_name_spacing = args.app_name_generic_name_spacing or dpi(5)
     args.app_name_halign = args.app_name_halign or "center"
     args.app_name_font = args.app_name_font or beautiful.font
     args.app_name_normal_color = args.app_name_normal_color or beautiful.fg_normal or "#FFFFFF"
     args.app_name_selected_color = args.app_name_selected_color or beautiful.bg_normal or "#000000"
+    args.app_show_generic_name = args.app_show_generic_name or false
 
     local ret = gobject({})
     ret._private = {}
