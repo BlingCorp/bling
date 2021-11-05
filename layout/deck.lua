@@ -1,8 +1,3 @@
-local awful = require("awful")
-local gears = require("gears")
-local gcolor = require("gears.color")
-local beautiful = require("beautiful")
-
 local mylayout = {}
 
 mylayout.name = "deck"
@@ -39,20 +34,4 @@ function mylayout.arrange(p)
     end
 end
 
-local icon_raw = gears.filesystem.get_configuration_dir()
-    .. tostring(...):match("^.*bling"):gsub("%.", "/")
-    .. "/icons/layouts/deck.png"
-
-local function get_icon()
-    if icon_raw ~= nil then
-        return gcolor.recolor_image(icon_raw, beautiful.fg_normal)
-    else
-        return nil
-    end
-end
-
-return {
-    layout = mylayout,
-    icon_raw = icon_raw,
-    get_icon = get_icon,
-}
+return mylayout
