@@ -180,13 +180,11 @@ local function emit_metadata_signal(self, title, artist, artUrl, player_name, al
 
         awful.spawn.with_line_callback(get_art_script, {
             stdout = function(line)
-                self:emit_signal("metadata", title, artist, line, album,
-                                new, player_name)
+                self:emit_signal("metadata", title, artist, line, album, new, player_name)
             end
         })
     else
-        self:emit_signal("metadata", title, artist, "", album,
-                        new, player_name)
+        self:emit_signal("metadata", title, artist, "", album, new, player_name)
     end
 end
 

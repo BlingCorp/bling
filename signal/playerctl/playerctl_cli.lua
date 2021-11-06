@@ -133,13 +133,11 @@ local function emit_player_metadata(self)
 
                             awful.spawn.with_line_callback(get_art_script, {
                                 stdout = function(stdout)
-                                    self:emit_signal("metadata", title, artist,
-                                                    stdout, album, player_name)
+                                    self:emit_signal("metadata", title, artist, stdout, album, player_name)
                                 end
                             })
                         else
-                            self:emit_signal("metadata", title, artist, "",
-                                            album, player_name)
+                            self:emit_signal("metadata", title, artist, "", album, player_name)
                         end
                     else
                         self:emit_signal("no_players")
