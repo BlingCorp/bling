@@ -204,7 +204,9 @@ local function create_app_widget(self, entry)
             awful.spawn(entry.executable)
         end
 
-        self:hide()
+        if self.hide_on_launch then
+            self:hide()
+        end
     end
 
     app:connect_signal("mouse::enter", function(_self)
@@ -713,6 +715,7 @@ local function new(args)
     args.select_before_spawn = args.select_before_spawn == nil and true or args.select_before_spawn
     args.hide_on_left_clicked_outside = args.hide_on_left_clicked_outside == nil and true or args.hide_on_left_clicked_outside
     args.hide_on_right_clicked_outside = args.hide_on_right_clicked_outside == nil and true or args.hide_on_right_clicked_outside
+    args.hide_on_launch = args.hide_on_launch == nil and false or args.hide_on_launch
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching == nil and false or args.try_to_keep_index_after_searching
     args.reset_on_hide = args.reset_on_hide == nil and true or args.reset_on_hide
     args.save_history = args.save_history == nil and true or args.save_history
