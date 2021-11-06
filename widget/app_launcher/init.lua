@@ -824,8 +824,6 @@ local function new(args)
         text = ret.prompt_start_text,
         font = ret.prompt_font,
         reset_on_stop = ret.reset_on_hide,
-        bg = ret.prompt_color,
-        fg = ret.prompt_text_color,
         bg_cursor = ret.prompt_cursor_color,
         history_path = ret.save_history == true and gfilesystem.get_cache_dir() .. "/history" or nil,
         changed_callback = function(text)
@@ -906,6 +904,7 @@ local function new(args)
                     forced_height = ret.prompt_height,
                     shape = ret.prompt_shape,
                     bg = ret.prompt_color,
+                    fg = ret.prompt_text_color,
                     border_width = ret.prompt_border_width,
                     border_color = ret.prompt_border_color,
                     {
