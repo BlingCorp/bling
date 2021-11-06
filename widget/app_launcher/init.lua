@@ -778,7 +778,7 @@ local function new(args)
 
     args.expand_apps = args.expand_apps == nil and true or args.expand_apps
     args.app_width = args.app_width or dpi(300)
-    args.app_height = args.app_height or dpi(100)
+    args.app_height = args.app_height or dpi(120)
     args.app_shape = args.app_shape or nil
     args.app_normal_color = args.app_normal_color or beautiful.bg_normal or "#000000"
     args.app_normal_hover_color = args.app_normal_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
