@@ -734,7 +734,7 @@ local function new(args)
     args.select_before_spawn = args.select_before_spawn == nil and true or args.select_before_spawn
     args.hide_on_left_clicked_outside = args.hide_on_left_clicked_outside == nil and true or args.hide_on_left_clicked_outside
     args.hide_on_right_clicked_outside = args.hide_on_right_clicked_outside == nil and true or args.hide_on_right_clicked_outside
-    args.hide_on_launch = args.hide_on_launch ~= nil and args.hide_on_launch or false
+    args.hide_on_launch = args.hide_on_launch == nil and true or args.hide_on_launch
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching ~= nil and args.try_to_keep_index_after_searching or false
     args.reset_on_hide = args.reset_on_hide == nil and true or args.reset_on_hide
     args.save_history = args.save_history == nil and true or args.save_history
