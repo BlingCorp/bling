@@ -5,9 +5,9 @@
 --      title (string)
 --      artist  (string)
 --      album_path (string)
---      player_name (string)
 --      album (string)
 --      new (bool)
+--      player_name (string)
 -- position
 --      interval_sec (number)
 --      length_sec (number)
@@ -180,13 +180,13 @@ local function emit_metadata_signal(self, title, artist, artUrl, player_name, al
 
         awful.spawn.with_line_callback(get_art_script, {
             stdout = function(line)
-                self:emit_signal("metadata", title, artist, line, player_name,
-                                                  album, new)
+                self:emit_signal("metadata", title, artist, line, album,
+                                new, player_name)
             end
         })
     else
-        self:emit_signal("metadata", title, artist, "", player_name,
-                                          album, new)
+        self:emit_signal("metadata", title, artist, "", album,
+                        new, player_name)
     end
 end
 

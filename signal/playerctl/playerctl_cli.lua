@@ -5,8 +5,8 @@
 --      title (string)
 --      artist  (string)
 --      album_path (string)
---      player_name (string)
 --      album (string)
+--      player_name (string)
 -- position
 --      interval_sec (number)
 --      length_sec (number)
@@ -134,12 +134,12 @@ local function emit_player_metadata(self)
                             awful.spawn.with_line_callback(get_art_script, {
                                 stdout = function(stdout)
                                     self:emit_signal("metadata", title, artist,
-                                                    stdout, player_name, album)
+                                                    stdout, album, player_name)
                                 end
                             })
                         else
                             self:emit_signal("metadata", title, artist, "",
-                                                        player_name, album)
+                                            album, player_name)
                         end
                     else
                         self:emit_signal("no_players")
