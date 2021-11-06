@@ -1,30 +1,44 @@
 local beautiful = require("beautiful")
+local gears = require("gears")
 
-local mstab = require(... .. ".mstab")
-beautiful.layout_mstab = mstab.get_icon()
+local M = {}
+local relative_lua_path = tostring(...)
 
-local vertical = require(... .. ".vertical")
-beautiful.layout_vertical = vertical.get_icon()
+local function get_layout_icon_path(name)
+    local relative_icon_path = relative_lua_path
+        :match("^.*bling"):gsub("%.", "/")
+        .. "/icons/layouts/" .. name .. ".png"
 
-local horizontal = require(... .. ".horizontal")
-beautiful.layout_horizontal = horizontal.get_icon()
+    for p in package.path:gmatch('([^;]+)') do
+        p = p:gsub("?.*", "")
+        local absolute_icon_path = p .. relative_icon_path
+        if gears.filesystem.file_readable(absolute_icon_path) then
+            return absolute_icon_path
+        end
+    end
+end
 
-local centered = require(... .. ".centered")
-beautiful.layout_centered = centered.get_icon()
+local function get_icon(icon_raw)
+    if icon_raw ~= nil then
+        return gears.color.recolor_image(icon_raw, beautiful.fg_normal)
+    else
+        return nil
+    end
+end
 
-local equalarea = require(... .. ".equalarea")
-beautiful.layout_equalarea = equalarea.get_icon()
-
-local deck = require(... .. ".deck")
-beautiful.layout_deck = deck.get_icon()
-
-local layout = {
-    mstab = mstab.layout,
-    centered = centered.layout,
-    vertical = vertical.layout,
-    horizontal = horizontal.layout,
-    equalarea = equalarea.layout,
-    deck = deck.layout,
+local layouts = {
+    "mstab",
+    "vertical",
+    "horizontal",
+    "centered",
+    "equalarea",
+    "deck"
 }
 
-return layout
+for _, layout_name in ipairs(layouts) do
+    local icon_raw = get_layout_icon_path(layout_name)
+    beautiful["layout_" .. layout_name] = get_icon(icon_raw)
+    M[layout_name] = require(... .. "." .. layout_name)
+end
+
+return M
