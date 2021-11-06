@@ -142,7 +142,6 @@ local function create_app_widget(self, entry)
     {
         widget = wibox.widget.textbox,
         id = "name",
-        align = self.app_name_halign,
         font = self.app_name_font,
         markup = entry.name
     } or nil
@@ -151,7 +150,6 @@ local function create_app_widget(self, entry)
     {
         widget = wibox.widget.textbox,
         id = "generic_name",
-        align = self.app_name_halign,
         font = self.app_name_font,
         markup = entry.generic_name ~= "" and "<span weight='300'> <i>(" .. entry.generic_name .. ")</i></span>" or ""
     } or nil
@@ -177,10 +175,14 @@ local function create_app_widget(self, entry)
                     spacing = self.app_content_spacing,
                     icon,
                     {
-                        layout = wibox.layout.fixed.horizontal,
-                        spacing = self.app_name_generic_name_spacing,
-                        name,
-                        generic_name
+                        widget = wibox.container.place,
+                        halign = self.app_name_halign,
+                        {
+                            layout = wibox.layout.fixed.horizontal,
+                            spacing = self.app_name_generic_name_spacing,
+                            name,
+                            generic_name
+                        }
                     }
                 },
                 nil
