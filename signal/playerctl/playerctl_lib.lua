@@ -446,12 +446,12 @@ local function start_manager(self)
 
     -- Callback to check if all players have exited
     function self._private.manager:on_name_vanished(name)
-        if #self._private.manager.players == 0 then
-            self._private.metadata_timer:stop()
-            self._private.position_timer:stop()
+        if #_self._private.manager.players == 0 then
+            _self._private.metadata_timer:stop()
+            _self._private.position_timer:stop()
             _self:emit_signal("no_players")
         else
-            get_current_player_info(_self, self._private.manager.players[1])
+            get_current_player_info(_self, _self._private.manager.players[1])
         end
     end
 end
