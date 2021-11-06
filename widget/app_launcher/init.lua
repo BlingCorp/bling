@@ -995,6 +995,25 @@ local function new(args)
     return ret
 end
 
+function app_launcher.text(args)
+    args = args or {}
+
+    args.prompt_height = args.prompt_height or dpi(50)
+    args.prompt_margins = args.prompt_margins or dpi(30)
+    args.prompt_paddings = args.prompt_paddings or dpi(15)
+    args.app_width = args.app_width or dpi(400)
+    args.app_height = args.app_height or dpi(40)
+    args.apps_spacing = args.apps_spacing or dpi(10)
+    args.apps_per_row = args.apps_per_row or 15
+    args.apps_per_column = args.apps_per_column or 1
+    args.app_name_halign = args.app_name_halign or "left"
+    args.app_show_icon = args.app_show_icon ~= nil and args.app_show_icon or false
+    args.app_show_generic_name = args.app_show_generic_name == nil and true or args.app_show_generic_name
+    args.apps_margin = args.apps_margin or { left = dpi(40), right  = dpi(40), bottom = dpi(30) }
+
+    return new(args)
+end
+
 function app_launcher.mt:__call(...)
     return new(...)
 end
