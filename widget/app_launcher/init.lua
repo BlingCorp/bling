@@ -329,6 +329,94 @@ local function search(self, text)
     end
 end
 
+local function page_backward(self, direction)
+    if self._private.current_page > 1 then
+        self._private.current_page = self._private.current_page - 1
+    elseif self.wrap_page_scrolling and #self._private.matched_entries >= self._private.max_apps_per_page then
+        self._private.current_page = self._private.pages_count
+    elseif self.wrap_app_scrolling then
+        local rows, columns = self._private.grid:get_dimension()
+        unselect_app(self)
+        select_app(self, math.min(rows, #self._private.grid.children), columns)
+        return
+    else
+        return
+    end
+
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+
+    -- Remove the current page apps from the grid
+    self._private.grid:reset()
+
+    local max_app_index_to_include = self._private.apps_per_page * self._private.current_page
+    local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
+
+    for index, entry in pairs(self._private.matched_entries) do
+        -- Only add widgets that are between this range (part of the current page)
+        if index > min_app_index_to_include and index <= max_app_index_to_include then
+            self._private.grid:add(create_app_widget(self, entry))
+        end
+    end
+
+    local rows, columns = self._private.grid:get_dimension()
+    if self._private.current_page < self._private.pages_count then
+        if direction == "up" then
+            select_app(self, rows, columns)
+        else
+            -- Keep the same row from last page
+            select_app(self, pos.row, columns)
+        end
+    elseif self.wrap_page_scrolling then
+        if direction == "up" then
+            select_app(self, math.min(rows, #self._private.grid.children), columns)
+        else
+            -- Keep the same row from last page
+            select_app(self, math.min(pos.row, #self._private.grid.children), 1)
+        end
+    end
+end
+
+local function page_forward(self, direction)
+    local min_app_index_to_include = 0
+    local max_app_index_to_include = self._private.apps_per_page
+
+    if self._private.current_page < self._private.pages_count then
+        min_app_index_to_include = self._private.apps_per_page * self._private.current_page
+        self._private.current_page = self._private.current_page + 1
+        max_app_index_to_include = self._private.apps_per_page * self._private.current_page
+    elseif self.wrap_page_scrolling and #self._private.matched_entries >= self._private.max_apps_per_page then
+        self._private.current_page = 1
+        min_app_index_to_include = 0
+        max_app_index_to_include = self._private.apps_per_page
+    elseif self.wrap_app_scrolling then
+        unselect_app(self)
+        select_app(self, 1, 1)
+        return
+    else
+        return
+    end
+
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+
+    -- Remove the current page apps from the grid
+    self._private.grid:reset()
+
+    for index, entry in pairs(self._private.matched_entries) do
+        -- Only add widgets that are between this range (part of the current page)
+        if index > min_app_index_to_include and index <= max_app_index_to_include then
+            self._private.grid:add(create_app_widget(self, entry))
+        end
+    end
+
+    if self._private.current_page > 1 or self.wrap_page_scrolling then
+        if direction == "down" then
+            select_app(self, 1, 1)
+        else
+            select_app(self, math.min(pos.row, #self._private.grid.children), 1)
+        end
+    end
+end
+
 local function scroll_up(self)
     if #self._private.grid.children < 1 then
         self._private.active_widget = nil
@@ -347,27 +435,8 @@ local function scroll_up(self)
         else
             select_app(self, pos.row - 1, pos.col)
         end
-    -- Check if the current page is not the first
-    elseif self._private.current_page > 1 then
-       -- Remove the current page apps from the grid
-       self._private.grid:reset()
-
-       local max_app_index_to_include = (self._private.current_page - 1) * self._private.apps_per_page
-       local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
-
-       for index, entry in pairs(self._private.matched_entries) do
-           -- Only add widgets that are between this range (part of the current page)
-           if index > min_app_index_to_include and index <= max_app_index_to_include then
-               self._private.grid:add(create_app_widget(self, entry))
-           end
-       end
-
-       -- If we scrolled up a page, selected app should be the last one
-       rows, columns = self._private.grid:get_dimension()
-       select_app(self, rows, columns)
-
-       -- Current page should be decremented
-       self._private.current_page = self._private.current_page - 1
+    else
+       page_backward(self, "up")
     end
 end
 
@@ -380,7 +449,6 @@ local function scroll_down(self)
     local rows, columns = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local is_less_than_max_app = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
-    local is_less_than_max_page = self._private.current_page < self._private.pages_count
 
     -- Check if we can scroll down the app list
     if is_less_than_max_app then
@@ -391,26 +459,8 @@ local function scroll_down(self)
         else
             select_app(self, pos.row + 1, pos.col)
         end
-    -- If we can't scroll down the app list, check if we can scroll down a page
-    elseif is_less_than_max_page then
-        -- Remove the current page apps from the grid
-        self._private.grid:reset()
-
-        local min_app_index_to_include = self._private.apps_per_page * self._private.current_page
-        local max_app_index_to_include = min_app_index_to_include + self._private.apps_per_page
-
-        for index, entry in pairs(self._private.matched_entries) do
-            -- Only add widgets that are between this range (part of the current page)
-            if index > min_app_index_to_include and index <= max_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry))
-            end
-        end
-
-        -- Select app 1 when scrolling to the next page
-        select_app(self, 1, 1)
-
-        -- Current page should be incremented
-        self._private.current_page = self._private.current_page + 1
+    else
+        page_forward(self, "down")
     end
 end
 
@@ -422,33 +472,13 @@ local function scroll_left(self)
 
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local is_bigger_than_first_column = pos.col > 1
-    local is_not_first_page = self._private.current_page > 1
 
     -- Check if the current marked app is not the first
     if is_bigger_than_first_column then
         unselect_app(self)
         select_app(self, pos.row, pos.col - 1)
-    -- Check if the current page is not the first
-    elseif is_not_first_page then
-       -- Remove the current page apps from the grid
-       self._private.grid:reset()
-
-       local max_app_index_to_include = (self._private.current_page - 1) * self._private.apps_per_page
-       local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
-
-       for index, entry in pairs(self._private.matched_entries) do
-           -- Only add widgets that are between this range (part of the current page)
-           if index > min_app_index_to_include and index <= max_app_index_to_include then
-               self._private.grid:add(create_app_widget(self, entry))
-           end
-       end
-
-       -- Keep the same row from last page
-       local rows, columns = self._private.grid:get_dimension()
-       select_app(self, pos.row, columns)
-
-       -- Current page should be decremented
-       self._private.current_page = self._private.current_page - 1
+    else
+       page_backward(self, "left")
     end
 end
 
@@ -477,26 +507,8 @@ local function scroll_right(self)
             select_app(self, pos.row, pos.col + 1)
         end
 
-    -- If we can't scroll down the app list, check if we can scroll down a page
-    elseif is_less_than_max_page then
-        -- Remove the current page apps from the grid
-        self._private.grid:reset()
-
-        local min_app_index_to_include = self._private.apps_per_page * self._private.current_page
-        local max_app_index_to_include = min_app_index_to_include + self._private.apps_per_page
-
-        for index, entry in pairs(self._private.matched_entries) do
-            -- Only add widgets that are between this range (part of the current page)
-            if index > min_app_index_to_include and index <= max_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry))
-            end
-        end
-
-        -- Keep the last row
-        select_app(self, math.min(pos.row, #self._private.grid.children), 1)
-
-        -- Current page should be incremented
-        self._private.current_page = self._private.current_page + 1
+    else
+        page_forward(self, "right")
     end
 end
 
@@ -719,6 +731,8 @@ local function new(args)
     args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching == nil and false or args.try_to_keep_index_after_searching
     args.reset_on_hide = args.reset_on_hide == nil and true or args.reset_on_hide
     args.save_history = args.save_history == nil and true or args.save_history
+    args.wrap_page_scrolling = args.wrap_page_scrolling == nil and true or args.wrap_page_scrolling
+    args.wrap_app_scrolling = args.wrap_app_scrolling == nil and true or args.wrap_app_scrolling
 
     args.default_app_icon_name = args.default_app_icon_name or nil
     args.default_app_icon_path = args.default_app_icon_path or nil
@@ -793,9 +807,9 @@ local function new(args)
     gtable.crush(ret, app_launcher)
     gtable.crush(ret, args)
 
-    -- Determines the grid width
-    local grid_width = ret.shirnk_width == false and
-    dpi((ret.app_width * ret.apps_per_column) + ((ret.apps_per_column - 1) * ret.apps_spacing))
+    -- Calculate the grid width and height
+    local grid_width = ret.shirnk_width == false
+        and dpi((ret.app_width * ret.apps_per_column) + ((ret.apps_per_column - 1) * ret.apps_spacing))
         or nil
     local grid_height = ret.shrink_height == false
         and dpi((ret.app_height * ret.apps_per_row) + ((ret.apps_per_row - 1) * ret.apps_spacing))
