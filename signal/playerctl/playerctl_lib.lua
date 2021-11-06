@@ -451,7 +451,7 @@ local function start_manager(self)
             _self._private.position_timer:stop()
             _self:emit_signal("no_players")
         else
-            get_current_player_info(_self, _self._private.manager.players[1])
+            get_current_player_info(_self, self.players[1])
         end
     end
 end
