@@ -414,7 +414,12 @@ local function page_forward(self, direction)
         if direction == "down" then
             select_app(self, 1, 1)
         else
-            select_app(self, pos.row, 1)
+            local last_col_max_row = math.min(pos.row, #self._private.grid.children % self.apps_per_row)
+            if last_col_max_row ~= 0 then
+                select_app(self, last_col_max_row, 1)
+            else
+                select_app(self, pos.row, 1)
+            end
         end
     end
 end
