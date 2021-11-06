@@ -89,11 +89,7 @@ function playerctl:set_shuffle(shuffle)
 end
 
 function playerctl:cycle_shuffle()
-    if self._private.shuffle == false then
-        self:set_shuffle(true)
-    elseif self._private.shuffle == true then
-        self:set_shuffle(false)
-    end
+    self:set_shuffle(not self._private.shuffle)
 end
 
 function playerctl:set_volume(volume)
