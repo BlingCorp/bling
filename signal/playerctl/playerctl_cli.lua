@@ -29,7 +29,7 @@ local gstring = require("gears.string")
 local beautiful = require("beautiful")
 local setmetatable = setmetatable
 local tonumber = tonumber
-local pairs = pairs
+local ipairs = ipairs
 local type = type
 
 local playerctl = { mt = {} }
@@ -228,7 +228,7 @@ local function parse_args(self, args)
         if type(args.player) == "string" then
             self._private.cmd = self._private.cmd .. args.player .. " "
         elseif type(args.player) == "table" then
-            for index, player in pairs(args.player) do
+            for index, player in ipairs(args.player) do
                 self._private.cmd = self._private.cmd .. player
                 if index < #args.player then
                     self._private.cmd = self._private.cmd .. ","
@@ -245,7 +245,7 @@ local function parse_args(self, args)
         if type(args.ignore) == "string" then
             self._private.cmd = self._private.cmd .. args.ignore .. " "
         elseif type(args.ignore) == "table" then
-            for index, player in pairs(args.ignore) do
+            for index, player in ipairs(args.ignore) do
                 self._private.cmd = self._private.cmd .. player
                 if index < #args.ignore then
                     self._private.cmd = self._private.cmd .. ","
