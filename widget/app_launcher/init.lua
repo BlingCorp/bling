@@ -164,7 +164,7 @@ local function create_app_widget(self, entry)
         bg = self.app_normal_color,
         {
             widget = wibox.container.margin,
-            margins = self.app_content_margin,
+            margins = self.app_content_padding,
             {
                 -- Using this hack instead of container.place because that will fuck with the name/icon halign
                 layout = wibox.layout.align.vertical,
@@ -788,7 +788,7 @@ local function new(args)
     args.app_selected_hover_color = args.app_selected_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 2.5)) or
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 0.5))
-    args.app_content_margin = args.app_content_margin or dpi(10)
+    args.app_content_padding = args.app_content_padding or dpi(10)
     args.app_content_spacing = args.app_content_spacing or dpi(10)
     args.app_show_icon = args.app_show_icon == nil and true or args.app_show_icon
     args.app_icon_halign = args.app_icon_halign or "center"
