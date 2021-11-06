@@ -83,11 +83,7 @@ function playerctl:set_position(position)
 end
 
 function playerctl:set_shuffle(shuffle)
-    if shuffle == true then
-        shuffle = "on"
-    else
-        shuffle = "off"
-    end
+    shuffle = shuffle and "on" or "off"
 
     awful.spawn.with_shell(self._private.cmd .. "shuffle " .. shuffle)
 end
