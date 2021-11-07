@@ -637,19 +637,46 @@ function app_launcher:show()
 
     screen.app_launcher = self._private.widget
     screen.app_launcher.screen = screen
-    screen.app_launcher.visible = true
     self._private.prompt:start()
 
     local animation = self.rubato
     if animation ~= nil then
+        if self._private.widget.goal_x == nil then
+            self._private.widget.goal_x = self._private.widget.x
+        end
+        if self._private.widget.goal_y == nil then
+            self._private.widget.goal_y = self._private.widget.y
+            self._private.widget.placement = nil
+        end
+
         if animation.x then
             animation.x.ended:unsubscribe()
-            animation.x:set(self._private.widget.x)
+            animation.x:set(self._private.widget.goal_x)
+            gtimer {
+                timeout = 0.01,
+                call_now = false,
+                autostart = true,
+                single_shot = true,
+                callback = function()
+                    screen.app_launcher.visible = true
+                end
+            }
         end
         if animation.y then
             animation.y.ended:unsubscribe()
-            animation.y:set(self._private.widget.y)
+            animation.y:set(self._private.widget.goal_y)
+            gtimer {
+                timeout = 0.01,
+                call_now = false,
+                autostart = true,
+                single_shot = true,
+                callback = function()
+                    screen.app_launcher.visible = true
+                end
+            }
         end
+    else
+        screen.app_launcher.visible = true
     end
 
     self:emit_signal("bling::app_launcher::visibility", true)
