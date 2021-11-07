@@ -112,7 +112,7 @@ local function emit_player_metadata(self)
                 art_url = art_url:gsub("open.spotify.com", "i.scdn.co")
             end
 
-            if self._private.metadata_timer ~= nil
+            if self._private.metadata_timer
                 and self._private.metadata_timer.started
             then
                 self._private.metadata_timer:stop()
