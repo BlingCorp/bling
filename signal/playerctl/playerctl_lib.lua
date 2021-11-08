@@ -404,7 +404,7 @@ local function get_current_player_info(self, player)
     local artUrl = player:print_metadata_prop("mpris:artUrl") or ""
     local album = player:get_album() or ""
 
-    emit_metadata_signal(self, title, artist, artUrl, player.player_name, album, false)
+    emit_metadata_signal(self, title, artist, artUrl, album, false, player.player_name)
     playback_status_cb(self, player, player.playback_status)
     volume_cb(self, player, player.volume)
     loop_status_cb(self, player, player.loop_status)
