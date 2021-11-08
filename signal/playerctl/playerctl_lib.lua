@@ -119,7 +119,7 @@ function playerctl:cycle_loop_status()
         elseif player.loop_status == "TRACK" then
             player:set_loop_status("PLAYLIST")
         elseif player.loop_status == "PLAYLIST" then
-            player.set_loop_status(player, "NONE")
+            player:set_loop_status("NONE")
         end
     end
 end
