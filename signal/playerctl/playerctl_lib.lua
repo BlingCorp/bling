@@ -101,7 +101,7 @@ end
 
 function playerctl:next()
     if self._private.manager.players[1] then
-        self._private.manager.players[1].next(self._private.manager.players[1])
+        self._private.manager.players[1]:next()
     end
 end
 
