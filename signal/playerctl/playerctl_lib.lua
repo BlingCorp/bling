@@ -143,7 +143,7 @@ end
 
 function playerctl:set_volume(volume)
     if self._private.manager.players[1] then
-        self._private.manager.players[1].set_volume(self._private.manager.players[1], volume)
+        self._private.manager.players[1]:set_volume(volume)
     end
 end
 
