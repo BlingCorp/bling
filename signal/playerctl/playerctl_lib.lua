@@ -155,7 +155,7 @@ function playerctl:get_active_player()
     return self._private.manager.players[1]
 end
 
-local function emit_metadata_signal(self, title, artist, artUrl, player_name, album, new)
+local function emit_metadata_signal(self, title, artist, artUrl, album, new, player_name)
     title = gstring.xml_escape(title)
     artist = gstring.xml_escape(artist)
     album = gstring.xml_escape(album)
