@@ -107,7 +107,7 @@ end
 
 function playerctl:set_loop_status(loop_status)
     if self._private.manager.players[1] then
-        self._private.manager.players[1].set_loop_status(self._private.manager.players[1], loop_status)
+        self._private.manager.players[1]:set_loop_status(loop_status)
     end
 end
 
