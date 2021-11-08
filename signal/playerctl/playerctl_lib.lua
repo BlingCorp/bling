@@ -187,6 +187,7 @@ end
 local function metadata_cb(self, player, metadata)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
+        self._private.active_player = player
     end
 
     local data = metadata.value
@@ -249,6 +250,7 @@ end
 local function playback_status_cb(self, player, status)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
+        self._private.active_player = player
     end
 
     if player == self._private.manager.players[1] then
@@ -264,6 +266,7 @@ end
 local function seeked_cb(self, player, position)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
+        self._private.active_player = player
     end
 
     if player == self._private.manager.players[1] then
@@ -274,6 +277,7 @@ end
 local function volume_cb(self, player, volume)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
+        self._private.active_player = player
     end
 
     if player == self._private.manager.players[1] then
@@ -284,6 +288,7 @@ end
 local function loop_status_cb(self, player, loop_status)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
+        self._private.active_player = player
     end
 
     if player == self._private.manager.players[1] then
@@ -294,6 +299,7 @@ end
 local function shuffle_cb(self, player, shuffle)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
+        self._private.active_player = player
     end
 
     if player == self._private.manager.players[1] then
