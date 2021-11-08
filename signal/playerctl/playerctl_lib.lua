@@ -451,7 +451,7 @@ local function start_manager(self)
     end
 
     function self._private.manager:on_player_vanished(player)
-        if self.players == 0 then
+        if #self.players == 0 then
             _self._private.metadata_timer:stop()
             _self._private.position_timer:stop()
             _self:emit_signal("no_players")
