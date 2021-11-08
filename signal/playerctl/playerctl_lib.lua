@@ -115,7 +115,7 @@ function playerctl:cycle_loop_status()
     local player = self._private.manager.players[1]
     if player then
         if player.loop_status == "NONE" then
-            player.set_loop_status(player, "TRACK")
+            player:set_loop_status("TRACK")
         elseif player.loop_status == "TRACK" then
             player.set_loop_status(player, "PLAYLIST")
         elseif player.loop_status == "PLAYLIST" then
