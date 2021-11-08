@@ -217,7 +217,7 @@ local function metadata_cb(self, player, metadata)
                 autostart = true,
                 single_shot = true,
                 callback = function()
-                    emit_metadata_signal(self, title, artist, artUrl, player.player_name, album, true)
+                    emit_metadata_signal(self, title, artist, artUrl, album, true, player.player_name)
                 end
             }
 
