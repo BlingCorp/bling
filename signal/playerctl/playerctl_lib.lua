@@ -138,7 +138,9 @@ end
 
 function playerctl:cycle_shuffle()
     local player = self._private.manager.players[1]
-    player.set_shuffle(player, not player.shuffle)
+    if player then
+        player:set_shuffle(not player.shuffle)
+    end
 end
 
 function playerctl:set_volume(volume)
