@@ -95,7 +95,7 @@ end
 
 function playerctl:previous()
     if self._private.manager.players[1] then
-        self._private.manager.players[1].previous(self._private.manager.players[1])
+        self._private.manager.players[1]:previous()
     end
 end
 
