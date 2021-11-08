@@ -399,10 +399,10 @@ local function player_compare(self, a, b)
 end
 
 local function get_current_player_info(self, player)
-    local title = self._private.lgi_Playerctl.Player.get_title(player) or ""
-    local artist = self._private.lgi_Playerctl.Player.get_artist(player) or ""
-    local artUrl = self._private.lgi_Playerctl.Player.print_metadata_prop(player, "mpris:artUrl") or ""
-    local album = self._private.lgi_Playerctl.Player.get_album(player) or ""
+    local title = player:get_title() or ""
+    local artist = player:get_artist() or ""
+    local artUrl = player:print_metadata_prop("mpris:artUrl") or ""
+    local album = player:get_album() or ""
 
     emit_metadata_signal(self, title, artist, artUrl, player.player_name, album, false)
     playback_status_cb(self, player, player.playback_status)
