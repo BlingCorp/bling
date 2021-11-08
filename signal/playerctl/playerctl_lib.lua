@@ -83,7 +83,7 @@ end
 
 function playerctl:stop()
     if self._private.manager.players[1] then
-        self._private.manager.players[1].stop(self._private.manager.players[1])
+        self._private.manager.players[1]:stop()
     end
 end
 
