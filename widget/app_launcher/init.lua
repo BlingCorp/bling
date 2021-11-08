@@ -3,9 +3,11 @@ local awful = require("awful")
 local gobject = require("gears.object")
 local gtable = require("gears.table")
 local gtimer = require("gears.timer")
+local gfilesystem = require("gears.filesystem")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local color = require(tostring(...):match(".*bling") .. ".helpers.color")
+local prompt = require(... .. ".prompt")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
 local table = table
@@ -67,15 +69,6 @@ local function string_levenshtein(str1, str2)
 	return matrix[len1][len2]
 end
 
-local function has_value(tab, val)
-    for index, value in pairs(tab) do
-        if val:find(value) then
-            return true
-        end
-    end
-    return false
-end
-
 local function case_insensitive_pattern(pattern)
     -- find an optional '%' (group 1) followed by any character (group 2)
     local p = pattern:gsub("(%%?)(.)", function(percent, letter)
@@ -91,6 +84,15 @@ local function case_insensitive_pattern(pattern)
     return p
 end
 
+local function has_value(tab, val)
+    for index, value in pairs(tab) do
+        if val:find(case_insensitive_pattern(value)) then
+            return true
+        end
+    end
+    return false
+end
+
 local function select_app(self, x, y)
     local widgets = self._private.grid:get_widgets_at(x, y)
     if widgets then
@@ -98,8 +100,14 @@ local function select_app(self, x, y)
         if self._private.active_widget ~= nil then
             self._private.active_widget.selected = true
             self._private.active_widget:get_children_by_id("background")[1].bg = self.app_selected_color
-            local text_widget = self._private.active_widget:get_children_by_id("text")[1]
-            text_widget.markup = "<span foreground='" .. self.app_name_selected_color .. "'>" .. text_widget.text .. "</span>"
+            local name_widget = self._private.active_widget:get_children_by_id("name")[1]
+            if name_widget then
+                name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_selected_color, name_widget.text)
+            end
+            local generic_name_widget = self._private.active_widget:get_children_by_id("generic_name")[1]
+            if generic_name_widget then
+                generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", self.app_name_selected_color, generic_name_widget.text)
+            end
         end
     end
 end
@@ -108,40 +116,43 @@ local function unselect_app(self)
     if self._private.active_widget ~= nil then
         self._private.active_widget.selected = false
         self._private.active_widget:get_children_by_id("background")[1].bg = self.app_normal_color
-        local text_widget = self._private.active_widget:get_children_by_id("text")[1]
-        text_widget.markup = "<span foreground='" .. self.app_name_normal_color .. "'>" .. text_widget.text .. "</span>"
+        local name_widget = self._private.active_widget:get_children_by_id("name")[1]
+        if name_widget then
+            name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, name_widget.text)
+        end
+        local generic_name_widget = self._private.active_widget:get_children_by_id("generic_name")[1]
+        if generic_name_widget then
+            generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", self.app_name_normal_color, generic_name_widget.text)
+        end
         self._private.active_widget = nil
     end
 end
 
 local function create_app_widget(self, entry)
-    local icon = self.app_show_icon == true
-        and
-        {
-            widget = wibox.container.place,
-            halign = self.app_name_halign,
-            {
-                widget = wibox.widget.imagebox,
-                forced_width = self.app_icon_width,
-                forced_height = self.app_icon_height,
-                image = entry.icon
-            }
-        }
-        or nil
-    local name = self.app_show_name == true
-        and
-        {
-            widget = wibox.container.place,
-            halign = self.app_icon_halign,
-            {
-                widget = wibox.widget.textbox,
-                id = "text",
-                align = "center",
-                font = self.app_name_font,
-                markup = entry.name
-            }
-        }
-        or nil
+    local icon = self.app_show_icon == true and
+    {
+        widget = wibox.widget.imagebox,
+        halign = self.app_icon_halign,
+        forced_width = self.app_icon_width,
+        forced_height = self.app_icon_height,
+        image = entry.icon
+    } or nil
+
+    local name = self.app_show_name == true and
+    {
+        widget = wibox.widget.textbox,
+        id = "name",
+        font = self.app_name_font,
+        markup = entry.name
+    } or nil
+
+    local generic_name = entry.generic_name ~= nil and self.app_show_generic_name == true and
+    {
+        widget = wibox.widget.textbox,
+        id = "generic_name",
+        font = self.app_name_font,
+        markup = entry.generic_name ~= "" and "<span weight='300'> <i>(" .. entry.generic_name .. ")</i></span>" or ""
+    } or nil
 
     local app = wibox.widget
     {
@@ -152,13 +163,29 @@ local function create_app_widget(self, entry)
         shape = self.app_shape,
         bg = self.app_normal_color,
         {
-            widget = wibox.container.place,
-            valign = self.app_content_valign,
+            widget = wibox.container.margin,
+            margins = self.app_content_padding,
             {
-                layout = wibox.layout.fixed.vertical,
-                spacing = self.app_content_spacing,
-                icon,
-                name
+                -- Using this hack instead of container.place because that will fuck with the name/icon halign
+                layout = wibox.layout.align.vertical,
+                expand = "outside",
+                nil,
+                {
+                    layout = wibox.layout.fixed.vertical,
+                    spacing = self.app_content_spacing,
+                    icon,
+                    {
+                        widget = wibox.container.place,
+                        halign = self.app_name_halign,
+                        {
+                            layout = wibox.layout.fixed.horizontal,
+                            spacing = self.app_name_generic_name_spacing,
+                            name,
+                            generic_name
+                        }
+                    }
+                },
+                nil
             }
         }
     }
@@ -179,7 +206,9 @@ local function create_app_widget(self, entry)
             awful.spawn(entry.executable)
         end
 
-        self:hide()
+        if self.hide_on_launch then
+            self:hide()
+        end
     end
 
     app:connect_signal("mouse::enter", function(_self)
@@ -255,7 +284,14 @@ local function search(self, text)
             if string.find(entry.name, case_insensitive_pattern(text)) ~= nil or
                 self.search_commands and string.find(entry.commandline, case_insensitive_pattern(text)) ~= nil
             then
-                table.insert(self._private.matched_entries, { name = entry.name, commandline = entry.commandline, executable = entry.executable, terminal = entry.terminal, icon = entry.icon })
+                table.insert(self._private.matched_entries, {
+                    name = entry.name,
+                    generic_name = entry.generic_name,
+                    commandline = entry.commandline,
+                    executable = entry.executable,
+                    terminal = entry.terminal,
+                    icon = entry.icon
+                })
             end
         end
 
@@ -295,6 +331,99 @@ local function search(self, text)
     end
 end
 
+local function page_backward(self, direction)
+    if self._private.current_page > 1 then
+        self._private.current_page = self._private.current_page - 1
+    elseif self.wrap_page_scrolling and #self._private.matched_entries >= self._private.max_apps_per_page then
+        self._private.current_page = self._private.pages_count
+    elseif self.wrap_app_scrolling then
+        local rows, columns = self._private.grid:get_dimension()
+        unselect_app(self)
+        select_app(self, math.min(rows, #self._private.grid.children % self.apps_per_row), columns)
+        return
+    else
+        return
+    end
+
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+
+    -- Remove the current page apps from the grid
+    self._private.grid:reset()
+
+    local max_app_index_to_include = self._private.apps_per_page * self._private.current_page
+    local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
+
+    for index, entry in pairs(self._private.matched_entries) do
+        -- Only add widgets that are between this range (part of the current page)
+        if index > min_app_index_to_include and index <= max_app_index_to_include then
+            self._private.grid:add(create_app_widget(self, entry))
+        end
+    end
+
+    local rows, columns = self._private.grid:get_dimension()
+    if self._private.current_page < self._private.pages_count then
+        if direction == "up" then
+            select_app(self, rows, columns)
+        else
+            -- Keep the same row from last page
+            select_app(self, pos.row, columns)
+        end
+    elseif self.wrap_page_scrolling then
+        if direction == "up" then
+            select_app(self, math.min(rows, #self._private.grid.children % self.apps_per_row), columns)
+        else
+            -- Keep the same row from last page
+            select_app(self, math.min(pos.row, #self._private.grid.children % self.apps_per_row), columns)
+        end
+    end
+end
+
+local function page_forward(self, direction)
+    local min_app_index_to_include = 0
+    local max_app_index_to_include = self._private.apps_per_page
+
+    if self._private.current_page < self._private.pages_count then
+        min_app_index_to_include = self._private.apps_per_page * self._private.current_page
+        self._private.current_page = self._private.current_page + 1
+        max_app_index_to_include = self._private.apps_per_page * self._private.current_page
+    elseif self.wrap_page_scrolling and #self._private.matched_entries >= self._private.max_apps_per_page then
+        self._private.current_page = 1
+        min_app_index_to_include = 0
+        max_app_index_to_include = self._private.apps_per_page
+    elseif self.wrap_app_scrolling then
+        unselect_app(self)
+        select_app(self, 1, 1)
+        return
+    else
+        return
+    end
+
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+
+    -- Remove the current page apps from the grid
+    self._private.grid:reset()
+
+    for index, entry in pairs(self._private.matched_entries) do
+        -- Only add widgets that are between this range (part of the current page)
+        if index > min_app_index_to_include and index <= max_app_index_to_include then
+            self._private.grid:add(create_app_widget(self, entry))
+        end
+    end
+
+    if self._private.current_page > 1 or self.wrap_page_scrolling then
+        if direction == "down" then
+            select_app(self, 1, 1)
+        else
+            local last_col_max_row = math.min(pos.row, #self._private.grid.children % self.apps_per_row)
+            if last_col_max_row ~= 0 then
+                select_app(self, last_col_max_row, 1)
+            else
+                select_app(self, pos.row, 1)
+            end
+        end
+    end
+end
+
 local function scroll_up(self)
     if #self._private.grid.children < 1 then
         self._private.active_widget = nil
@@ -313,27 +442,8 @@ local function scroll_up(self)
         else
             select_app(self, pos.row - 1, pos.col)
         end
-    -- Check if the current page is not the first
-    elseif self._private.current_page > 1 then
-       -- Remove the current page apps from the grid
-       self._private.grid:reset()
-
-       local max_app_index_to_include = (self._private.current_page - 1) * self._private.apps_per_page
-       local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
-
-       for index, entry in pairs(self._private.matched_entries) do
-           -- Only add widgets that are between this range (part of the current page)
-           if index > min_app_index_to_include and index <= max_app_index_to_include then
-               self._private.grid:add(create_app_widget(self, entry))
-           end
-       end
-
-       -- If we scrolled up a page, selected app should be the last one
-       rows, columns = self._private.grid:get_dimension()
-       select_app(self, rows, columns)
-
-       -- Current page should be decremented
-       self._private.current_page = self._private.current_page - 1
+    else
+       page_backward(self, "up")
     end
 end
 
@@ -346,7 +456,6 @@ local function scroll_down(self)
     local rows, columns = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local is_less_than_max_app = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
-    local is_less_than_max_page = self._private.current_page < self._private.pages_count
 
     -- Check if we can scroll down the app list
     if is_less_than_max_app then
@@ -357,26 +466,8 @@ local function scroll_down(self)
         else
             select_app(self, pos.row + 1, pos.col)
         end
-    -- If we can't scroll down the app list, check if we can scroll down a page
-    elseif is_less_than_max_page then
-        -- Remove the current page apps from the grid
-        self._private.grid:reset()
-
-        local min_app_index_to_include = self._private.apps_per_page * self._private.current_page
-        local max_app_index_to_include = min_app_index_to_include + self._private.apps_per_page
-
-        for index, entry in pairs(self._private.matched_entries) do
-            -- Only add widgets that are between this range (part of the current page)
-            if index > min_app_index_to_include and index <= max_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry))
-            end
-        end
-
-        -- Select app 1 when scrolling to the next page
-        select_app(self, 1, 1)
-
-        -- Current page should be incremented
-        self._private.current_page = self._private.current_page + 1
+    else
+        page_forward(self, "down")
     end
 end
 
@@ -388,33 +479,13 @@ local function scroll_left(self)
 
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local is_bigger_than_first_column = pos.col > 1
-    local is_not_first_page = self._private.current_page > 1
 
     -- Check if the current marked app is not the first
     if is_bigger_than_first_column then
         unselect_app(self)
         select_app(self, pos.row, pos.col - 1)
-    -- Check if the current page is not the first
-    elseif is_not_first_page then
-       -- Remove the current page apps from the grid
-       self._private.grid:reset()
-
-       local max_app_index_to_include = (self._private.current_page - 1) * self._private.apps_per_page
-       local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
-
-       for index, entry in pairs(self._private.matched_entries) do
-           -- Only add widgets that are between this range (part of the current page)
-           if index > min_app_index_to_include and index <= max_app_index_to_include then
-               self._private.grid:add(create_app_widget(self, entry))
-           end
-       end
-
-       -- Keep the same row from last page
-       local rows, columns = self._private.grid:get_dimension()
-       select_app(self, pos.row, columns)
-
-       -- Current page should be decremented
-       self._private.current_page = self._private.current_page - 1
+    else
+       page_backward(self, "left")
     end
 end
 
@@ -443,30 +514,12 @@ local function scroll_right(self)
             select_app(self, pos.row, pos.col + 1)
         end
 
-    -- If we can't scroll down the app list, check if we can scroll down a page
-    elseif is_less_than_max_page then
-        -- Remove the current page apps from the grid
-        self._private.grid:reset()
-
-        local min_app_index_to_include = self._private.apps_per_page * self._private.current_page
-        local max_app_index_to_include = min_app_index_to_include + self._private.apps_per_page
-
-        for index, entry in pairs(self._private.matched_entries) do
-            -- Only add widgets that are between this range (part of the current page)
-            if index > min_app_index_to_include and index <= max_app_index_to_include then
-                self._private.grid:add(create_app_widget(self, entry))
-            end
-        end
-
-        -- Keep the last row
-        select_app(self, math.min(pos.row, #self._private.grid.children), 1)
-
-        -- Current page should be incremented
-        self._private.current_page = self._private.current_page + 1
+    else
+        page_forward(self, "right")
     end
 end
 
-local function init(self)
+local function reset(self)
     self._private.grid:reset()
     self._private.matched_entries = self._private.all_entries
     self._private.apps_per_page = self._private.max_apps_per_page
@@ -485,6 +538,96 @@ local function init(self)
     select_app(self, 1, 1)
 end
 
+local function generate_apps(self)
+    self._private.all_entries = {}
+    self._private.matched_entries = {}
+
+    local app_info = Gio.AppInfo
+    local apps = app_info.get_all()
+    if self.sort_alphabetically then
+        table.sort(apps, function(a, b)
+            local app_a_score = app_info.get_name(a):lower()
+            if has_value(self.favorites, app_info.get_name(a)) then
+                app_a_score = "aaaaaaaaaaa" .. app_a_score
+            end
+            local app_b_score = app_info.get_name(b):lower()
+            if has_value(self.favorites, app_info.get_name(b)) then
+                app_b_score = "aaaaaaaaaaa" .. app_b_score
+            end
+
+            return app_a_score < app_b_score
+        end)
+    elseif self.reverse_sort_alphabetically then
+        table.sort(apps, function(a, b)
+            local app_a_score = app_info.get_name(a):lower()
+            if has_value(self.favorites, app_info.get_name(a)) then
+                app_a_score = "zzzzzzzzzzz" .. app_a_score
+            end
+            local app_b_score = app_info.get_name(b):lower()
+            if has_value(self.favorites, app_info.get_name(b)) then
+                app_b_score = "zzzzzzzzzzz" .. app_b_score
+            end
+
+            return app_a_score > app_b_score
+        end)
+    else
+        table.sort(apps, function(a, b)
+            local app_a_favorite = has_value(self.favorites, app_info.get_name(a))
+            local app_b_favorite = has_value(self.favorites, app_info.get_name(b))
+
+            if app_a_favorite and not app_b_favorite then
+                return true
+            elseif app_b_favorite and not app_a_favorite then
+                return false
+            elseif app_a_favorite and app_b_favorite then
+                return app_info.get_name(a):lower() < app_info.get_name(b):lower()
+            else
+                return false
+            end
+        end)
+    end
+
+    local icon_theme = require(tostring(path):match(".*bling") .. ".helpers.icon_theme")(self.icon_theme, self.icon_size)
+
+    for _, app in ipairs(apps) do
+        if app.should_show(app) then
+            local name = app_info.get_name(app)
+            local commandline = app_info.get_commandline(app)
+            local executable = app_info.get_executable(app)
+            local icon = icon_theme:get_gicon_path(app_info.get_icon(app))
+
+            -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
+            if not has_value(self.skip_names, name) and not has_value(self.skip_commands, commandline) then
+                -- Check if this app should be skipped becuase it's iconless depanding on skip_empty_icons
+                if icon ~= "" or self.skip_empty_icons == false then
+                    if icon == "" then
+                        if self.default_app_icon_name ~= nil then
+                            icon = icon_theme:get_icon_path(self.default_app_icon_name)
+                        elseif self.default_app_icon_path ~= nil then
+                            icon = self.default_app_icon_path
+                        else
+                            icon = icon_theme:choose_icon({"application-all", "application", "application-default-icon", "app"})
+                        end
+                    end
+
+                    local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
+                    local terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true" and true or false
+                    local generic_name = Gio.DesktopAppInfo.get_string(desktop_app_info, "GenericName") or nil
+
+                    table.insert(self._private.all_entries, {
+                        name = name,
+                        generic_name = generic_name,
+                        commandline = commandline,
+                        executable = executable,
+                        terminal = terminal,
+                        icon = icon
+                    })
+                end
+            end
+        end
+    end
+end
+
 --- Shows the app launcher
 function app_launcher:show()
     local screen = self.screen
@@ -494,30 +637,46 @@ function app_launcher:show()
 
     screen.app_launcher = self._private.widget
     screen.app_launcher.screen = screen
-    screen.app_launcher.visible = true
-    self._private.prompt:run()
+    self._private.prompt:start()
 
-    local placement = self.placement
-    if placement then
-        local pos = placement(self.screen.app_launcher, {pretend = true})
-        local animation = self.rubato
-        if animation ~= nil then
-            if animation.x then
-                animation.x.ended:unsubscribe()
-                animation.x:set(pos.x)
-            else
-                self._private.widget.x = pos.x
-            end
-            if animation.y then
-                animation.y.ended:unsubscribe()
-                animation.y:set(pos.y)
-            else
-                self._private.widget.y = pos.y
-            end
-        else
-            self._private.widget.x = pos.x
-            self._private.widget.y = pos.y
+    local animation = self.rubato
+    if animation ~= nil then
+        if self._private.widget.goal_x == nil then
+            self._private.widget.goal_x = self._private.widget.x
         end
+        if self._private.widget.goal_y == nil then
+            self._private.widget.goal_y = self._private.widget.y
+            self._private.widget.placement = nil
+        end
+
+        if animation.x then
+            animation.x.ended:unsubscribe()
+            animation.x:set(self._private.widget.goal_x)
+            gtimer {
+                timeout = 0.01,
+                call_now = false,
+                autostart = true,
+                single_shot = true,
+                callback = function()
+                    screen.app_launcher.visible = true
+                end
+            }
+        end
+        if animation.y then
+            animation.y.ended:unsubscribe()
+            animation.y:set(self._private.widget.goal_y)
+            gtimer {
+                timeout = 0.01,
+                call_now = false,
+                autostart = true,
+                single_shot = true,
+                callback = function()
+                    screen.app_launcher.visible = true
+                end
+            }
+        end
+    else
+        screen.app_launcher.visible = true
     end
 
     self:emit_signal("bling::app_launcher::visibility", true)
@@ -534,9 +693,7 @@ function app_launcher:hide()
         return
     end
 
-    -- There's no other way to stop the prompt?
-    root.fake_input("key_press", "Escape")
-    root.fake_input("key_release", "Escape")
+    self._private.prompt:stop()
 
     local animation = self.rubato
     if animation ~= nil then
@@ -553,21 +710,21 @@ function app_launcher:hide()
 
         if turn_off_on_anim_x_end then
             animation.x.ended:subscribe(function()
-                init(self)
+                if self.reset_on_hide == true then reset(self) end
                 screen.app_launcher.visible = false
                 screen.app_launcher = nil
                 animation.x.ended:unsubscribe()
             end)
         else
             animation.y.ended:subscribe(function()
-                init(self)
+                if self.reset_on_hide == true then reset(self) end
                 screen.app_launcher.visible = false
                 screen.app_launcher = nil
                 animation.y.ended:unsubscribe()
             end)
         end
     else
-        init(self)
+        if self.reset_on_hide == true then reset(self) end
         screen.app_launcher.visible = false
         screen.app_launcher = nil
     end
@@ -594,26 +751,34 @@ local function new(args)
     args = args or {}
 
     args.terminal = args.terminal or nil
-    args.search_commands = args.search_commands or true
+    args.favorites = args.favorites or {}
+    args.search_commands = args.search_commands == nil and true or args.search_commands
     args.skip_names = args.skip_names or {}
     args.skip_commands = args.skip_commands or {}
-    args.skip_empty_icons = args.skip_empty_icons or false
-    args.sort_alphabetically = args.sort_alphabetically or true
-    args.select_before_spawn = args.select_before_spawn or true
-    args.hide_on_clicked_outside = args.hide_on_clicked_outside or true
-    args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching or false
+    args.skip_empty_icons = args.skip_empty_icons ~= nil and args.skip_empty_icons or false
+    args.sort_alphabetically = args.sort_alphabetically == nil and true or args.sort_alphabetically
+    args.reverse_sort_alphabetically = args.reverse_sort_alphabetically ~= nil and args.reverse_sort_alphabetically or false
+    args.select_before_spawn = args.select_before_spawn == nil and true or args.select_before_spawn
+    args.hide_on_left_clicked_outside = args.hide_on_left_clicked_outside == nil and true or args.hide_on_left_clicked_outside
+    args.hide_on_right_clicked_outside = args.hide_on_right_clicked_outside == nil and true or args.hide_on_right_clicked_outside
+    args.hide_on_launch = args.hide_on_launch == nil and true or args.hide_on_launch
+    args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching ~= nil and args.try_to_keep_index_after_searching or false
+    args.reset_on_hide = args.reset_on_hide == nil and true or args.reset_on_hide
+    args.save_history = args.save_history == nil and true or args.save_history
+    args.wrap_page_scrolling = args.wrap_page_scrolling == nil and true or args.wrap_page_scrolling
+    args.wrap_app_scrolling = args.wrap_app_scrolling == nil and true or args.wrap_app_scrolling
 
     args.default_app_icon_name = args.default_app_icon_name or nil
     args.default_app_icon_path = args.default_app_icon_path or nil
     args.icon_theme = args.icon_theme or nil
     args.icons_size = args.icons_size or nil
 
-    args.show_on_focused_screen = args.show_on_focused_screen or true
+    args.show_on_focused_screen = args.show_on_focused_screen == nil and true or args.show_on_focused_screen
     args.screen = args.screen or capi.screen.primary
     args.placement = args.placement or awful.placement.centered
     args.rubato = args.rubato or nil
-    args.shirnk_width = args.shirnk_width or false
-    args.shrink_height = args.shrink_height or false
+    args.shirnk_width = args.shirnk_width ~= nil and args.shirnk_width or false
+    args.shrink_height = args.shrink_height ~= nil and args.shrink_height or false
     args.background = args.background or "#000000"
     args.shape = args.shape or nil
 
@@ -643,9 +808,9 @@ local function new(args)
     args.apps_margin = args.apps_margin or dpi(30)
     args.apps_spacing = args.apps_spacing or dpi(30)
 
-    args.expand_apps = args.expand_apps or true
+    args.expand_apps = args.expand_apps == nil and true or args.expand_apps
     args.app_width = args.app_width or dpi(300)
-    args.app_height = args.app_height or dpi(100)
+    args.app_height = args.app_height or dpi(120)
     args.app_shape = args.app_shape or nil
     args.app_normal_color = args.app_normal_color or beautiful.bg_normal or "#000000"
     args.app_normal_hover_color = args.app_normal_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
@@ -655,17 +820,19 @@ local function new(args)
     args.app_selected_hover_color = args.app_selected_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 2.5)) or
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 0.5))
-    args.app_content_valign = args.app_content_valign or "center"
+    args.app_content_padding = args.app_content_padding or dpi(10)
     args.app_content_spacing = args.app_content_spacing or dpi(10)
     args.app_show_icon = args.app_show_icon == nil and true or args.app_show_icon
     args.app_icon_halign = args.app_icon_halign or "center"
     args.app_icon_width = args.app_icon_width or dpi(70)
     args.app_icon_height = args.app_icon_height or dpi(70)
     args.app_show_name = args.app_show_name == nil and true or args.app_show_name
+    args.app_name_generic_name_spacing = args.app_name_generic_name_spacing or dpi(0)
     args.app_name_halign = args.app_name_halign or "center"
     args.app_name_font = args.app_name_font or beautiful.font
     args.app_name_normal_color = args.app_name_normal_color or beautiful.fg_normal or "#FFFFFF"
     args.app_name_selected_color = args.app_name_selected_color or beautiful.bg_normal or "#000000"
+    args.app_show_generic_name = args.app_show_generic_name ~= nil and args.app_show_generic_name or false
 
     local ret = gobject({})
     ret._private = {}
@@ -674,7 +841,7 @@ local function new(args)
     gtable.crush(ret, app_launcher)
     gtable.crush(ret, args)
 
-    -- Determines the grid width
+    -- Calculate the grid width and height
     local grid_width = ret.shirnk_width == false
         and dpi((ret.app_width * ret.apps_per_column) + ((ret.apps_per_column - 1) * ret.apps_spacing))
         or nil
@@ -683,22 +850,14 @@ local function new(args)
         or nil
 
     -- These widgets need to be later accessed
-    ret._private.prompt = awful.widget.prompt
+    ret._private.prompt = prompt
     {
         prompt = ret.prompt_text,
         text = ret.prompt_start_text,
         font = ret.prompt_font,
-        bg = ret.prompt_color,
-        fg = ret.prompt_text_color,
+        reset_on_stop = ret.reset_on_hide,
         bg_cursor = ret.prompt_cursor_color,
-        hooks =
-        {
-            -- Disable historyu scrolling with arrow keys
-            -- TODO: implement this as other keybind? tab?
-            {{}, "Up", function(command) return true, false end},
-            {{}, "Down", function(command) return true, false end},
-            {{}, "Return", function(command) return true, false end},
-        },
+        history_path = ret.save_history == true and gfilesystem.get_cache_dir() .. "/history" or nil,
         changed_callback = function(text)
             if text == ret._private.text then
                 return
@@ -763,6 +922,7 @@ local function new(args)
         type = "dock",
         visible = false,
         ontop = true,
+        placement = ret.placement,
         shape = ret.shape,
         bg =  ret.background,
         widget =
@@ -776,6 +936,7 @@ local function new(args)
                     forced_height = ret.prompt_height,
                     shape = ret.prompt_shape,
                     bg = ret.prompt_color,
+                    fg = ret.prompt_text_color,
                     border_width = ret.prompt_border_width,
                     border_color = ret.prompt_border_color,
                     {
@@ -793,7 +954,7 @@ local function new(args)
                                     font = ret.prompt_icon_font,
                                     markup = ret.prompt_icon_markup
                                 },
-                                ret._private.prompt
+                                ret._private.prompt.textbox
                             }
                         }
                     }
@@ -808,51 +969,13 @@ local function new(args)
     }
 
     -- Private variables to be used to be used by the scrolling and searching functions
-    ret._private.all_entries = {}
-    ret._private.matched_entries = {}
     ret._private.max_apps_per_page = ret.apps_per_column * ret.apps_per_row
     ret._private.apps_per_page = ret._private.max_apps_per_page
     ret._private.pages_count = 0
     ret._private.current_page = 1
 
-    local app_info = Gio.AppInfo
-    local apps = app_info.get_all()
-    if ret.sort_alphabetically then
-        table.sort(apps, function(a, b) return app_info.get_name(a):lower() < app_info.get_name(b):lower() end)
-    end
-
-    local icon_theme = require(tostring(path):match(".*bling") .. ".helpers.icon_theme")(ret.icon_theme, ret.icon_size)
-
-    for _, app in ipairs(apps) do
-        if app.should_show(app) then
-            local name = app_info.get_name(app)
-            local commandline = app_info.get_commandline(app)
-            local executable = app_info.get_executable(app)
-            local icon = icon_theme:get_gicon_path(app_info.get_icon(app))
-
-            -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
-            if not has_value(ret.skip_names, name) and not has_value(ret.skip_commands, commandline) then
-                -- Check if this app should be skipped becuase it's iconless depanding on skip_empty_icons
-                if icon ~= "" or ret.skip_empty_icons == false then
-                    if icon == "" then
-                        if ret.default_app_icon_name ~= nil then
-                            icon = icon_theme:get_icon_path(ret.default_app_icon_name)
-                        elseif ret.default_app_icon_path ~= nil then
-                            icon = ret.default_app_icon_path
-                        else
-                            icon = icon_theme:choose_icon({ "application-all", "application", "application-default-icon", "app" })
-                        end
-                    end
-
-                    local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
-                    local terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true" and true or false
-                    table.insert(ret._private.all_entries, { name = name, commandline = commandline, executable = executable, terminal = terminal, icon = icon })
-                end
-            end
-        end
-    end
-
-    init(ret)
+    generate_apps(ret)
+    reset(ret)
 
     if ret.rubato and ret.rubato.x then
         ret.rubato.x:subscribe(function(pos)
@@ -865,7 +988,7 @@ local function new(args)
         end)
     end
 
-    if ret.hide_on_clicked_outside then
+    if ret.hide_on_left_clicked_outside then
         awful.mouse.append_client_mousebinding(
             awful.button({ }, 1, function (c)
                 ret:hide()
@@ -877,7 +1000,8 @@ local function new(args)
                 ret:hide()
             end)
         )
-
+    end
+    if ret.hide_on_right_clicked_outside then
         awful.mouse.append_client_mousebinding(
             awful.button({ }, 3, function (c)
                 ret:hide()
@@ -891,7 +1015,35 @@ local function new(args)
         )
     end
 
+    local kill_old_inotify_process_script = [[ ps x | grep "inotifywait -e modify /usr/share/applications" | grep -v grep | awk '{print $1}' | xargs kill ]]
+    local subscribe_script = [[ bash -c "while (inotifywait -e modify /usr/share/applications -qq) do echo; done" ]]
+
+    awful.spawn.easy_async_with_shell(kill_old_inotify_process_script, function()
+        awful.spawn.with_line_callback(subscribe_script, {stdout = function(_)
+            generate_apps(ret)
+        end})
+    end)
+
     return ret
+end
+
+function app_launcher.text(args)
+    args = args or {}
+
+    args.prompt_height = args.prompt_height or dpi(50)
+    args.prompt_margins = args.prompt_margins or dpi(30)
+    args.prompt_paddings = args.prompt_paddings or dpi(15)
+    args.app_width = args.app_width or dpi(400)
+    args.app_height = args.app_height or dpi(40)
+    args.apps_spacing = args.apps_spacing or dpi(10)
+    args.apps_per_row = args.apps_per_row or 15
+    args.apps_per_column = args.apps_per_column or 1
+    args.app_name_halign = args.app_name_halign or "left"
+    args.app_show_icon = args.app_show_icon ~= nil and args.app_show_icon or false
+    args.app_show_generic_name = args.app_show_generic_name == nil and true or args.app_show_generic_name
+    args.apps_margin = args.apps_margin or { left = dpi(40), right  = dpi(40), bottom = dpi(30) }
+
+    return new(args)
 end
 
 function app_launcher.mt:__call(...)
