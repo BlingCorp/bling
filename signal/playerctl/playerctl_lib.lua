@@ -126,7 +126,7 @@ end
 
 function playerctl:set_position(position)
     if self._private.manager.players[1] then
-        self._private.manager.players[1].set_position(self._private.manager.players[1], position * 1000000)
+        self._private.manager.players[1]:set_position(position * 1000000)
     end
 end
 
