@@ -132,7 +132,7 @@ end
 
 function playerctl:set_shuffle(shuffle)
     if self._private.manager.players[1] then
-        self._private.manager.players[1].set_shuffle(self._private.manager.players[1], shuffle)
+        self._private.manager.players[1]:set_shuffle(shuffle)
     end
 end
 
