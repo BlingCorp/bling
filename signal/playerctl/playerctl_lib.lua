@@ -89,7 +89,7 @@ end
 
 function playerctl:play_pause()
     if self._private.manager.players[1] then
-        self._private.manager.players[1].play_pause(self._private.manager.players[1])
+        self._private.manager.players[1]:play_pause()
     end
 end
 
