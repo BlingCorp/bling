@@ -38,16 +38,14 @@ local function manage_clientspawn(c)
     end
 
     -- io.popen is normally discouraged. Should probably be changed
-    local handle = io.popen(
-        [[pstree -T -p -a -s ]]
-            .. tostring(c.pid)
-            .. [[ | sed '2q;d' | grep -o '[0-9]*$' | tr -d '\n']]
-    )
+    -- returns "init(1)---ancestorA(pidA)---ancestorB(pidB)...---process(pid)"
+    local handle = io.popen("pstree -A -p -s " .. tostring(c.pid))
     local parent_pid = handle:read("*a")
     handle:close()
 
     if
-        (tostring(parent_pid) == tostring(parent_client.pid))
+        -- will search for "(parent_client.pid)" inside the parent_pid string
+        ( tostring(parent_pid):find("("..tostring(parent_client.pid)..")") )
         and check_if_swallow(c)
     then
         c:connect_signal("unmanage", function()
