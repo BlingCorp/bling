@@ -773,6 +773,7 @@ local function new(args)
     args.icon_theme = args.icon_theme or nil
     args.icons_size = args.icons_size or nil
 
+    args.type = args.type or "dock"
     args.show_on_focused_screen = args.show_on_focused_screen == nil and true or args.show_on_focused_screen
     args.screen = args.screen or capi.screen.primary
     args.placement = args.placement or awful.placement.centered
@@ -919,7 +920,7 @@ local function new(args)
     }
     ret._private.widget = awful.popup
     {
-        type = "dock",
+        type = args.type,
         visible = false,
         ontop = true,
         placement = ret.placement,
