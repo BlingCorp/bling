@@ -158,7 +158,7 @@ local simple_index = 0
 function setters.simple(args)
     local wallpapers = prepare_list(args)
     simple_index = (simple_index % #wallpapers) + 1
-    if args.screens then
+    if type(args.screen) == 'table' then
         for _,v in ipairs(args.screens) do
             args.screen = v
             apply(wallpapers[simple_index], args)
@@ -176,7 +176,7 @@ end
 -- @see prepare_list
 function setters.random(args)
     local wallpapers = prepare_list(args)
-    if args.screens then
+    if type(args.screen) == 'table' then
         for _,v in ipairs(args.screens) do
             args.screen = v
             apply(wallpapers[math.random(#wallpapers)], args)
@@ -330,8 +330,9 @@ function setup(args)
     config.set_function = config.set_function
         or (config.wallpaper and setters.simple or setters.awesome_wallpaper)
     local function set_wallpaper(s)
-        if config.screen and s and config.screen ~= s then return end
-        if not config.screens then
+        if type(config.screen) == 'table' then
+        else
+            if config.screen and s and config.screen ~= s then return end
             config.screen = s or config.screen
         end
         config.set_function(config)
