@@ -49,10 +49,11 @@ bling.module.wallpaper.setup {
     change_timer = 600
 }
 
--- setup for all screens at once
+-- setup for multiple screens at once
+-- the 'screen' argument can be a table of screen objects
 bling.module.wallpaper.setup {
     set_function = bling.module.wallpaper.setters.random,
-    screens = screen, -- The awesome 'screen' variable is an array of all screen objects
+    screen = screen, -- The awesome 'screen' variable is an array of all screen objects
     wallpaper = {"/path/to/a/folder", "/path/to/another/folder"},
     change_timer = 631
 }
@@ -83,7 +84,8 @@ A wallpaper is one of the following elements:
 
 To set up for multiple screens, two possible methods are:
 * Call the `setup` function for each screen, passing the appropriate configuration and `screen` arg
-* Call the `setup` function once, passing an array of screens as the `screens` arg. This applies the same configuration to all screens
+* Call the `setup` function once, passing a table of screens as the `screen` arg. This applies the same configuration to all screens in the table
+_Note_: Multiple screen setup only works for the `simple` and `random` setters
 
 ```lua
 -- This is a valid wallpaper definition
