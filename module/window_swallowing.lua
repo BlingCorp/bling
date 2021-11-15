@@ -19,45 +19,31 @@ local activate_dont_swallow_filter = beautiful.dont_swallow_filter_activated
     or true
 
 -- check if element exist in table
-local function is_in_Table(element, table)
-    local res = false
+local function is_in_table(element, table)
     for _, value in pairs(table) do
         if element:match(value) then
-            res = true
-            break
+            return true
         end
+    return false
     end
-    return res
 end
 
 -- checks if client classname can be swallowed
 local function check_if_swallow(class)
-    local res
     if not activate_dont_swallow_filter then
-        res = true
+        return true
     else
-        if is_in_Table(class, dont_swallow_classname_list) then
-            res = false
-        else
-            res = true
-        end
+        return not is_in_table(class, dont_swallow_classname_list)
     end
-    return res
 end
 
 -- checks if client classname can swallow it's parent
 local function check_can_swallow(class)
-    local res
     if not activate_dont_swallow_filter then
-        res = true
+        return true
     else
-        if is_in_Table(class, cant_swallow_classname_list) then
-            res = false
-        else
-            res = true
-        end
+        return not is_in_table(class, cant_swallow_classname_list)
     end
-    return res
 end
 
 -- the function that will be connected to / disconnected from the spawn client signal
