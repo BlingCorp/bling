@@ -28,7 +28,8 @@ local function draw_widget(
     widget_border_color,
     widget_border_width,
     geo,
-    margin
+    margin,
+    background_image
 )
     local client_list = wibox.layout.manual()
     client_list.forced_height = geo.height
@@ -36,14 +37,19 @@ local function draw_widget(
     local tag_screen = t.screen
     for i, c in ipairs(t:clients()) do
         if not c.hidden and not c.minimized then
-      
-			local img_box = wibox.widget({
-                image = gears.surface.load(c.icon),
+
+
+            local img_box = wibox.widget ({
                 resize = true,
                 forced_height = 100 * scale,
                 forced_width = 100 * scale,
                 widget = wibox.widget.imagebox,
             })
+
+			-- If fails to set image, fallback to a awesome icon
+			if not pcall(function() img_box.image = gears.surface.load(c.icon) end) then
+				img_box.image = beautiful.theme_assets.awesome_icon (24, "#222222", "#fafafa")
+			end
 
             if tag_preview_image then
                 if c.prev_content or t.selected then
@@ -108,22 +114,26 @@ local function draw_widget(
         end
     end
 
-    return {
+    return wibox.widget {
         {
+            background_image,
             {
                 {
                     {
-                        client_list,
-                        forced_height = geo.height,
-                        forced_width = geo.width,
-                        widget = wibox.container.place,
+                        {
+                            client_list,
+                            forced_height = geo.height,
+                            forced_width = geo.width,
+                            widget = wibox.container.place,
+                        },
+                        layout = wibox.layout.align.horizontal,
                     },
-                    layout = wibox.layout.align.horizontal,
+                    layout = wibox.layout.align.vertical,
                 },
-                layout = wibox.layout.align.vertical,
+                margins = margin,
+                widget = wibox.container.margin,
             },
-            margins = margin,
-            widget = wibox.container.margin,
+            layout = wibox.layout.stack
         },
         bg = widget_bg,
         shape_border_width = widget_border_width,
@@ -143,6 +153,7 @@ local enable = function(opts)
     local work_area = opts.honor_workarea or false
     local padding = opts.honor_padding or false
     local placement_fn = opts.placement_fn or nil
+    local background_image = opts.background_widget or nil
 
     local margin = beautiful.tag_preview_widget_margin or dpi(0)
     local screen_radius = beautiful.tag_preview_widget_border_radius or dpi(0)
@@ -170,9 +181,22 @@ local enable = function(opts)
     })
 
     tag.connect_signal("property::selected", function(t)
-        for _, c in ipairs(t:clients()) do
-            c.prev_content = gears.surface.duplicate_surface(c.content)
-        end
+        -- Awesome switches up tags on startup really fast it seems, probably depends on what rules you have set
+        -- which can cause the c.content to not show the correct image
+        gears.timer
+        {
+            timeout = 0.1,
+            call_now  = false,
+            autostart = true,
+            single_shot = true,
+            callback = function()
+                if t.selected == true then
+                    for _, c in ipairs(t:clients()) do
+                        c.prev_content = gears.surface.duplicate_surface(c.content)
+                    end
+                end
+            end
+        }
     end)
 
     awesome.connect_signal("bling::tag_preview::update", function(t)
@@ -184,20 +208,35 @@ local enable = function(opts)
         tag_preview_box.maximum_width = scale * geo.width + margin * 2
         tag_preview_box.maximum_height = scale * geo.height + margin * 2
 
-		-- TODO: Use a table here
-        tag_preview_box:setup(draw_widget(t, tag_preview_image, scale,
-                                          screen_radius, client_radius,
-                                          client_opacity, client_bg,
-                                          client_border_color,
-                                          client_border_width, widget_bg,
-                                          widget_border_color,
-                                          widget_border_width, geo, margin))
+
+        tag_preview_box.widget = draw_widget(
+            t,
+            tag_preview_image,
+            scale,
+            screen_radius,
+            client_radius,
+            client_opacity,
+            client_bg,
+            client_border_color,
+            client_border_width,
+            widget_bg,
+            widget_border_color,
+            widget_border_width,
+            geo,
+            margin,
+            background_image
+        )
     end)
 
     awesome.connect_signal("bling::tag_preview::visibility", function(s, v)
         if not placement_fn then
             tag_preview_box.x = s.geometry.x + widget_x
             tag_preview_box.y = s.geometry.y + widget_y
+        end
+
+        if v == false then
+            tag_preview_box.widget = nil
+            collectgarbage("collect")
         end
 
         tag_preview_box.visible = v

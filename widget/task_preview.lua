@@ -30,14 +30,24 @@ local function draw_widget(
     end) then
         return
     end
-    local content = gears.surface(c.content)
-    local cr = cairo.Context(content)
-    local x, y, w, h = cr:clip_extents()
-    local img = cairo.ImageSurface.create(cairo.Format.ARGB32, w - x, h - y)
-    cr = cairo.Context(img)
-    cr:set_source_surface(content, 0, 0)
-    cr.operator = cairo.Operator.SOURCE
-    cr:paint()
+
+    local content = nil
+    if c.active then
+        content = gears.surface(c.content)
+    elseif c.prev_content then
+        content = gears.surface(c.prev_content)
+    end
+
+    local img = nil
+    if content ~= nil then
+        local cr = cairo.Context(content)
+        local x, y, w, h = cr:clip_extents()
+        img = cairo.ImageSurface.create(cairo.Format.ARGB32, w - x, h - y)
+        cr = cairo.Context(img)
+        cr:set_source_surface(content, 0, 0)
+        cr.operator = cairo.Operator.SOURCE
+        cr:paint()
+    end
 
     local widget = wibox.widget({
         (widget_template or {
@@ -139,6 +149,25 @@ local enable = function(opts)
         bg = "#00000000",
     })
 
+    tag.connect_signal("property::selected", function(t)
+        -- Awesome switches up tags on startup really fast it seems, probably depends on what rules you have set
+        -- which can cause the c.content to not show the correct image
+        gears.timer
+        {
+            timeout = 0.1,
+            call_now  = false,
+            autostart = true,
+            single_shot = true,
+            callback = function()
+                if t.selected == true then
+                    for _, c in ipairs(t:clients()) do
+                        c.prev_content = gears.surface.duplicate_surface(c.content)
+                    end
+                end
+            end
+        }
+    end)
+
     awesome.connect_signal("bling::task_preview::visibility", function(s, v, c)
         if v then
             -- Update task preview contents
@@ -153,6 +182,9 @@ local enable = function(opts)
                 widget_width,
                 widget_height
             )
+        else
+            task_preview_box.widget = nil
+            collectgarbage("collect")
         end
 
         if not placement_fn then

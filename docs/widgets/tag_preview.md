@@ -2,7 +2,7 @@
 
 This is a popup widget that will show a preview of a specified tag that illustrates the position, size, content, and icon of all clients.
 
-![](https://imgur.com/3nYe1e8.gif)
+![](https://imgur.com/zFdvs4K.gif)
 
 *gif by [javacafe](https://github.com/JavaCafe01)*
 
@@ -24,19 +24,25 @@ bling.widget.tag_preview.enable {
                 top = 30,
                 left = 30
             }
-        }) 
-    end           
-}   
+        })
+    end,
+	background_widget = wibox.widget {	-- Set a background image (like a wallpaper) for the widget 
+        image = beautiful.wallpaper,
+        horizontal_fit_policy = "fit",
+        vertical_fit_policy   = "fit",
+        widget = wibox.widget.imagebox
+    }
+}
 ```
 
 Here are the signals available:
 
 ```lua
--- bling::tag_preview::update   -- first line is the signal
---      t   (tag)               -- indented lines are function parameters
+-- bling::tag_preview::update -- first line is the signal
+--     t   (tag)              -- indented lines are function parameters
 -- bling::tag_preview::visibility
---      s   (screen)         
---      v   (boolean)
+--     s   (screen)
+--     v   (boolean)
 ```
 
 By default, the widget is not visible. You must implement when it will update and when it will show.
@@ -100,7 +106,7 @@ s.mytaglist = awful.widget.taglist {
         create_callback = function(self, c3, index, objects) --luacheck: no unused args
             self:get_children_by_id('index_role')[1].markup = '<b> '..index..' </b>'
             self:connect_signal('mouse::enter', function()
-                
+
                 -- BLING: Only show widget when there are clients in the tag
                 if #c3:clients() > 0 then
                     -- BLING: Update the widget with the new tag
@@ -119,7 +125,7 @@ s.mytaglist = awful.widget.taglist {
 
                 -- BLING: Turn the widget off
                 awesome.emit_signal("bling::tag_preview::visibility", s, false)
-                
+
                 if self.has_backup then self.bg = self.backup end
             end)
         end,
@@ -132,17 +138,18 @@ s.mytaglist = awful.widget.taglist {
 ```
 
 ### Theme Variables
+
 ```lua
-theme.tag_preview_widget_border_radius = 0          -- Border radius of the widget (With AA)
-theme.tag_preview_client_border_radius = 0          -- Border radius of each client in the widget (With AA)
-theme.tag_preview_client_opacity = 0.5              -- Opacity of each client
-theme.tag_preview_client_bg = "#000000"             -- The bg color of each client
-theme.tag_preview_client_border_color = "#ffffff"   -- The border color of each client
-theme.tag_preview_client_border_width = 3           -- The border width of each client
-theme.tag_preview_widget_bg = "#000000"             -- The bg color of the widget
-theme.tag_preview_widget_border_color = "#ffffff"   -- The border color of the widget
-theme.tag_preview_widget_border_width = 3           -- The border width of the widget
-theme.tag_preview_widget_margin = 0                 -- The margin of the widget
+theme.tag_preview_widget_border_radius = 0        -- Border radius of the widget (With AA)
+theme.tag_preview_client_border_radius = 0        -- Border radius of each client in the widget (With AA)
+theme.tag_preview_client_opacity = 0.5            -- Opacity of each client
+theme.tag_preview_client_bg = "#000000"           -- The bg color of each client
+theme.tag_preview_client_border_color = "#ffffff" -- The border color of each client
+theme.tag_preview_client_border_width = 3         -- The border width of each client
+theme.tag_preview_widget_bg = "#000000"           -- The bg color of the widget
+theme.tag_preview_widget_border_color = "#ffffff" -- The border color of the widget
+theme.tag_preview_widget_border_width = 3         -- The border width of the widget
+theme.tag_preview_widget_margin = 0               -- The margin of the widget
 ```
 
 NOTE: I recommend to only use the widget border radius theme variable when not using shadows with a compositor, as anti-aliased rounding with the outer widgets made with AwesomeWM rely on the actual bg being transparent. If you want rounding with shadows on the widget, use a compositor like [jonaburg's fork](https://github.com/jonaburg/picom).

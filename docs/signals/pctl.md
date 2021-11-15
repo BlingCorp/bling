@@ -24,20 +24,20 @@ To disable: `bling.signal.playerctl.disable()`
 Here are the signals available:
 
 ```lua
--- bling::playerctl::status     -- first line is the signal
---      playing  (boolean)      -- indented lines are function parameters
---      player_name (string)
+-- bling::playerctl::status   -- first line is the signal
+--     playing      (boolean) -- indented lines are function parameters
+--     player_name  (string)
 -- bling::playerctl::title_artist_album
---      title  (string)
---      artist  (string)
---      album_path  (string)
---      player_name (string)
+--     title        (string)
+--     artist       (string)
+--     album_path   (string)
+--     player_name  (string)
 -- bling::playerctl::position
---      interval_sec  (number)
---      length_sec  (number)
---      player_name (string)
+--     interval_sec (number)
+--     length_sec   (number)
+--     player_name  (string)
 -- bling::playerctl::no_players
---      (No parameters)
+--     (No parameters)
 ```
 
 ### Example Implementation
@@ -122,8 +122,8 @@ By default, this module will output signals from the most recently active player
 These options can be set through a call to `bling.signal.playerctl.enable()` or these theme variables:
 ```lua
 theme.playerctl_backend = "playerctl_cli"
-theme.playerctl_ignore = {}
-theme.playerctl_player = {}
+theme.playerctl_ignore  = {}
+theme.playerctl_player  = {}
 theme.playerctl_update_on_activity = true
 theme.playerctl_position_update_interval = 1
 ```
@@ -140,12 +140,12 @@ bling.signal.playerctl.enable {
 -- OR in your theme file:
 -- Same config as above but with theme variables
 theme.playerctl_backend = "playerctl_lib"
-theme.playerctl_ignore = "firefox"
-theme.playerctl_player = {"ncspot", "%any"}
+theme.playerctl_ignore  = "firefox"
+theme.playerctl_player  = {"ncspot", "%any"}
 
 -- Prioritize vlc over all other players and deprioritize spotify
 theme.playerctl_backend = "playerctl_lib"
-theme.playerctl_player = {"vlc", "%any", "spotify"}
+theme.playerctl_player  = {"vlc", "%any", "spotify"}
 
 -- Disable priority of most recently active players
 theme.playerctl_backend = "playerctl_lib"
