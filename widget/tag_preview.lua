@@ -38,6 +38,7 @@ local function draw_widget(
     for i, c in ipairs(t:clients()) do
         if not c.hidden and not c.minimized then
 
+
             local img_box = wibox.widget ({
                 resize = true,
                 forced_height = 100 * scale,
@@ -206,6 +207,8 @@ local enable = function(opts)
 
         tag_preview_box.maximum_width = scale * geo.width + margin * 2
         tag_preview_box.maximum_height = scale * geo.height + margin * 2
+
+
         tag_preview_box.widget = draw_widget(
             t,
             tag_preview_image,
@@ -240,4 +243,4 @@ local enable = function(opts)
     end)
 end
 
-return { enable = enable }
+return {enable = enable, draw_widget = draw_widget}

@@ -196,4 +196,4 @@ local enable = function(opts)
     end)
 end
 
-return { enable = enable }
+return { enable = enable, draw_widget = draw_widget }

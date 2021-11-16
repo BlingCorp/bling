@@ -80,6 +80,19 @@ theme.task_preview_widget_border_color = "#ffffff"   -- The border color of the 
 theme.task_preview_widget_border_width = 3           -- The border width of the widget
 theme.task_preview_widget_margin = 0                 -- The margin of the widget
 
+-- tabbed misc widget(s)
+theme.bling_tabbed_misc_titlebar_indicator = {
+    layout_spacing = dpi(4),
+    icon_size = dpi(20),
+    icon_margin = dpi(4),
+    bg_color_focus = "#ff0000",
+    bg_color = "#00000000",
+    icon_shape = function(cr, w, h)
+        gears.shape.rounded_rect(cr, w, h, 0)
+    end,
+    layout = wibox.layout.fixed.horizontal
+}
+
 -- window switcher widget
 theme.window_switcher_widget_bg = "#000000"              -- The bg color of the widget
 theme.window_switcher_widget_border_width = 3            -- The border width of the widget
