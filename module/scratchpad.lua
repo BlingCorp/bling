@@ -22,6 +22,8 @@ local function on_animate_turn_off_end(self)
 
     helpers.client.turn_off(self.client, self.tag_on_toggled_scratchpad)
 
+    self.turning_off = false
+
     self:emit_signal("turn_off", self.client)
 end
 
@@ -122,9 +124,8 @@ function Scratchpad:new(args)
         end)
 
         ret.rubato.x.ended:subscribe(function()
-            if ret.turn_off_x_end then
+            if ret.rubato.y and ret.rubato.y.state == false and ret.turning_off == true then
                 on_animate_turn_off_end(ret)
-                ret.turn_off_x_end = false
             end
         end)
     end
@@ -150,9 +151,8 @@ function Scratchpad:new(args)
         end)
 
         ret.rubato.y.ended:subscribe(function()
-            if ret.turn_off_y_end then
+            if ret.rubato.x and ret.rubato.x.state == false and ret.turning_off == true then
                 on_animate_turn_off_end(ret)
-                ret.turn_off_y_end = false
             end
         end)
     end
@@ -184,6 +184,7 @@ function Scratchpad:apply(c)
         width = self.geometry.width,
         height = self.geometry.height,
     })
+
     if self.autoclose then
         c:connect_signal("unfocus", function(c1)
             c1.sticky = false -- client won't turn off if sticky
@@ -317,16 +318,12 @@ function Scratchpad:turn_off()
     end
 
     if self.client and not in_anim then
-        local anim_x_duration = (anim_x and anim_x.duration) or 0
-        local anim_y_duration = (anim_y and anim_y.duration) or 0
-
-        self.turn_off_x_end = (anim_x_duration >= anim_y_duration) and true or false
-        self.turn_off_y_end = not self.turn_off_x_end
-
         if anim_x then
+            self.turning_off = true
             animate_turn_off(self, anim_x, "x")
         end
         if anim_y then
+            self.turning_off = true
             animate_turn_off(self, anim_y, "y")
         end
 
