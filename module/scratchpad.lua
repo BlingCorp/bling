@@ -10,8 +10,6 @@ local Scratchpad = { mt = {} }
 
 --- Called when the turn off animation has ended
 local function on_animate_turn_off_end(self)
-    print("on_animate_turn_off_end")
-
     -- When toggling off a scratchpad that's present on multiple tags
     -- depsite still being unminizmied on the other tags it will become invisible
     -- as it's position could be outside the screen from the animation
@@ -29,8 +27,6 @@ end
 
 --- The turn off animation
 local function animate_turn_off(self, anim, axis)
-    print("animate turn off")
-
     self.screen_on_toggled_scratchpad = self.client.screen
     self.tag_on_toggled_scratchpad = self.screen_on_toggled_scratchpad.selected_tag
 
@@ -64,8 +60,6 @@ end
 
 --- The turn on animation
 local function animate_turn_on(self, anim, axis)
-    print("animate turn on")
-
     -- Check for the following scenerio:
     -- Toggle on scratchpad at tag 1
     -- Toggle on scratchpad at tag 2
@@ -211,13 +205,11 @@ function Scratchpad:turn_on()
     end
 
     if self.client and not in_anim and self.client.first_tag and self.client.first_tag.selected then
-        print("on 1 " .. tostring(in_anim))
         self.client:raise()
         capi.client.focus = self.client
         return
     end
     if self.client and not in_anim then
-        print("on 2 " .. tostring(in_anim))
         -- if a client was found, turn it on
         if self.reapply then
             self:apply(self.client)
@@ -238,7 +230,6 @@ function Scratchpad:turn_on()
         return
     end
     if not self.client then
-        print("on 3 " .. tostring(in_anim))
         -- if no client was found, spawn one, find the corresponding window,
         --  apply the properties only once (until the next closing)
         local pid = awful.spawn.with_shell(self.command)
@@ -326,8 +317,6 @@ function Scratchpad:turn_off()
     end
 
     if self.client and not in_anim then
-        print("off " .. tostring(in_anim))
-
         local anim_x_duration = (anim_x and anim_x.duration) or 0
         local anim_y_duration = (anim_y and anim_y.duration) or 0
 
