@@ -9,7 +9,7 @@ local pairs = pairs
 local Scratchpad = { mt = {} }
 
 --- Called when the turn off animation has ended
-local function on_animate_turn_off_end(self)
+local function on_animate_turn_off_end(self, tag)
     -- When toggling off a scratchpad that's present on multiple tags
     -- depsite still being unminizmied on the other tags it will become invisible
     -- as it's position could be outside the screen from the animation
@@ -20,7 +20,7 @@ local function on_animate_turn_off_end(self)
         height = self.geometry.height,
     })
 
-    helpers.client.turn_off(self.client, self.tag_on_toggled_scratchpad)
+    helpers.client.turn_off(self.client, tag)
 
     self.turning_off = false
 
@@ -58,6 +58,29 @@ local function animate_turn_off(self, anim, axis)
     end
 
     anim:set(anim:initial())
+end
+
+-- Handles changing tag mid animation
+local function abort_if_tag_was_switched(self)
+    -- Check for the following scenerio:
+    -- Toggle on scratchpad at tag 1
+    -- Toggle on scratchpad at tag 2
+    -- Toggle off scratchpad at tag 1
+    -- Switch to tag 2
+    -- Outcome: The client will remain on tag 1 and will instead be removed from tag 2
+    if (self.turning_off) and (self.screen_on_toggled_scratchpad and
+        self.screen_on_toggled_scratchpad.selected_tag) ~= self.tag_on_toggled_scratchpad
+    then
+        if self.rubato.x then
+            self.rubato.x:abort()
+        end
+        if self.rubato.y then
+            self.rubato.y:abort()
+        end
+        on_animate_turn_off_end(self, self.tag_on_toggled_scratchpad)
+        self.screen_on_toggled_scratchpad.selected_tag = nil
+        self.tag_on_toggled_scratchpad = nil
+    end
 end
 
 --- The turn on animation
@@ -107,20 +130,7 @@ function Scratchpad:new(args)
             if ret.client and ret.client.valid then
                 ret.client.x = pos
             end
-
-            -- Handles changing tag mid animation
-            -- Check for the following scenerio:
-            -- Toggle on scratchpad at tag 1
-            -- Toggle on scratchpad at tag 2
-            -- Toggle off scratchpad at tag 1
-            -- Switch to tag 2
-            -- Outcome: The client will remain on tag 1 and will instead be removed from tag 2
-            if (ret.screen_on_toggled_scratchpad and
-                ret.screen_on_toggled_scratchpad.selected_tag) ~= ret.tag_on_toggled_scratchpad then
-                on_animate_turn_off_end(ret)
-                ret.screen_on_toggled_scratchpad.selected_tag = nil
-                ret.tag_on_toggled_scratchpad = nil
-            end
+            abort_if_tag_was_switched(ret)
         end)
 
         ret.rubato.x.ended:subscribe(function()
@@ -134,20 +144,7 @@ function Scratchpad:new(args)
             if ret.client and ret.client.valid then
                 ret.client.y = pos
             end
-
-            -- Handles changing tag mid animation
-            -- Check for the following scenerio:
-            -- Toggle on scratchpad at tag 1
-            -- Toggle on scratchpad at tag 2
-            -- Toggle off scratchpad at tag 1
-            -- Switch to tag 2
-            -- Outcome: The client will remain on tag 1 and will instead be removed from tag 2
-            if (ret.screen_on_toggled_scratchpad and
-                ret.screen_on_toggled_scratchpad.selected_tag) ~= ret.tag_on_toggled_scratchpad then
-                on_animate_turn_off_end(ret)
-                ret.screen_on_toggled_scratchpad.selected_tag = nil
-                ret.tag_on_toggled_scratchpad = nil
-            end
+            abort_if_tag_was_switched(ret)
         end)
 
         ret.rubato.y.ended:subscribe(function()
