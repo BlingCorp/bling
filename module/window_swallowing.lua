@@ -11,11 +11,11 @@ local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 local window_swallowing_activated = false
 
 -- you might want to add or remove applications here
-local dont_swallow_classname_list = beautiful.dont_swallow_classname_list
+local parent_filter_list = beautiful.parent_filter_list
     or { "firefox", "Gimp", "Google-chrome" }
-local cant_swallow_classname_list = beautiful.cant_swallow_classname_list
-    or { "Yad" }
-local activate_dont_swallow_filter = beautiful.dont_swallow_filter_activated
+local child_filter_list = beautiful.child_filter_list
+    or { }
+local swallowing_filter = beautiful.swallowing_filter
     or true
 
 -- check if element exist in table
@@ -28,21 +28,21 @@ local function is_in_table(element, table)
     end
 end
 
--- checks if client classname can be swallowed
-local function check_if_swallow(class)
-    if not activate_dont_swallow_filter then
+-- checks if parent's classname can be swallowed
+local function check_parent(class)
+    if not swallowing_filter then
         return true
     else
-        return not is_in_table(class, dont_swallow_classname_list)
+        return not is_in_table(class, parent_filter_list)
     end
 end
 
--- checks if client classname can swallow it's parent
-local function check_can_swallow(class)
-    if not activate_dont_swallow_filter then
+-- checks if client's classname can swallow it's parent
+local function check_client(class)
+    if not swallowing_filter then
         return true
     else
-        return not is_in_table(class, cant_swallow_classname_list)
+        return not is_in_table(class, child_filter_list)
     end
 end
 
@@ -63,7 +63,7 @@ local function manage_clientspawn(c)
     if
         -- will search for "(parent_client.pid)" inside the parent_pid string
         ( tostring(parent_pid):find("("..tostring(parent_client.pid)..")") )
-        and check_if_swallow(parent_client.class) and check_can_swallow(c.class)
+        and check_parent(parent_client.class) and check_client(c.class)
     then
         c:connect_signal("unmanage", function()
             helpers.client.turn_on(parent_client)
