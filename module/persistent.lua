@@ -22,12 +22,15 @@ end
 
 local function get_xproperty(name, type)
     capi.awesome.register_xproperty(name, type)
+    print(name)
+    print(capi.awesome.get_xproperty(name))
     return capi.awesome.get_xproperty(name)
 end
 
 local function set_xproperty(name, type, value)
     capi.awesome.register_xproperty(name, type)
     capi.awesome.set_xproperty(name, value)
+    print(name .. " " .. tostring(capi.awesome.get_xproperty(name)))
 end
 
 local function client_get_xproperty(client, name, type)
