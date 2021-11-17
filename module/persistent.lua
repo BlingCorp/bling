@@ -1,4 +1,6 @@
 local awful = require("awful")
+local gobject = require("gears.object")
+local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local tonumber = tonumber
 local tostring = tostring
@@ -32,7 +34,7 @@ local function client_set_xproperty(client, name, type, value)
     client:set_xproperty(xprop, value)
 end
 
-local function save()
+function persistent:save()
     set_xproperty("tag_index", "number", awful.screen.focused().selected_tag.index)
 
     for index, entry in ipairs(capi.root.tags()) do
@@ -70,7 +72,7 @@ local function save()
     end
 end
 
-local function restore()
+function persistent:restore()
     local tag = awful.screen.focused().tags[get_xproperty("tag_index", "number")]
     if tag then
         tag:view_only()
@@ -142,27 +144,25 @@ local function restore()
     end
 end
 
-local function new()
-    local ret = {}
-
+function persistent:enable()
     capi.awesome.connect_signal("exit", function(reason_restart)
         if reason_restart == true then
-            save()
+            self:save()
         end
     end)
 
     gtimer.delayed_call(function()
-        restore()
+        self:restore()
     end)
 
-    return ret
+    return instance
 end
 
-function persistent.enable(...)
-    if not instance then
-        instance = new(...)
-    end
-    return instance
+local function new()
+    local ret = gobject{}
+    gtable.crush(ret, persistent, true)
+
+    return ret
 end
 
 return setmetatable(persistent, persistent.mt)
