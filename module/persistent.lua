@@ -40,41 +40,20 @@ function persistent:save()
 end
 
 function persistent:save_tags()
-    set_xproperty("tag_index", "number", awful.screen.focused().selected_tag.index)
-
     for _, tag in ipairs(capi.root.tags()) do
-        local name_property = "tag_" .. tag.index .. "_name"
-        set_xproperty(name_property, "string", tag.name)
+        local prefix = "tag_" .. tag.index .. "_"
 
-        local activated_property = "tag_" .. tag.index .. "_activated"
-        set_xproperty(activated_property, "boolean", tag.activated)
-
-        local selected_property = "tag_" .. tag.index .. "_selected"
-        set_xproperty(selected_property, "boolean", tag.selected)
-
-        local master_width_factor_property = "tag_" .. tag.index .. "_master_width_factor"
-        set_xproperty(master_width_factor_property, "string", tostring(tag.master_width_factor))
-
-        local layout_property = "tag_" .. tag.index .. "_layout"
-        set_xproperty(layout_property, "number", awful.layout.get_tag_layout_index(tag))
-
-        local volatile_property = "tag_" .. tag.index .. "_volatile"
-        set_xproperty(volatile_property, "boolean", tag.volatile or false)
-
-        local gap_property = "tag_" .. tag.index .. "_gap"
-        set_xproperty(gap_property, "string", tostring(tag.gap))
-
-        local gap_single_client_property = "tag_" .. tag.index .. "_gap_single_client"
-        set_xproperty(gap_single_client_property, "boolean", tag.gap_single_client)
-
-        local master_fill_policy_property = "tag_" .. tag.index .. "_master_fill_policy"
-        set_xproperty(master_fill_policy_property, "string", tag.master_fill_policy)
-
-        local master_count_property = "tag_" .. tag.index .. "_master_count"
-        set_xproperty(master_count_property, "number", tag.master_count)
-
-        local column_count_property = "tag_" .. tag.index .. "_column_count"
-        set_xproperty(column_count_property, "number", tag.column_count)
+        set_xproperty(prefix .. "name", "string", tag.name)
+        set_xproperty(prefix .. "activated", "boolean", tag.activated)
+        set_xproperty(prefix .. "selected", "boolean", tag.selected)
+        set_xproperty(prefix .. "master_width_factor", "string", tostring(tag.master_width_factor))
+        set_xproperty(prefix .. "layout", "number", awful.layout.get_tag_layout_index(tag))
+        set_xproperty(prefix .. "volatile", "boolean", tag.volatile or false)
+        set_xproperty(prefix .. "gap", "string", tostring(tag.gap))
+        set_xproperty(prefix .. "gap_single_client", "boolean", tag.gap_single_client)
+        set_xproperty(prefix .. "master_fill_policy", "string", tag.master_fill_policy)
+        set_xproperty(prefix .. "master_count", "number", tag.master_count)
+        set_xproperty(prefix .. "column_count", "number", tag.column_count)
     end
 end
 
