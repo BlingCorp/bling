@@ -51,6 +51,8 @@ function persistent:save()
 end
 
 function persistent:save_tags()
+    set_xproperty("tags_count", "number", #capi.root.tags())
+
     for _, tag in ipairs(capi.root.tags()) do
         local prefix = "tag_" .. tag.index .. "_"
 
@@ -97,33 +99,62 @@ function persistent:save_clients()
     end
 end
 
-function persistent:restore()
-    self:restore_tags()
+function persistent:restore(args)
+    self:restore_tags(args)
     self:restore_clients()
 end
 
-function persistent:restore_tags()
+function persistent:restore_tags(args)
+    args = args or {}
+
     local selected_tag = false
     awful.tag.viewnone()
 
-    for index, tag in ipairs(capi.root.tags()) do
-        local prefix = "tag_" .. tag.index .. "_"
+    if args.create_tags == true then
+        local tags_count = get_xproperty("tags_count", "number")
+        for i = 1, tags_count, 1 do
+            local prefix = "tag_" .. i .. "_"
 
-        tag.name = get_xproperty(prefix .. "name", "string")
-        tag.activated = get_xproperty(prefix .. "activated", "boolean")
-        tag.screen = get_xproperty(prefix .. "screen", "number")
-        tag.master_width_factor = tonumber(get_xproperty(prefix .. "master_width_factor", "string"))
-        tag.layout = awful.layout.layouts[get_xproperty(prefix .. "layout", "number")]
-        tag.volatile = get_xproperty(prefix .. "volatile", "boolean")
-        tag.gap = tonumber(get_xproperty(prefix .. "gap", "string"))
-        tag.gap_single_client = get_xproperty(prefix .. "gap_single_client", "boolean")
-        tag.master_fill_policy = get_xproperty(prefix .. "master_fill_policy", "string")
-        tag.master_count = get_xproperty(prefix .. "master_count", "number")
-        tag.column_count = get_xproperty(prefix .. "column_count", "number")
+            local tag = {}
+            local name = get_xproperty(prefix .. "name", "string")
+            tag.activated = get_xproperty(prefix .. "activated", "boolean")
+            tag.screen = get_xproperty(prefix .. "screen", "number")
+            tag.master_width_factor = tonumber(get_xproperty(prefix .. "master_width_factor", "string"))
+            tag.layout = awful.layout.layouts[get_xproperty(prefix .. "layout", "number")]
+            tag.volatile = get_xproperty(prefix .. "volatile", "boolean")
+            tag.gap = tonumber(get_xproperty(prefix .. "gap", "string"))
+            tag.gap_single_client = get_xproperty(prefix .. "gap_single_client", "boolean")
+            tag.master_fill_policy = get_xproperty(prefix .. "master_fill_policy", "string")
+            tag.master_count = get_xproperty(prefix .. "master_count", "number")
+            tag.column_count = get_xproperty(prefix .. "column_count", "number")
 
-        if get_xproperty(prefix .. "selected", "boolean") == true then
-            awful.tag.viewtoggle(tag)
-            selected_tag = true
+            awful.tag.add(name, tag)
+
+            if get_xproperty(prefix .. "selected", "boolean") == true then
+                awful.tag.viewtoggle(tag)
+                selected_tag = true
+            end
+        end
+    else
+        for index, tag in ipairs(capi.root.tags()) do
+            local prefix = "tag_" .. tag.index .. "_"
+
+            tag.name = get_xproperty(prefix .. "name", "string")
+            tag.activated = get_xproperty(prefix .. "activated", "boolean")
+            tag.screen = get_xproperty(prefix .. "screen", "number")
+            tag.master_width_factor = tonumber(get_xproperty(prefix .. "master_width_factor", "string"))
+            tag.layout = awful.layout.layouts[get_xproperty(prefix .. "layout", "number")]
+            tag.volatile = get_xproperty(prefix .. "volatile", "boolean")
+            tag.gap = tonumber(get_xproperty(prefix .. "gap", "string"))
+            tag.gap_single_client = get_xproperty(prefix .. "gap_single_client", "boolean")
+            tag.master_fill_policy = get_xproperty(prefix .. "master_fill_policy", "string")
+            tag.master_count = get_xproperty(prefix .. "master_count", "number")
+            tag.column_count = get_xproperty(prefix .. "column_count", "number")
+
+            if get_xproperty(prefix .. "selected", "boolean") == true then
+                awful.tag.viewtoggle(tag)
+                selected_tag = true
+            end
         end
     end
 
@@ -188,7 +219,7 @@ function persistent:restore_clients()
     end
 end
 
-function persistent:enable()
+function persistent:enable(args)
     capi.awesome.connect_signal("exit", function(reason_restart)
         if reason_restart == true then
             awful.spawn("kitty", false)
@@ -198,7 +229,7 @@ function persistent:enable()
 
     capi.awesome.connect_signal("startup", function(reason_restart)
         if is_restart() == true then
-            self:restore()
+            self:restore(args)
         end
     end)
 end
