@@ -40,60 +40,117 @@ function playerctl:disable()
     awful.spawn.with_shell("killall playerctl")
 end
 
-function playerctl:pause()
-    awful.spawn.with_shell(self._private.cmd .. "pause")
-end
-
-function playerctl:play()
-    awful.spawn.with_shell(self._private.cmd .. "play")
-end
-
-function playerctl:stop()
-    awful.spawn.with_shell(self._private.cmd .. "stop")
-end
-
-function playerctl:play_pause()
-    awful.spawn.with_shell(self._private.cmd .. "play-pause")
-end
-
-function playerctl:previous()
-    awful.spawn.with_shell(self._private.cmd .. "previous")
-end
-
-function playerctl:next()
-    awful.spawn.with_shell(self._private.cmd .. "next")
-end
-
-function playerctl:set_loop_status(loop_status)
-    awful.spawn.with_shell(self._private.cmd .. "loop " .. loop_status)
-end
-
-function playerctl:cycle_loop_status()
-    if self._private.loop_status == "None" then
-        self:set_loop_status("Track")
-    elseif self._private.loop_status == "Track" then
-        self:set_loop_status("Playlist")
-    elseif self._private.loop_status == "Playlist" then
-        self:set_loop_status("None")
+function playerctl:pause(player)
+    if player ~= nil then
+        awful.spawn.with_shell("playerctl --player=" .. player .. " pause")
+    else
+        awful.spawn.with_shell(self._private.cmd .. "pause")
     end
 end
 
-function playerctl:set_position(position)
-    awful.spawn.with_shell(self._private.cmd .. "position " .. position)
+function playerctl:play(player)
+    if player ~= nil then
+        awful.spawn.with_shell("playerctl --player=" .. player .. " play")
+    else
+        awful.spawn.with_shell(self._private.cmd .. "play")
+    end
 end
 
-function playerctl:set_shuffle(shuffle)
+function playerctl:stop(player)
+    if player ~= nil then
+        awful.spawn.with_shell("playerctl --player=" .. player .. " stop")
+    else
+        awful.spawn.with_shell(self._private.cmd .. "stop")
+    end
+end
+
+function playerctl:play_pause(player)
+    if player ~= nil then
+        awful.spawn.with_shell("playerctl --player=" .. player .. " play-pause")
+    else
+        awful.spawn.with_shell(self._private.cmd .. "play-pause")
+    end
+end
+
+function playerctl:previous(player)
+    if player ~= nil then
+        awful.spawn.with_shell("playerctl --player=" .. player .. " previous")
+    else
+        awful.spawn.with_shell(self._private.cmd .. "previous")
+    end
+end
+
+function playerctl:next(player)
+    if player ~= nil then
+        awful.spawn.with_shell("playerctl --player=" .. player .. " next")
+    else
+        awful.spawn.with_shell(self._private.cmd .. "next")
+    end
+end
+
+function playerctl:set_loop_status(player, loop_status)
+    if player ~= nil then
+        awful.spawn.with_shell("playerctl --player=" .. player .. " loop " .. loop_status)
+    else
+        awful.spawn.with_shell(self._private.cmd .. "loop " .. loop_status)
+    end
+end
+
+function playerctl:cycle_loop_status(player)
+    local function set_loop_status(loop_status)
+        if loop_status == "None" then
+            self:set_loop_status("Track")
+        elseif loop_status == "Track" then
+            self:set_loop_status("Playlist")
+        elseif loop_status == "Playlist" then
+            self:set_loop_status("None")
+        end
+    end
+
+    if player ~= nil then
+        awful.spawn.easy_async_with_shell("playerctl --player=" .. player .. " loop", function(stdout)
+            set_loop_status(stdout)
+        end)
+    else
+        set_loop_status(self._private.loop_status)
+    end
+end
+
+function playerctl:set_position(player, position)
+    if player ~= nil then
+        awful.spawn.with_shell("playerctl --player=" .. player .. " position " .. position)
+    else
+        awful.spawn.with_shell(self._private.cmd .. "position " .. position)
+    end
+end
+
+function playerctl:set_shuffle(player, shuffle)
     shuffle = shuffle and "on" or "off"
 
-    awful.spawn.with_shell(self._private.cmd .. "shuffle " .. shuffle)
+    if player ~= nil then
+        awful.spawn.with_shell("playerctl --player=" .. player .. " shuffle " .. shuffle)
+    else
+        awful.spawn.with_shell(self._private.cmd .. "shuffle " .. shuffle)
+    end
 end
 
-function playerctl:cycle_shuffle()
-    self:set_shuffle(not self._private.shuffle)
+function playerctl:cycle_shuffle(player)
+    if player ~= nil then
+        awful.spawn.easy_async_with_shell("playerctl --player=" .. player .. " shuffle", function(stdout)
+            local shuffle = stdout == "on" and true or false
+            self:set_shuffle(not self._private.shuffle)
+        end)
+    else
+        self:set_shuffle(not self._private.shuffle)
+    end
 end
 
-function playerctl:set_volume(volume)
-    awful.spawn.with_shell(self._private.cmd .. "volume " .. volume)
+function playerctl:set_volume(player, volume)
+    if player ~= nil then
+        awful.spawn.with_shell("playerctl --player=" .. player .. " volume " .. volume)
+    else
+        awful.spawn.with_shell(self._private.cmd .. "volume " .. volume)
+    end
 end
 
 local function emit_player_metadata(self)
