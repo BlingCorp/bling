@@ -35,6 +35,11 @@ local function client_set_xproperty(client, name, type, value)
 end
 
 function persistent:save()
+    self:save_tags()
+    self:save_tags()
+end
+
+function persistent:save_tags()
     set_xproperty("tag_index", "number", awful.screen.focused().selected_tag.index)
 
     for _, tag in ipairs(capi.root.tags()) do
@@ -65,7 +70,9 @@ function persistent:save()
         local column_count_property = "tag_" .. tag.index .. "_column_count"
         set_xproperty(column_count_property, "number", tag.column_count)
     end
+end
 
+function persistent:save_clients()
     local properties = { "hidden", "minimized", "above", "ontop", "below", "fullscreen",
                         "maximized", "maximized_horizontal", "maximized_vertical", "sticky",
                         "floating", "x", "y", "width", "height"}
@@ -94,6 +101,11 @@ function persistent:save()
 end
 
 function persistent:restore()
+    self:restore_tags()
+    self:restore_clients()
+end
+
+function persistent:restore_tags()
     local tag = awful.screen.focused().tags[get_xproperty("tag_index", "number")]
     if tag then
         tag:view_only()
@@ -109,7 +121,9 @@ function persistent:restore()
             entry.layout = layout
         end
     end
+end
 
+function persistent:restore_clients()
     for index, client in ipairs(capi.client.get()) do
         local properties = { "hidden", "minimized", "above", "ontop", "below", "fullscreen",
                             "maximized", "maximized_horizontal", "maximized_vertical", "sticky",
