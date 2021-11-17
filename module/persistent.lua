@@ -55,8 +55,8 @@ function persistent:save_tags()
         local prefix = "tag_" .. tag.index .. "_"
 
         set_xproperty(prefix .. "name", "string", tag.name)
-        set_xproperty(prefix .. "activated", "boolean", tag.activated)
         set_xproperty(prefix .. "selected", "boolean", tag.selected)
+        set_xproperty(prefix .. "activated", "boolean", tag.activated)
         set_xproperty(prefix .. "master_width_factor", "string", tostring(tag.master_width_factor))
         set_xproperty(prefix .. "layout", "number", awful.layout.get_tag_layout_index(tag))
         set_xproperty(prefix .. "volatile", "boolean", tag.volatile or false)
