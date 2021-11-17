@@ -194,10 +194,14 @@ function persistent:enable()
 end
 
 local function new()
-    local ret = gobject{}
-    gtable.crush(ret, persistent, true)
+    if instance then
+        return instance
+    end
 
-    return ret
+    instance = gobject{}
+    gtable.crush(instance, persistent, true)
+
+    return instance
 end
 
 return setmetatable(persistent, persistent.mt)
