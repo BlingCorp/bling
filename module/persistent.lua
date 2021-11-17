@@ -59,7 +59,7 @@ function persistent:save_tags()
         set_xproperty(layout_property, "number", awful.layout.get_tag_layout_index(tag))
 
         local volatile_property = "tag_" .. tag.index .. "_volatile"
-        set_xproperty(volatile_property, "boolean", tag.volatile)
+        set_xproperty(volatile_property, "boolean", tag.volatile or false)
 
         local gap_property = "tag_" .. tag.index .. "_gap"
         set_xproperty(gap_property, "string", tostring(tag.gap))
