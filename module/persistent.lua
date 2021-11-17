@@ -37,12 +37,33 @@ end
 function persistent:save()
     set_xproperty("tag_index", "number", awful.screen.focused().selected_tag.index)
 
-    for index, entry in ipairs(capi.root.tags()) do
-        local master_width_property = "tag_" .. entry.index .. "_master_width_factor"
-        set_xproperty(master_width_property, "string", tostring(entry.master_width_factor))
+    for _, tag in ipairs(capi.root.tags()) do
+        local name_property = "tag_" .. tag.index .. "_name"
+        set_xproperty(name_property, "string", tag.name)
 
-        local layout_property = "tag_" .. entry.index .. "_layout"
-        set_xproperty(layout_property, "number", awful.layout.get_tag_layout_index(entry))
+        local master_width_factor_property = "tag_" .. tag.index .. "_master_width_factor"
+        set_xproperty(master_width_factor_property, "number", tag.master_width_factor)
+
+        local layout_property = "tag_" .. tag.index .. "_layout"
+        set_xproperty(layout_property, "number", awful.layout.get_tag_layout_index(tag))
+
+        local volatile_property = "tag_" .. tag.index .. "_volatile"
+        set_xproperty(volatile_property, "boolean", tostring(tag.volatile))
+
+        local gap_property = "tag_" .. tag.index .. "_gap"
+        set_xproperty(gap_property, "number", tag.gap)
+
+        local gap_single_client_property = "tag_" .. tag.index .. "_gap_single_client"
+        set_xproperty(gap_single_client_property, "boolean", tag.gap_single_client)
+
+        local master_fill_policy_property = "tag_" .. tag.index .. "_master_fill_policy"
+        set_xproperty(master_fill_policy_property, "string", tag.master_fill_policy)
+
+        local master_count_property = "tag_" .. tag.index .. "_master_count"
+        set_xproperty(master_count_property, "number", tag.master_count)
+
+        local column_count_property = "tag_" .. tag.index .. "_column_count"
+        set_xproperty(column_count_property, "number", tag.column_count)
     end
 
     local properties = { "hidden", "minimized", "above", "ontop", "below", "fullscreen",
