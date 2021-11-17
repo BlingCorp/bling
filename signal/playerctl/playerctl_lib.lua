@@ -157,6 +157,16 @@ function playerctl:get_active_player()
     return self._private.manager.players[1]
 end
 
+function playerctl:get_player_of_name(name)
+    for _, player in ipairs(self._private.manager.players[1]) do
+        if player.name == name then
+            return player
+        end
+    end
+
+    return nil
+end
+
 local function emit_metadata_signal(self, title, artist, artUrl, album, new, player_name)
     title = gstring.xml_escape(title)
     artist = gstring.xml_escape(artist)
