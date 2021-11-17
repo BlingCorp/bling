@@ -69,50 +69,57 @@ function playerctl:disable()
     self._private.last_artUrl = ""
 end
 
-function playerctl:pause()
-    if self._private.manager.players[1] then
-        self._private.manager.players[1]:pause()
+function playerctl:pause(player)
+    player = player or self._private.manager.players[1]
+    if player then
+        player:pause()
     end
 end
 
-function playerctl:play()
-    if self._private.manager.players[1] then
-        self._private.manager.players[1]:play()
+function playerctl:play(player)
+    player = player or self._private.manager.players[1]
+    if player then
+        player:play()
     end
 end
 
-function playerctl:stop()
-    if self._private.manager.players[1] then
-        self._private.manager.players[1]:stop()
+function playerctl:stop(player)
+    player = player or self._private.manager.players[1]
+    if player then
+        player:stop()
     end
 end
 
-function playerctl:play_pause()
-    if self._private.manager.players[1] then
-        self._private.manager.players[1]:play_pause()
+function playerctl:play_pause(player)
+    player = player or self._private.manager.players[1]
+    if player then
+        player:play_pause()
     end
 end
 
-function playerctl:previous()
-    if self._private.manager.players[1] then
-        self._private.manager.players[1]:previous()
+function playerctl:previous(player)
+    player = player or self._private.manager.players[1]
+    if player then
+        player:previous()
     end
 end
 
-function playerctl:next()
-    if self._private.manager.players[1] then
-        self._private.manager.players[1]:next()
+function playerctl:next(player)
+    player = player or self._private.manager.players[1]
+    if player then
+        player:next()
     end
 end
 
-function playerctl:set_loop_status(loop_status)
-    if self._private.manager.players[1] then
-        self._private.manager.players[1]:set_loop_status(loop_status)
+function playerctl:set_loop_status(player, loop_status)
+    player = player or self._private.manager.players[1]
+    if player then
+        player:set_loop_status(loop_status)
     end
 end
 
-function playerctl:cycle_loop_status()
-    local player = self._private.manager.players[1]
+function playerctl:cycle_loop_status(player)
+    player = player or self._private.manager.players[1]
     if player then
         if player.loop_status == "NONE" then
             player:set_loop_status("TRACK")
@@ -124,28 +131,31 @@ function playerctl:cycle_loop_status()
     end
 end
 
-function playerctl:set_position(position)
-    if self._private.manager.players[1] then
-        self._private.manager.players[1]:set_position(position * 1000000)
+function playerctl:set_position(player, position)
+    player = player or self._private.manager.players[1]
+    if player then
+        player:set_position(position * 1000000)
     end
 end
 
-function playerctl:set_shuffle(shuffle)
-    if self._private.manager.players[1] then
-        self._private.manager.players[1]:set_shuffle(shuffle)
+function playerctl:set_shuffle(player, shuffle)
+    player = player or self._private.manager.players[1]
+    if player then
+        player:set_shuffle(shuffle)
     end
 end
 
-function playerctl:cycle_shuffle()
-    local player = self._private.manager.players[1]
+function playerctl:cycle_shuffle(player)
+    player = player or self._private.manager.players[1]
     if player then
         player:set_shuffle(not player.shuffle)
     end
 end
 
-function playerctl:set_volume(volume)
-    if self._private.manager.players[1] then
-        self._private.manager.players[1]:set_volume(volume)
+function playerctl:set_volume(player, volume)
+    player = player or self._private.manager.players[1]
+    if player then
+        player:set_volume(volume)
     end
 end
 
