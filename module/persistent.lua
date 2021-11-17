@@ -12,6 +12,14 @@ local capi = { awesome = awesome, root = root, screen = screen, client = client 
 local persistent = { mt = {} }
 local instance = nil
 
+local function is_restart()
+    capi.awesome.register_xproperty("is_restart", "boolean")
+    local restart_detected = capi.awesome.get_xproperty("is_restart") ~= nil
+    capi.awesome.set_xproperty("is_restart", true)
+
+    return restart_detected
+end
+
 local function get_xproperty(name, type)
     capi.awesome.register_xproperty(name, type)
     return capi.awesome.get_xproperty(name)
@@ -171,8 +179,10 @@ function persistent:enable()
         end
     end)
 
-    gtimer.delayed_call(function()
-        self:restore()
+    capi.awesome.connect_signal("startup", function(reason_restart)
+        if is_restart() == true then
+            self:restore()
+        end
     end)
 end
 
