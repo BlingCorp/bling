@@ -187,7 +187,6 @@ end
 local function metadata_cb(self, player, metadata)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
-        self._private.active_player = player
     end
 
     local data = metadata.value
@@ -201,6 +200,8 @@ local function metadata_cb(self, player, metadata)
     local album = data["xesam:album"] or ""
 
     if player == self._private.manager.players[1] then
+        self._private.active_player = player
+
         -- Callback can be called even though values we care about haven't
         -- changed, so check to see if they have
         if
@@ -237,6 +238,7 @@ end
 local function position_cb(self)
     local player = self._private.manager.players[1]
     if player then
+
         local position = player:get_position() / 1000000
         local length = (player.metadata.value["mpris:length"] or 0) / 1000000
         if position ~= self._private.last_position or length ~= self._private.last_length then
@@ -250,10 +252,11 @@ end
 local function playback_status_cb(self, player, status)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
-        self._private.active_player = player
     end
 
     if player == self._private.manager.players[1] then
+        self._private.active_player = player
+
         -- Reported as PLAYING, PAUSED, or STOPPED
         if status == "PLAYING" then
             self:emit_signal("playback_status", true, player.player_name)
@@ -266,10 +269,10 @@ end
 local function seeked_cb(self, player, position)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
-        self._private.active_player = player
     end
 
     if player == self._private.manager.players[1] then
+        self._private.active_player = player
         self:emit_signal("seeked", position / 1000000, player.player_name)
     end
 end
@@ -277,10 +280,10 @@ end
 local function volume_cb(self, player, volume)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
-        self._private.active_player = player
     end
 
     if player == self._private.manager.players[1] then
+        self._private.active_player = player
         self:emit_signal("volume", volume, player.player_name)
     end
 end
@@ -288,10 +291,10 @@ end
 local function loop_status_cb(self, player, loop_status)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
-        self._private.active_player = player
     end
 
     if player == self._private.manager.players[1] then
+        self._private.active_player = player
         self:emit_signal("loop_status", loop_status:lower(), player.player_name)
     end
 end
@@ -299,10 +302,10 @@ end
 local function shuffle_cb(self, player, shuffle)
     if self.update_on_activity then
         self._private.manager:move_player_to_top(player)
-        self._private.active_player = player
     end
 
     if player == self._private.manager.players[1] then
+        self._private.active_player = player
         self:emit_signal("shuffle", shuffle, player.player_name)
     end
 end
