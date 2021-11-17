@@ -189,8 +189,6 @@ function persistent:enable()
     gtimer.delayed_call(function()
         self:restore()
     end)
-
-    return instance
 end
 
 local function new()
