@@ -53,7 +53,7 @@ function persistent:save_tags()
         set_xproperty(selected_property, "boolean", tag.selected)
 
         local master_width_factor_property = "tag_" .. tag.index .. "_master_width_factor"
-        set_xproperty(master_width_factor_property, "number", tag.master_width_factor)
+        set_xproperty(master_width_factor_property, "string", tostring(tag.master_width_factor))
 
         local layout_property = "tag_" .. tag.index .. "_layout"
         set_xproperty(layout_property, "number", awful.layout.get_tag_layout_index(tag))
@@ -62,7 +62,7 @@ function persistent:save_tags()
         set_xproperty(volatile_property, "boolean", tag.volatile)
 
         local gap_property = "tag_" .. tag.index .. "_gap"
-        set_xproperty(gap_property, "number", tag.gap)
+        set_xproperty(gap_property, "string", tostring(tag.gap))
 
         local gap_single_client_property = "tag_" .. tag.index .. "_gap_single_client"
         set_xproperty(gap_single_client_property, "boolean", tag.gap_single_client)
