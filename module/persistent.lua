@@ -46,6 +46,12 @@ function persistent:save_tags()
         local name_property = "tag_" .. tag.index .. "_name"
         set_xproperty(name_property, "string", tag.name)
 
+        local activated_property = "tag_" .. tag.index .. "_activated"
+        set_xproperty(activated_property, "boolean", tag.activated)
+
+        local selected_property = "tag_" .. tag.index .. "_selected"
+        set_xproperty(selected_property, "boolean", tag.selected)
+
         local master_width_factor_property = "tag_" .. tag.index .. "_master_width_factor"
         set_xproperty(master_width_factor_property, "number", tag.master_width_factor)
 
