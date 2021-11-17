@@ -36,7 +36,7 @@ end
 
 function persistent:save()
     self:save_tags()
-    self:save_tags()
+    self:save_clients()
 end
 
 function persistent:save_tags()
