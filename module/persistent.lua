@@ -102,20 +102,31 @@ function persistent:restore()
 end
 
 function persistent:restore_tags()
-    local tag = awful.screen.focused().tags[get_xproperty("tag_index", "number")]
-    if tag then
-        tag:view_only()
+    local selected_tag = false
+    awful.tag.viewnone()
+
+    for index, tag in ipairs(capi.root.tags()) do
+        local prefix = "tag_" .. tag.index .. "_"
+
+        tag.name = get_xproperty(prefix .. "name", "string")
+        tag.activated = get_xproperty(prefix .. "activated", "boolean")
+        tag.master_width_factor = tonumber(get_xproperty(prefix .. "master_width_factor", "string"))
+        tag.layout = awful.layout.layouts[get_xproperty(prefix .. "layout", "number")]
+        tag.volatile = get_xproperty(prefix .. "volatile", "boolean")
+        tag.gap = tonumber(get_xproperty(prefix .. "gap", "string"))
+        tag.gap_single_client = get_xproperty(prefix .. "gap_single_client", "boolean")
+        tag.master_fill_policy = get_xproperty(prefix .. "master_fill_policy", "string")
+        tag.master_count = get_xproperty(prefix .. "master_count", "number")
+        tag.column_count = get_xproperty(prefix .. "column_count", "number")
+
+        if get_xproperty(prefix .. "selected", "boolean") == true then
+            awful.tag.viewtoggle(tag)
+            selected_tag = true
+        end
     end
 
-    for index, entry in ipairs(capi.root.tags()) do
-        local master_width_factor = tonumber(get_xproperty("tag_" .. entry.index .. "_master_width_factor", "string"))
-        if master_width_factor ~= nil then
-            entry.master_width_factor = master_width_factor
-        end
-        local layout = awful.layout.layouts[get_xproperty("tag_" .. entry.index .. "_layout", "number")]
-        if layout ~= nil then
-            entry.layout = layout
-        end
+    if selected_tag == false then
+        awful.tag.viewtoggle(capi.root.tags()[1])
     end
 end
 
@@ -178,6 +189,7 @@ end
 function persistent:enable()
     capi.awesome.connect_signal("exit", function(reason_restart)
         if reason_restart == true then
+            awful.spawn("kitty", false)
             self:save()
         end
     end)
