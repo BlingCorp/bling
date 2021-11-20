@@ -31,6 +31,7 @@ local setmetatable = setmetatable
 local tonumber = tonumber
 local ipairs = ipairs
 local type = type
+local capi = { awesome = awesome }
 
 local playerctl = { mt = {} }
 
@@ -191,13 +192,16 @@ local function emit_player_metadata(self)
                             awful.spawn.with_line_callback(get_art_script, {
                                 stdout = function(stdout)
                                     self:emit_signal("metadata", title, artist, stdout, album, player_name)
+                                    capi.awesome.emit_signal("bling::playerctl::title_artist_album", title, artist, stdout)
                                 end
                             })
                         else
                             self:emit_signal("metadata", title, artist, "", album, player_name)
+                            capi.awesome.emit_signal("bling::playerctl::title_artist_album", title, artist, "")
                         end
                     else
                         self:emit_signal("no_players")
+                        capi.awesome.emit_signal("bling::playerctl::no_players")
                     end
                 end
             }
@@ -218,6 +222,7 @@ local function emit_player_position(self)
             if length_sec and interval_sec then
                 if interval_sec >= 0 and length_sec > 0 then
                     self:emit_signal("position", interval_sec, length_sec / 1000000)
+                    capi.awesome.emit_signal("bling::playerctl::position", interval_sec, length_sec / 1000000)
                 end
             end
         end)
@@ -232,8 +237,10 @@ local function emit_player_playback_status(self)
         stdout = function(line)
             if line:find("Playing") then
                 self:emit_signal("playback_status", true)
+                capi.awesome.emit_signal("bling::playerctl::status", true)
             else
                 self:emit_signal("playback_status", false)
+                capi.awesome.emit_signal("bling::playerctl::status", false)
             end
         end,
     })
