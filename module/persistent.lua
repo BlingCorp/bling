@@ -222,7 +222,6 @@ end
 function persistent:enable(args)
     capi.awesome.connect_signal("exit", function(reason_restart)
         if reason_restart == true then
-            awful.spawn("kitty", false)
             self:save()
         end
     end)
