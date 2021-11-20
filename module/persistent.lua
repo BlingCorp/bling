@@ -4,15 +4,13 @@ local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local gfilesystem = require("gears.filesystem")
 local json = require(tostring(...):match(".*bling") .. ".helpers").json
-local tonumber = tonumber
 local tostring = tostring
 local ipairs = ipairs
 local string = string
 local table = table
-local type = type
 local capi = { awesome = awesome, root = root, screen = screen, client = client }
 
-local persistent = { mt = {} }
+local persistent = { }
 local instance = nil
 
 local function is_restart()
@@ -23,21 +21,7 @@ local function is_restart()
     return restart_detected
 end
 
-function persistent:save()
-    self:save_tags()
-    self:save_clients()
-
-    local cache = gfilesystem.get_xdg_cache_home()
-    if not gfilesystem.dir_readable(cache .. "awesome") then
-        gfilesystem.make_directories(cache .. "awesome")
-    end
-
-    local json_settings = json.encode(self.settings, { indent = true })
-    local path = cache .. "awesome/persistent.json"
-    awful.spawn.with_shell("echo '" .. json_settings .. "'" .. " > " .. path)
-end
-
-function persistent:save_tags()
+local function save_tags(self)
     self.settings.tags = {}
 
     for _, tag in ipairs(capi.root.tags()) do
@@ -57,7 +41,7 @@ function persistent:save_tags()
     end
 end
 
-function persistent:save_clients()
+local function save_clients(self)
     self.settings.clients = {}
 
     local properties =
@@ -103,19 +87,8 @@ function persistent:save_clients()
     end
 end
 
-function persistent:restore(args)
-    args = args or {}
-
-    local path = gfilesystem.get_xdg_cache_home() .. "awesome/persistent.json"
-    awful.spawn.easy_async_with_shell("cat " .. path, function(stdout)
-        self.restored_settings = json.decode(stdout)
-        self:restore_tags(args)
-        self:restore_clients(args)
-    end)
-end
-
-function persistent:restore_tags(args)
-    args = args or {}
+local function restore_tags(self, args)
+    args.create_tags = args.create_tags ~= nil and args.create_tags or false
 
     local selected_tag = false
     awful.tag.viewnone()
@@ -154,7 +127,7 @@ function persistent:restore_tags(args)
     end
 end
 
-function persistent:restore_clients()
+local function restore_clients(self)
     for index, client in ipairs(capi.client.get()) do
         local pid =  tostring(client.pid)
 
@@ -214,14 +187,55 @@ function persistent:restore_clients()
     end
 end
 
+function persistent:save(args)
+    args = args or {}
+
+    args.save_tags = args.save_tags == nil and true or args.save_tags
+    args.save_clients = args.save_clients == nil and true or args.save_clients
+
+    if args.save_tags == true then
+        save_tags(self)
+    end
+    if args.save_clients ==  true then
+        save_clients(self)
+    end
+
+    local cache = gfilesystem.get_xdg_cache_home()
+    if not gfilesystem.dir_readable(cache .. "awesome") then
+        gfilesystem.make_directories(cache .. "awesome")
+    end
+
+    local json_settings = json.encode(self.settings, { indent = true })
+    local path = cache .. "awesome/persistent.json"
+    awful.spawn.with_shell("echo '" .. json_settings .. "'" .. " > " .. path)
+end
+
+function persistent:restore(args)
+    args = args or {}
+
+    args.restore_tags = args.restore_tags == nil and true or args.restore_tags
+    args.restore_clients = args.restore_clients == nil and true or args.restore_clients
+
+    local path = gfilesystem.get_xdg_cache_home() .. "awesome/persistent.json"
+    awful.spawn.easy_async_with_shell("cat " .. path, function(stdout)
+        self.restored_settings = json.decode(stdout)
+        if args.restore_tags == true then
+            restore_tags(self, args)
+        end
+        if args.restore_clients ==  true then
+            restore_clients(self)
+        end
+    end)
+end
+
 function persistent:enable(args)
     capi.awesome.connect_signal("exit", function(reason_restart)
         if reason_restart == true then
-            self:save()
+            self:save(args)
         end
     end)
 
-    capi.awesome.connect_signal("startup", function(reason_restart)
+    capi.awesome.connect_signal("startup", function()
         if is_restart() == true then
             self:restore(args)
         end
