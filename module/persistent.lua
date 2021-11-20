@@ -2,9 +2,12 @@ local awful = require("awful")
 local gobject = require("gears.object")
 local gtable = require("gears.table")
 local gtimer = require("gears.timer")
+local gfilesystem = require("gears.filesystem")
+local json = require(tostring(...):match(".*bling") .. ".helpers").json
 local tonumber = tonumber
 local tostring = tostring
 local ipairs = ipairs
+local string = string
 local table = table
 local type = type
 local capi = { awesome = awesome, root = root, screen = screen, client = client }
@@ -20,88 +23,95 @@ local function is_restart()
     return restart_detected
 end
 
-local function get_xproperty(name, type)
-    capi.awesome.register_xproperty(name, type)
-    print(name)
-    print(capi.awesome.get_xproperty(name))
-    return capi.awesome.get_xproperty(name)
-end
-
-local function set_xproperty(name, type, value)
-    capi.awesome.register_xproperty(name, type)
-    capi.awesome.set_xproperty(name, value)
-    print(name .. " " .. tostring(capi.awesome.get_xproperty(name)))
-end
-
-local function client_get_xproperty(client, name, type)
-    local xprop = "bling.client." .. name
-    capi.awesome.register_xproperty(xprop, type)
-    return client:get_xproperty(xprop)
-end
-
-local function client_set_xproperty(client, name, type, value)
-    local xprop = "bling.client." .. name
-    capi.awesome.register_xproperty(xprop, type)
-    client:set_xproperty(xprop, value)
-end
-
 function persistent:save()
     self:save_tags()
     self:save_clients()
+
+    local cache = gfilesystem.get_xdg_cache_home()
+    if not gfilesystem.dir_readable(cache .. "awesome") then
+        gfilesystem.make_directories(cache .. "awesome")
+    end
+
+    local json_settings = json.beautify(json.encode(self.settings))
+    local path = cache .. "awesome/persistent.json"
+    awful.spawn.with_shell("echo '" .. json_settings .. "'" .. " > " .. path)
 end
 
 function persistent:save_tags()
-    set_xproperty("tags_count", "number", #capi.root.tags())
+    self.settings.tags = {}
 
     for _, tag in ipairs(capi.root.tags()) do
-        local prefix = "tag_" .. tag.index .. "_"
-
-        set_xproperty(prefix .. "name", "string", tag.name)
-        set_xproperty(prefix .. "selected", "boolean", tag.selected)
-        set_xproperty(prefix .. "activated", "boolean", tag.activated)
-        set_xproperty(prefix .. "screen", "number", tag.screen.index)
-        set_xproperty(prefix .. "master_width_factor", "string", tostring(tag.master_width_factor))
-        set_xproperty(prefix .. "layout", "number", awful.layout.get_tag_layout_index(tag))
-        set_xproperty(prefix .. "volatile", "boolean", tag.volatile or false)
-        set_xproperty(prefix .. "gap", "string", tostring(tag.gap))
-        set_xproperty(prefix .. "gap_single_client", "boolean", tag.gap_single_client)
-        set_xproperty(prefix .. "master_fill_policy", "string", tag.master_fill_policy)
-        set_xproperty(prefix .. "master_count", "number", tag.master_count)
-        set_xproperty(prefix .. "column_count", "number", tag.column_count)
+        self.settings.tags[tag.index] = {}
+        self.settings.tags[tag.index].name = tag.name
+        self.settings.tags[tag.index].selected = tag.selected
+        self.settings.tags[tag.index].activated = tag.activated
+        self.settings.tags[tag.index].screen = tag.screen.index
+        self.settings.tags[tag.index].master_width_factor = tag.master_width_factor
+        self.settings.tags[tag.index].layout = awful.layout.get_tag_layout_index(tag)
+        self.settings.tags[tag.index].volatile = tag.volatile or false
+        self.settings.tags[tag.index].gap = tag.gap
+        self.settings.tags[tag.index].gap_single_client = tag.gap_single_client
+        self.settings.tags[tag.index].master_fill_policy = tag.master_fill_policy
+        self.settings.tags[tag.index].master_count = tag.master_count
+        self.settings.tags[tag.index].column_count = tag.column_count
     end
 end
 
 function persistent:save_clients()
-    local properties = { "hidden", "minimized", "above", "ontop", "below", "fullscreen",
-                        "maximized", "maximized_horizontal", "maximized_vertical", "sticky",
-                        "floating", "x", "y", "width", "height"}
+    self.settings.clients = {}
 
-    for index, client in ipairs(capi.client.get()) do
+    local properties =
+    {
+        "hidden", "minimized", "above", "ontop", "below", "fullscreen",
+        "maximized", "maximized_horizontal", "maximized_vertical", "sticky",
+        "floating", "x", "y", "width", "height"
+    }
+
+    for _, client in ipairs(capi.client.get()) do
+        local pid = tostring(client.pid)
+        self.settings.clients[pid] = {}
+
+        -- Has to be blocking!
+        local handle = io.popen(string.format("ps -p %d -o args=", client.pid))
+        self.settings.clients[pid].command = handle:read("*a"):gsub('^%s*(.-)%s*$', '%1')
+        handle:close()
+
+        -- Properties
         for _, property in ipairs(properties) do
-            client_set_xproperty(client, property, type(client[property]), client[property])
-        end
-
-        client_set_xproperty(client, "screen", "number", client.screen.index)
-        client_set_xproperty(client, "tags_count", "number", #client:tags())
-        for index, client_tag in ipairs(client:tags()) do
-            client_set_xproperty(client, "tag_" .. index, "number", client_tag.index)
-        end
-
-        if client.bling_tabbed and client.bling_tabbed.parent == client.window then
-            client_set_xproperty(client, "bling_tabbed_clients_amount", "number", #client.bling_tabbed.clients)
-            client_set_xproperty(client, "bling_tabbed_focused_idx", "number", tostring(client.bling_tabbed.focused_idx))
-            for index, bling_tabbed_client in ipairs(client.bling_tabbed.clients) do
-                client_set_xproperty(client, "bling_tabbed_client_" .. index, "string", tostring(bling_tabbed_client.window))
+            for _, property in ipairs(properties) do
+                self.settings.clients[pid][property] = client[property]
             end
-        else
-            client_set_xproperty(client, "bling_tabbed_clients_amount", "number", 0)
+        end
+        self.settings.clients[pid].screen = client.screen.index
+
+        -- Tags
+        self.settings.clients[pid].tags = {}
+        for index, client_tag in ipairs(client:tags()) do
+            self.settings.clients[pid].tags[index] = client_tag.index
+        end
+
+        -- Bling tabs
+        if client.bling_tabbed and client.bling_tabbed.parent == client.window then
+            self.settings.clients[pid].bling_tabbed = {}
+            self.settings.clients[pid].bling_tabbed.focused_idx = client.bling_tabbed.focused_idx
+
+            self.settings.clients[pid].bling_tabbed.clients = {}
+            for index, bling_tabbed_client in ipairs(client.bling_tabbed.clients) do
+                self.settings.clients[pid].bling_tabbed.clients[pid] = bling_tabbed_client.window
+            end
         end
     end
 end
 
 function persistent:restore(args)
-    self:restore_tags(args)
-    self:restore_clients()
+    args = args or {}
+
+    local path = gfilesystem.get_xdg_cache_home() .. "awesome/persistent.json"
+    awful.spawn.easy_async_with_shell("cat " .. path, function(stdout)
+        self.restored_settings = json.decode(stdout)
+        self:restore_tags(args)
+        self:restore_clients(args)
+    end)
 end
 
 function persistent:restore_tags(args)
@@ -111,47 +121,28 @@ function persistent:restore_tags(args)
     awful.tag.viewnone()
 
     if args.create_tags == true then
-        local tags_count = get_xproperty("tags_count", "number")
-        for i = 1, tags_count, 1 do
-            local prefix = "tag_" .. i .. "_"
-
-            local tag = {}
-            local name = get_xproperty(prefix .. "name", "string")
-            tag.activated = get_xproperty(prefix .. "activated", "boolean")
-            tag.screen = get_xproperty(prefix .. "screen", "number")
-            tag.master_width_factor = tonumber(get_xproperty(prefix .. "master_width_factor", "string"))
-            tag.layout = awful.layout.layouts[get_xproperty(prefix .. "layout", "number")]
-            tag.volatile = get_xproperty(prefix .. "volatile", "boolean")
-            tag.gap = tonumber(get_xproperty(prefix .. "gap", "string"))
-            tag.gap_single_client = get_xproperty(prefix .. "gap_single_client", "boolean")
-            tag.master_fill_policy = get_xproperty(prefix .. "master_fill_policy", "string")
-            tag.master_count = get_xproperty(prefix .. "master_count", "number")
-            tag.column_count = get_xproperty(prefix .. "column_count", "number")
-
-            awful.tag.add(name, tag)
-
-            if get_xproperty(prefix .. "selected", "boolean") == true then
+        for _, tag in ipairs(self.restored_settings.tags) do
+            awful.tag.add(tag.name, tag)
+            if tag.selected == true then
                 awful.tag.viewtoggle(tag)
                 selected_tag = true
             end
         end
     else
         for index, tag in ipairs(capi.root.tags()) do
-            local prefix = "tag_" .. tag.index .. "_"
+            tag.name = self.restored_settings.tags[index].name
+            tag.activated = self.restored_settings.tags[index].activated
+            tag.screen = self.restored_settings.tags[index].screen
+            tag.master_width_factor = self.restored_settings.tags[index].master_width_factor
+            tag.layout = awful.layout.layouts[self.restored_settings.tags[index].layout]
+            tag.volatile = self.restored_settings.tags[index].volatile
+            tag.gap = self.restored_settings.tags[index].gap
+            tag.gap_single_client = self.restored_settings.tags[index].gap_single_client
+            tag.master_fill_policy = self.restored_settings.tags[index].master_fill_policy
+            tag.master_count = self.restored_settings.tags[index].master_count
+            tag.column_count = self.restored_settings.tags[index].column_count
 
-            tag.name = get_xproperty(prefix .. "name", "string")
-            tag.activated = get_xproperty(prefix .. "activated", "boolean")
-            tag.screen = get_xproperty(prefix .. "screen", "number")
-            tag.master_width_factor = tonumber(get_xproperty(prefix .. "master_width_factor", "string"))
-            tag.layout = awful.layout.layouts[get_xproperty(prefix .. "layout", "number")]
-            tag.volatile = get_xproperty(prefix .. "volatile", "boolean")
-            tag.gap = tonumber(get_xproperty(prefix .. "gap", "string"))
-            tag.gap_single_client = get_xproperty(prefix .. "gap_single_client", "boolean")
-            tag.master_fill_policy = get_xproperty(prefix .. "master_fill_policy", "string")
-            tag.master_count = get_xproperty(prefix .. "master_count", "number")
-            tag.column_count = get_xproperty(prefix .. "column_count", "number")
-
-            if get_xproperty(prefix .. "selected", "boolean") == true then
+            if self.restored_settings.tags[index].selected == true then
                 awful.tag.viewtoggle(tag)
                 selected_tag = true
             end
@@ -165,57 +156,70 @@ end
 
 function persistent:restore_clients()
     for index, client in ipairs(capi.client.get()) do
-        local properties = { "hidden", "minimized", "above", "ontop", "below", "fullscreen",
-                            "maximized", "maximized_horizontal", "maximized_vertical", "sticky",
-                            "floating", "x", "y", "width", "height"}
+        local properties =
+        {
+            "hidden", "minimized", "above", "ontop", "below", "fullscreen",
+            "maximized", "maximized_horizontal", "maximized_vertical", "sticky",
+            "floating", "x", "y", "width", "height"
+        }
 
+        local pid =  tostring(client.pid)
         for _, property in ipairs(properties) do
-            client[property] = client_get_xproperty(client, property, type(client[property]))
+            client[property] = self.restored_settings.clients[pid][property]
         end
-        client:move_to_screen(client_get_xproperty(client, "screen", "number"))
-
-        local parent = client
-        local bling_tabbed_clients_amount = client_get_xproperty(parent, "bling_tabbed_clients_amount", "number") or 0
-        for i = 1, bling_tabbed_clients_amount, 1 do
-            local child_window = tonumber(client_get_xproperty(parent, "bling_tabbed_client_" .. i, "string"))
-            for index, child in ipairs(capi.client.get()) do
-                if child.window == child_window then
-                    local tab_index = client_get_xproperty(client, "bling_tabbed_focused_idx", "number")
-                    if not parent.bling_tabbed and not child.bling_tabbed then
-                        tabbed.init(parent)
-                        tabbed.add(child, parent.bling_tabbed)
-                        gtimer.delayed_call(function()
-                            tabbed.switch_to(parent.bling_tabbed, tab_index)
-                        end)
-                    end
-                    if not parent.bling_tabbed and child.bling_tabbed then
-                        tabbed.add(parent, child.bling_tabbed)
-                        gtimer.delayed_call(function()
-                            tabbed.switch_to(child.bling_tabbed, tab_index)
-                        end)
-                    end
-                    if parent.bling_tabbed and not child.bling_tabbed then
-                        tabbed.add(child, parent.bling_tabbed)
-                        gtimer.delayed_call(function()
-                            tabbed.switch_to(parent.bling_tabbed, tab_index)
-                        end)
-                    end
-                    child:tags({})
-                end
-            end
-        end
+        client:move_to_screen(self.restored_settings.clients[pid].screen)
 
         gtimer.delayed_call(function()
-            local tags_count = client_get_xproperty(client, "tags_count", "number") or 0
             local tags = {}
-            for i = 1, tags_count, 1 do
-                local tag_index = client_get_xproperty(client, "tag_" .. i, "number")
-                table.insert(tags, capi.screen[client.screen].tags[tag_index])
+            for _, tag in ipairs(self.restored_settings.clients[pid].tags) do
+                table.insert(tags, capi.screen[client.screen].tags[tag])
             end
-
             client.first_tag = tags[1]
             client:tags(tags)
         end)
+
+        -- local parent = client
+        -- local bling_tabbed_clients_amount = client_get_xproperty(parent, "bling_tabbed_clients_amount", "number") or 0
+        -- for i = 1, bling_tabbed_clients_amount, 1 do
+        --     local child_window = tonumber(client_get_xproperty(parent, "bling_tabbed_client_" .. i, "string"))
+        --     for index, child in ipairs(capi.client.get()) do
+        --         if child.window == child_window then
+        --             local tab_index = client_get_xproperty(client, "bling_tabbed_focused_idx", "number")
+        --             if not parent.bling_tabbed and not child.bling_tabbed then
+        --                 tabbed.init(parent)
+        --                 tabbed.add(child, parent.bling_tabbed)
+        --                 gtimer.delayed_call(function()
+        --                     tabbed.switch_to(parent.bling_tabbed, tab_index)
+        --                 end)
+        --             end
+        --             if not parent.bling_tabbed and child.bling_tabbed then
+        --                 tabbed.add(parent, child.bling_tabbed)
+        --                 gtimer.delayed_call(function()
+        --                     tabbed.switch_to(child.bling_tabbed, tab_index)
+        --                 end)
+        --             end
+        --             if parent.bling_tabbed and not child.bling_tabbed then
+        --                 tabbed.add(child, parent.bling_tabbed)
+        --                 gtimer.delayed_call(function()
+        --                     tabbed.switch_to(parent.bling_tabbed, tab_index)
+        --                 end)
+        --             end
+        --             child:tags({})
+        --         end
+        --     end
+        -- end
+
+        -- gtimer.delayed_call(function()
+        --     local tags_count = client_get_xproperty(client, "tags_count", "number") or 0
+        --     local tags = {}
+        --     for i = 1, tags_count, 1 do
+        --         local tag_index = client_get_xproperty(client, "tag_" .. i, "number")
+        --         table.insert(tags, capi.screen[client.screen].tags[tag_index])
+        --     end
+
+        --     client.first_tag = tags[1]
+        --     client:tags(tags)
+        -- end)
     end
 end
 
@@ -234,14 +238,13 @@ function persistent:enable(args)
 end
 
 local function new()
-    if instance then
-        return instance
-    end
+    local ret = gobject{}
+    gtable.crush(ret, persistent, true)
+    ret.settings = {}
 
-    instance = gobject{}
-    gtable.crush(instance, persistent, true)
-
-    return instance
+    return ret
 end
 
-return setmetatable(persistent, persistent.mt)
+if not instance then
+    instance = new()
+end
