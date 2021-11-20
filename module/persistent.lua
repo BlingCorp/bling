@@ -32,7 +32,7 @@ function persistent:save()
         gfilesystem.make_directories(cache .. "awesome")
     end
 
-    local json_settings = json.beautify(json.encode(self.settings))
+    local json_settings = json.encode(self.settings, { indent = true })
     local path = cache .. "awesome/persistent.json"
     awful.spawn.with_shell("echo '" .. json_settings .. "'" .. " > " .. path)
 end
