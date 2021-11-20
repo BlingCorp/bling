@@ -97,7 +97,7 @@ function persistent:save_clients()
 
             self.settings.clients[pid].bling_tabbed.clients = {}
             for index, bling_tabbed_client in ipairs(client.bling_tabbed.clients) do
-                self.settings.clients[pid].bling_tabbed.clients[pid] = bling_tabbed_client.window
+                self.settings.clients[pid].bling_tabbed.clients[index] = bling_tabbed_client.window
             end
         end
     end
@@ -156,19 +156,21 @@ end
 
 function persistent:restore_clients()
     for index, client in ipairs(capi.client.get()) do
+        local pid =  tostring(client.pid)
+
+        -- Properties
         local properties =
         {
             "hidden", "minimized", "above", "ontop", "below", "fullscreen",
             "maximized", "maximized_horizontal", "maximized_vertical", "sticky",
             "floating", "x", "y", "width", "height"
         }
-
-        local pid =  tostring(client.pid)
         for _, property in ipairs(properties) do
             client[property] = self.restored_settings.clients[pid][property]
         end
         client:move_to_screen(self.restored_settings.clients[pid].screen)
 
+        -- Tags
         gtimer.delayed_call(function()
             local tags = {}
             for _, tag in ipairs(self.restored_settings.clients[pid].tags) do
@@ -178,48 +180,37 @@ function persistent:restore_clients()
             client:tags(tags)
         end)
 
-        -- local parent = client
-        -- local bling_tabbed_clients_amount = client_get_xproperty(parent, "bling_tabbed_clients_amount", "number") or 0
-        -- for i = 1, bling_tabbed_clients_amount, 1 do
-        --     local child_window = tonumber(client_get_xproperty(parent, "bling_tabbed_client_" .. i, "string"))
-        --     for index, child in ipairs(capi.client.get()) do
-        --         if child.window == child_window then
-        --             local tab_index = client_get_xproperty(client, "bling_tabbed_focused_idx", "number")
-        --             if not parent.bling_tabbed and not child.bling_tabbed then
-        --                 tabbed.init(parent)
-        --                 tabbed.add(child, parent.bling_tabbed)
-        --                 gtimer.delayed_call(function()
-        --                     tabbed.switch_to(parent.bling_tabbed, tab_index)
-        --                 end)
-        --             end
-        --             if not parent.bling_tabbed and child.bling_tabbed then
-        --                 tabbed.add(parent, child.bling_tabbed)
-        --                 gtimer.delayed_call(function()
-        --                     tabbed.switch_to(child.bling_tabbed, tab_index)
-        --                 end)
-        --             end
-        --             if parent.bling_tabbed and not child.bling_tabbed then
-        --                 tabbed.add(child, parent.bling_tabbed)
-        --                 gtimer.delayed_call(function()
-        --                     tabbed.switch_to(parent.bling_tabbed, tab_index)
-        --                 end)
-        --             end
-        --             child:tags({})
-        --         end
-        --     end
-        -- end
-
-        -- gtimer.delayed_call(function()
-        --     local tags_count = client_get_xproperty(client, "tags_count", "number") or 0
-        --     local tags = {}
-        --     for i = 1, tags_count, 1 do
-        --         local tag_index = client_get_xproperty(client, "tag_" .. i, "number")
-        --         table.insert(tags, capi.screen[client.screen].tags[tag_index])
-        --     end
-
-        --     client.first_tag = tags[1]
-        --     client:tags(tags)
-        -- end)
+        -- Bling tabbed
+        local parent = client
+        if self.restored_settings.clients[pid].bling_tabbed then
+            for _, window in ipairs(self.restored_settings.clients[pid].bling_tabbed.clients) do
+                for index, client in ipairs(capi.client.get()) do
+                    if client.window == window then
+                        local focused_idx = self.restored_settings.clients[pid].bling_tabbed.focused_idx
+                        if not parent.bling_tabbed and not client.bling_tabbed then
+                            tabbed.init(parent)
+                            tabbed.add(client, parent.bling_tabbed)
+                            gtimer.delayed_call(function()
+                                tabbed.switch_to(parent.bling_tabbed, focused_idx)
+                            end)
+                        end
+                        if not parent.bling_tabbed and client.bling_tabbed then
+                            tabbed.add(parent, client.bling_tabbed)
+                            gtimer.delayed_call(function()
+                                tabbed.switch_to(client.bling_tabbed, focused_idx)
+                            end)
+                        end
+                        if parent.bling_tabbed and not client.bling_tabbed then
+                            tabbed.add(client, parent.bling_tabbed)
+                            gtimer.delayed_call(function()
+                                tabbed.switch_to(parent.bling_tabbed, focused_idx)
+                            end)
+                        end
+                        client:tags({})
+                    end
+                end
+            end
+        end
     end
 end
 
