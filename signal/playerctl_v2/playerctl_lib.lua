@@ -111,7 +111,7 @@ function playerctl:next(player)
     end
 end
 
-function playerctl:set_loop_status(player, loop_status)
+function playerctl:set_loop_status(loop_status, player)
     player = player or self._private.manager.players[1]
     if player then
         player:set_loop_status(loop_status)
@@ -131,14 +131,14 @@ function playerctl:cycle_loop_status(player)
     end
 end
 
-function playerctl:set_position(player, position)
+function playerctl:set_position(position, player)
     player = player or self._private.manager.players[1]
     if player then
         player:set_position(position * 1000000)
     end
 end
 
-function playerctl:set_shuffle(player, shuffle)
+function playerctl:set_shuffle(shuffle, player)
     player = player or self._private.manager.players[1]
     if player then
         player:set_shuffle(shuffle)
@@ -152,7 +152,7 @@ function playerctl:cycle_shuffle(player)
     end
 end
 
-function playerctl:set_volume(player, volume)
+function playerctl:set_volume(volume, player)
     player = player or self._private.manager.players[1]
     if player then
         player:set_volume(volume)
