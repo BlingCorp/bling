@@ -250,11 +250,13 @@ function persistent:restore(args)
     local path = gfilesystem.get_xdg_cache_home() .. "awesome/persistent.json"
     awful.spawn.easy_async_with_shell("cat " .. path, function(stdout)
         self.restored_settings = json.decode(stdout)
-        if args.restore_tags == true then
-            restore_tags(self, args)
-        end
-        if args.restore_clients ==  true then
-            restore_clients(self, args)
+        if self.restored_settings ~= nil then
+            if args.restore_tags == true then
+                restore_tags(self, args)
+            end
+            if args.restore_clients ==  true then
+                restore_clients(self, args)
+            end
         end
     end)
 end
