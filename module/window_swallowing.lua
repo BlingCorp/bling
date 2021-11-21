@@ -20,29 +20,22 @@ local swallowing_filter = beautiful.swallowing_filter
 
 -- check if element exist in table
 local function is_in_table(element, table)
+    local res = false
     for _, value in pairs(table) do
         if element:match(value) then
-            return true
+            res = true
+            break
         end
-    return false
     end
+    return res
 end
 
 -- checks if parent's classname can be swallowed
-local function check_parent(class)
+local function check_swallow(class, list)
     if not swallowing_filter then
         return true
     else
-        return not is_in_table(class, parent_filter_list)
-    end
-end
-
--- checks if client's classname can swallow it's parent
-local function check_client(class)
-    if not swallowing_filter then
-        return true
-    else
-        return not is_in_table(class, child_filter_list)
+        return not is_in_table(class, list)
     end
 end
 
@@ -63,7 +56,8 @@ local function manage_clientspawn(c)
     if
         -- will search for "(parent_client.pid)" inside the parent_pid string
         ( tostring(parent_pid):find("("..tostring(parent_client.pid)..")") )
-        and check_parent(parent_client.class) and check_client(c.class)
+        and check_swallow(parent_client.class, parent_filter_list)
+        and check_swallow(c.class, child_filter_list)
     then
         c:connect_signal("unmanage", function()
             helpers.client.turn_on(parent_client)
