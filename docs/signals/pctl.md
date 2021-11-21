@@ -17,27 +17,65 @@ This module relies on `playerctl` and `curl`. If you have this module disabled, 
 
 ### Usage
 
-To enable: `bling.signal.playerctl.enable()`
+To enable: `playerctl = bling.signal.playerctl.lib/cli()`
 
-To disable: `bling.signal.playerctl.disable()`
+To disable: `playerctl:disable()`
 
-Here are the signals available:
-
+Playerctl_lib signals available:
 ```lua
--- bling::playerctl::status   -- first line is the signal
---     playing      (boolean) -- indented lines are function parameters
---     player_name  (string)
--- bling::playerctl::title_artist_album
---     title        (string)
---     artist       (string)
---     album_path   (string)
---     player_name  (string)
--- bling::playerctl::position
---     interval_sec (number)
---     length_sec   (number)
---     player_name  (string)
--- bling::playerctl::no_players
---     (No parameters)
+-- metadata
+--      title (string)
+--      artist  (string)
+--      album_path (string)
+--      album (string)
+--      new (bool)
+--      player_name (string)
+-- position
+--      interval_sec (number)
+--      length_sec (number)
+--      player_name (string)
+-- playback_status
+--      playing (boolean)
+--      player_name (string)
+-- seeked
+--      position (number)
+--      player_name (string)
+-- volume
+--      volume (number)
+--      player_name (string)
+-- loop_status
+--      loop_status (string)
+--      player_name (string)
+-- shuffle
+--      shuffle (boolean)
+--      player_name (string)
+-- exit
+--      player_name (string)
+-- no_players
+--      (No parameters)
+```
+
+Playerctl_cli signals available:
+```LUA
+-- metadata
+--      title (string)
+--      artist  (string)
+--      album_path (string)
+--      album (string)
+--      player_name (string)
+-- position
+--      interval_sec (number)
+--      length_sec (number)
+-- playback_status
+--      playing (boolean)
+-- volume
+--      volume (number)
+-- loop_status
+--      loop_status (string)
+-- shuffle
+--      shuffle (bool)
+-- no_players
+--      (No parameters)
 ```
 
 ### Example Implementation
@@ -74,10 +112,11 @@ local artist_widget = wibox.widget {
 }
 
 -- Get Song Info
-awesome.connect_signal("bling::playerctl::title_artist_album",
-                       function(title, artist, art_path, player_name)
+playerctl = bling.signal.playerctl.lib()
+playerctl:connect_signal("metadata",
+                       function(title, artist, album_path, album, new, player_name)
     -- Set art widget
-    art:set_image(gears.surface.load_uncached(art_path))
+    art:set_image(gears.surface.load_uncached(album_path))
 
     -- Set player name, title and artist widgets
     name_widget:set_markup_silently(player_name)
@@ -92,9 +131,11 @@ Here's another example in which you get a notification with the album art, title
 ```lua
 local naughty = require("naughty")
 
-awesome.connect_signal("bling::playerctl::title_artist_album",
-                       function(title, artist, art_path, player_name)
-    naughty.notify({title = title, text = artist, image = art_path})
+playerctl:connect_signal("metadata",
+                       function(title, artist, album_path, album, new, player_name)
+    if new == true then
+        naughty.notify({title = title, text = artist, image = album_path})
+    end
 end)
 ```
 
@@ -103,13 +144,11 @@ By default, this module will output signals from the most recently active player
 
 | Option              | playerctl_cli      | playerctl_lib      |
 | ------------------- | ------------------ | ------------------ |
-| backend             | :heavy_check_mark: | :heavy_check_mark: |
-| ignore              |                    | :heavy_check_mark: |
-| player              |                    | :heavy_check_mark: |
+| ignore              | :heavy_check_mark: | :heavy_check_mark: |
+| player              | :heavy_check_mark: | :heavy_check_mark: |
 | update_on_activity  |                    | :heavy_check_mark: |
 | interval            | :heavy_check_mark: | :heavy_check_mark: |
-
-- `backend`: This is a string containing the name of the backend that will be used to produce the playerctl signals, either `playerctl_cli` or `playertl_lib`. `playerctl_cli` is used by default because it is supported on most if not all systems. That said, if the playerctl package for your distribution supports the `playerctl_lib` backend, it is recommended, because it supports all the configuration options as seen in the table above and uses less system resources. If you are not sure if your package supports the `playerctl_lib` backend you can simply try it and will receive an error message from Awesome upon calling `bling.signal.playerctl.enable()` if it is not supported. See the examples below for how to set configuration options.
+| debounce_delay      | :heavy_check_mark: | :heavy_check_mark: |
 
 - `ignore`: This option is either a string with a single name or a table of strings containing names of players that will be ignored by this module. It is empty by default.
 
@@ -119,9 +158,11 @@ By default, this module will output signals from the most recently active player
 
 - `interval`: This option is a number specifying the update interval for fetching the player position. It is 1 by default.
 
-These options can be set through a call to `bling.signal.playerctl.enable()` or these theme variables:
+- `debounce_delay`: This option is a number specifying the debounce timer interval. If a new metadata signal gets emitted before debounce_delay has passed, the last signal will be dropped.
+This is to help with some players sending multiple signals. It is `0.35` by default.
+
+These options can be set through a call to `bling.signal.playerctl.lib/cli()` or these theme variables:
 ```lua
-theme.playerctl_backend = "playerctl_cli"
 theme.playerctl_ignore  = {}
 theme.playerctl_player  = {}
 theme.playerctl_update_on_activity = true
@@ -131,15 +172,13 @@ theme.playerctl_position_update_interval = 1
 #### Example Configurations
 ```lua
 -- Prioritize ncspot over all other players and ignore firefox players (e.g. YouTube and Twitch tabs) completely
-bling.signal.playerctl.enable {
-    backend = "playerctl_lib",
+playerctl = bling.signal.playerctl.lib {
     ignore = "firefox",
     player = {"ncspot", "%any"}
 }
 
 -- OR in your theme file:
 -- Same config as above but with theme variables
-theme.playerctl_backend = "playerctl_lib"
 theme.playerctl_ignore  = "firefox"
 theme.playerctl_player  = {"ncspot", "%any"}
 
@@ -148,7 +187,6 @@ theme.playerctl_backend = "playerctl_lib"
 theme.playerctl_player  = {"vlc", "%any", "spotify"}
 
 -- Disable priority of most recently active players
-theme.playerctl_backend = "playerctl_lib"
 theme.playerctl_update_on_activity = false
 
 -- Only emit the position signal every 2 seconds
