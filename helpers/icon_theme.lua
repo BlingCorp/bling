@@ -25,10 +25,10 @@ function icon_theme:get_client_icon_path(client, default_icon_name)
 
     local class = name_lookup[client.class] or client.class:lower()
 
-    -- Try to remove dash
+    -- Try to remove dashes
     local class_1 = class:gsub("[%-]", "")
 
-    -- Try to replace dash with dot
+    -- Try to replace dashes with dot
     local class_2 = class:gsub("[%-]", ".")
 
     -- Try to match only the first word
