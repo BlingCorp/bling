@@ -39,7 +39,6 @@ local function get_icon_by_icon_name(self, client, apps)
 end
 
 local function get_icon_by_class(self, client, apps)
-
     local class = name_lookup[client.class] or client.class:lower()
 
     -- Try to remove dashes
