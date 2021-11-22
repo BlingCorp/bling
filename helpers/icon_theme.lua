@@ -19,8 +19,8 @@ local function get_icon_by_pid_command(self, client, apps)
     handle:close()
 
     for _, app in ipairs(apps) do
-        local commandline = app:get_commandline()
-        if commandline:find(pid_command, 1, true) then
+        local executable = app:get_executable()
+        if executable:find(pid_command, 1, true) then
             return self:get_gicon_path(app:get_icon())
         end
     end
