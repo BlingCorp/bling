@@ -50,9 +50,9 @@ function icon_theme:get_client_icon_path(client, default_icon_name)
 end
 
 function icon_theme:choose_icon(icons_names)
-    local icon_info = Gtk.IconTheme.choose_icon(self.gtk_theme, icons_names, self.icon_size, 0);
+    local icon_info = self.gtk_theme:choose_icon(icons_names, self.icon_size, 0);
     if icon_info then
-        local icon_path = Gtk.IconInfo.get_filename(icon_info)
+        local icon_path = icon_info:get_filename()
         if icon_path then
             return icon_path
         end
@@ -66,9 +66,9 @@ function icon_theme:get_gicon_path(gicon)
         return ""
     end
 
-    local icon_info = Gtk.IconTheme.lookup_by_gicon(self.gtk_theme, gicon, self.icon_size, 0);
+    local icon_info = self.gtk_theme:lookup_by_gicon(gicon, self.icon_size, 0);
     if icon_info then
-        local icon_path = Gtk.IconInfo.get_filename(icon_info)
+        local icon_path = icon_info:get_filename()
         if icon_path then
             return icon_path
         end
@@ -78,9 +78,9 @@ function icon_theme:get_gicon_path(gicon)
 end
 
 function icon_theme:get_icon_path(icon_name)
-    local icon_info = Gtk.IconTheme.lookup_icon(self.gtk_theme, icon_name, self.icon_size, 0);
+    local icon_info = self.gtk_theme:lookup_icon(icon_name, self.icon_size, 0)
     if icon_info then
-        local icon_path = Gtk.IconInfo.get_filename(icon_info)
+        local icon_path = icon_info:get_filename()
         if icon_path then
             return icon_path
         end
