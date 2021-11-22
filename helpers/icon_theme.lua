@@ -1,5 +1,6 @@
 local Gio = require("lgi").Gio
 local Gtk = require("lgi").Gtk
+local awful = require("awful")
 local gobject = require("gears.object")
 local gtable = require("gears.table")
 local setmetatable = setmetatable
@@ -13,9 +14,22 @@ local name_lookup =
 }
 
 function icon_theme:get_client_icon_path(client, default_icon_name)
+    local apps = Gio.AppInfo.get_all()
+
+    local handle = io.popen(string.format("ps -p %d -o args=", client.pid))
+    local pid_command = handle:read("*a"):gsub('^%s*(.-)%s*$', '%1')
+    handle:close()
+
+    for _, app in ipairs(apps) do
+        local commandline = app:get_commandline()
+        if commandline:match(pid_command) then
+            return self:get_gicon_path(app:get_icon())
+        end
+    end
+
     local icon_name = client.icon_name and client.icon_name:lower() or nil
     if icon_name ~= nil then
-        for _, app in ipairs(Gio.AppInfo.get_all()) do
+        for _, app in ipairs(apps) do
             local name = app:get_name():lower()
             if name:match(icon_name) then
                 return self:get_gicon_path(app:get_icon())
@@ -37,7 +51,7 @@ function icon_theme:get_client_icon_path(client, default_icon_name)
     class_3 = class_3:match("(.-)%s+") or class_3
 
     local possible_icon_names = { class, class_3, class_2, class_1 }
-    for _, app in ipairs(Gio.AppInfo.get_all()) do
+    for _, app in ipairs(apps) do
         local id = app:get_id():lower()
         for _, possible_icon_name in ipairs(possible_icon_names) do
             if id:match(possible_icon_name) then
