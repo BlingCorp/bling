@@ -14,8 +14,8 @@ local name_lookup =
 
 function icon_theme:get_client_icon_path(client, default_icon_name)
     local icon_name = client.icon_name and client.icon_name:lower() or nil
-    for _, app in ipairs(Gio.AppInfo.get_all()) do
-        if icon_name ~= nil then
+    if icon_name ~= nil then
+        for _, app in ipairs(Gio.AppInfo.get_all()) do
             local name = app:get_name():lower()
             if name:match(icon_name) then
                 return self:get_gicon_path(app:get_icon())
