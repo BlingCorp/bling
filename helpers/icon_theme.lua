@@ -13,9 +13,7 @@ local name_lookup =
     ["jetbrains-studio"] = "android-studio"
 }
 
-function icon_theme:get_client_icon_path(client, default_icon_name)
-    local apps = Gio.AppInfo.get_all()
-
+local function get_icon_by_pid_command(self, client, apps)
     local handle = io.popen(string.format("ps -p %d -o args=", client.pid))
     local pid_command = handle:read("*a"):gsub('^%s*(.-)%s*$', '%1')
     handle:close()
@@ -26,7 +24,9 @@ function icon_theme:get_client_icon_path(client, default_icon_name)
             return self:get_gicon_path(app:get_icon())
         end
     end
+end
 
+local function get_icon_by_icon_name(self, client, apps)
     local icon_name = client.icon_name and client.icon_name:lower() or nil
     if icon_name ~= nil then
         for _, app in ipairs(apps) do
@@ -36,6 +36,9 @@ function icon_theme:get_client_icon_path(client, default_icon_name)
             end
         end
     end
+end
+
+local function get_icon_by_class(self, client, apps)
 
     local class = name_lookup[client.class] or client.class:lower()
 
@@ -59,8 +62,15 @@ function icon_theme:get_client_icon_path(client, default_icon_name)
             end
         end
     end
+end
 
-    return self:get_icon_path(default_icon_name or "gnome-window-manager")
+function icon_theme:get_client_icon_path(client, default_icon_name)
+    local apps = Gio.AppInfo.get_all()
+
+    return  get_icon_by_pid_command(self, client, apps) or
+            get_icon_by_icon_name(self, client, apps) or
+            get_icon_by_class(self, client, apps) or
+            self:get_icon_path(default_icon_name or "gnome-window-manager")
 end
 
 function icon_theme:choose_icon(icons_names)
