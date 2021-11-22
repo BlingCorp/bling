@@ -14,6 +14,7 @@ local name_lookup =
 
 function icon_theme:get_client_icon_path(client, default_icon_name)
     local class = name_lookup[client.class] or client.class:lower()
+    local icon_name = client.icon_name and client.icon_name:lower() or nil
 
     -- Try to remove dash
     local class_1 = class:gsub("[%-]", "")
@@ -26,7 +27,16 @@ function icon_theme:get_client_icon_path(client, default_icon_name)
     class_3 = class_3:match("(.-)%.") or class_3
     class_3 = class_3:match("(.-)%s+") or class_3
 
-    local possible_icon_names = { class_3, class_2, class_1 }
+    local possible_icon_names = { class, class_3, class_2, class_1 }
+
+    for _, app in ipairs(Gio.AppInfo.get_all()) do
+        if icon_name ~= nil then
+            local name = app:get_name():lower()
+            if name:match(icon_name) then
+                return self:get_gicon_path(app:get_icon())
+            end
+        end
+    end
 
     for _, app in ipairs(Gio.AppInfo.get_all()) do
         local id = app:get_id():lower()
