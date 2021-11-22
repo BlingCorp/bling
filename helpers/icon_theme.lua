@@ -14,7 +14,7 @@ local name_lookup =
 }
 
 local function get_icon_by_pid_command(self, client, apps)
-    local handle = io.popen(string.format("ps -p %d -o args=", client.pid))
+    local handle = io.popen(string.format("ps -p %d -o comm=", client.pid))
     local pid_command = handle:read("*a"):gsub('^%s*(.-)%s*$', '%1')
     handle:close()
 
