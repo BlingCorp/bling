@@ -134,7 +134,7 @@ function Scratchpad:new(args)
         end)
 
         ret.rubato.x.ended:subscribe(function()
-            if ret.rubato.y and ret.rubato.y.state == false and ret.turning_off == true then
+            if ((ret.rubato.y and ret.rubato.y.state == false) or (ret.rubato.y == nil)) and ret.turning_off == true then
                 on_animate_turn_off_end(ret)
             end
         end)
@@ -148,7 +148,7 @@ function Scratchpad:new(args)
         end)
 
         ret.rubato.y.ended:subscribe(function()
-            if ret.rubato.x and ret.rubato.x.state == false and ret.turning_off == true then
+            if ((ret.rubato.x and ret.rubato.x.state == false) or (ret.rubato.x == nil)) and ret.turning_off == true then
                 on_animate_turn_off_end(ret)
             end
         end)
