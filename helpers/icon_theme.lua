@@ -14,14 +14,17 @@ local name_lookup =
 }
 
 local function get_icon_by_pid_command(self, client, apps)
-    local handle = io.popen(string.format("ps -p %d -o comm=", client.pid))
-    local pid_command = handle:read("*a"):gsub("^%s*(.-)%s*$", "%1")
-    handle:close()
+    local pid = client.pid
+    if pid ~= nil then
+        local handle = io.popen(string.format("ps -p %d -o comm=", pid))
+        local pid_command = handle:read("*a"):gsub("^%s*(.-)%s*$", "%1")
+        handle:close()
 
-    for _, app in ipairs(apps) do
-        local executable = app:get_executable()
-        if executable:find(pid_command, 1, true) then
-            return self:get_gicon_path(app:get_icon())
+        for _, app in ipairs(apps) do
+            local executable = app:get_executable()
+            if executable:find(pid_command, 1, true) then
+                return self:get_gicon_path(app:get_icon())
+            end
         end
     end
 end
