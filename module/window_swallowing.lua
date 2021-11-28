@@ -12,11 +12,12 @@ local window_swallowing_activated = false
 
 -- you might want to add or remove applications here
 local parent_filter_list = beautiful.parent_filter_list
+    or beautiful.dont_swallow_classname_list
     or { "firefox", "Gimp", "Google-chrome" }
 local child_filter_list = beautiful.child_filter_list
-    or { }
+    or beautiful.dont_swallow_classname_list or { }
 local swallowing_filter = beautiful.swallowing_filter
-    or true
+    or beautiful.dont_swallow_filter_activated or true
 
 -- check if element exist in table
 local function is_in_table(element, table)
