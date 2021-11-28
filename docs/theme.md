@@ -42,6 +42,7 @@ theme.tabbar_fg_normal_inactive = nil  -- foreground color of unfocused clients 
 theme.tabbar_disable = false           -- disable the tab bar entirely
 
 -- mstab
+theme.mstab_bar_disable = false             -- disable the tabbar
 theme.mstab_bar_ontop = false               -- whether you want to allow the bar to be ontop of clients
 theme.mstab_dont_resize_slaves = false      -- whether the tabbed stack windows should be smaller than the
                                             -- currently focused stack window (set it to true if you use
