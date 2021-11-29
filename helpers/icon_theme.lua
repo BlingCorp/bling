@@ -44,23 +44,25 @@ end
 local function get_icon_by_class(self, client, apps)
     local class = name_lookup[client.class] or client.class:lower()
 
-    -- Try to remove dashes
-    local class_1 = class:gsub("[%-]", "")
+    if class ~= nil then
+        -- Try to remove dashes
+        local class_1 = class:gsub("[%-]", "")
 
-    -- Try to replace dashes with dot
-    local class_2 = class:gsub("[%-]", ".")
+        -- Try to replace dashes with dot
+        local class_2 = class:gsub("[%-]", ".")
 
-    -- Try to match only the first word
-    local class_3 = class:match("(.-)-") or class
-    class_3 = class_3:match("(.-)%.") or class_3
-    class_3 = class_3:match("(.-)%s+") or class_3
+        -- Try to match only the first word
+        local class_3 = class:match("(.-)-") or class
+        class_3 = class_3:match("(.-)%.") or class_3
+        class_3 = class_3:match("(.-)%s+") or class_3
 
-    local possible_icon_names = { class, class_3, class_2, class_1 }
-    for _, app in ipairs(apps) do
-        local id = app:get_id():lower()
-        for _, possible_icon_name in ipairs(possible_icon_names) do
-            if id:find(possible_icon_name, 1, true) then
-                return self:get_gicon_path(app:get_icon())
+        local possible_icon_names = { class, class_3, class_2, class_1 }
+        for _, app in ipairs(apps) do
+            local id = app:get_id():lower()
+            for _, possible_icon_name in ipairs(possible_icon_names) do
+                if id:find(possible_icon_name, 1, true) then
+                    return self:get_gicon_path(app:get_icon())
+                end
             end
         end
     end
