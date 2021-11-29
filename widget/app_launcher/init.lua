@@ -498,7 +498,6 @@ local function scroll_right(self)
     local rows, columns = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local is_less_than_max_column = pos.col < columns
-    local is_less_than_max_page = self._private.current_page < self._private.pages_count
 
     -- Check if we can scroll down the app list
     if is_less_than_max_column then
