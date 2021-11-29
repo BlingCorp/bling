@@ -66,13 +66,13 @@ local function get_icon_by_class(self, client, apps)
     end
 end
 
-function icon_theme:get_client_icon_path(client, default_icon_name)
+function icon_theme:get_client_icon_path(client)
     local apps = Gio.AppInfo.get_all()
 
     return  get_icon_by_pid_command(self, client, apps) or
             get_icon_by_icon_name(self, client, apps) or
             get_icon_by_class(self, client, apps) or
-            self:get_icon_path(default_icon_name or "gnome-window-manager")
+            client.icon
 end
 
 function icon_theme:choose_icon(icons_names)
