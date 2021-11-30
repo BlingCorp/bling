@@ -1,5 +1,6 @@
-local Gio = require("lgi").Gio
-local Gtk = require("lgi").Gtk
+local lgi = require("lgi")
+local Gio = lgi.Gio
+local Gtk = lgi.require("Gtk", "3.0")
 local awful = require("awful")
 local gobject = require("gears.object")
 local gtable = require("gears.table")
