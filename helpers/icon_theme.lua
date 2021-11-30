@@ -22,7 +22,7 @@ local function get_icon_by_pid_command(self, client, apps)
 
         for _, app in ipairs(apps) do
             local executable = app:get_executable()
-            if executable:find(pid_command, 1, true) then
+            if executable and executable:find(pid_command, 1, true) then
                 return self:get_gicon_path(app:get_icon())
             end
         end
@@ -34,7 +34,7 @@ local function get_icon_by_icon_name(self, client, apps)
     if icon_name ~= nil then
         for _, app in ipairs(apps) do
             local name = app:get_name():lower()
-            if name:find(icon_name, 1, true) then
+            if name and name:find(icon_name, 1, true) then
                 return self:get_gicon_path(app:get_icon())
             end
         end
@@ -60,7 +60,7 @@ local function get_icon_by_class(self, client, apps)
         for _, app in ipairs(apps) do
             local id = app:get_id():lower()
             for _, possible_icon_name in ipairs(possible_icon_names) do
-                if id:find(possible_icon_name, 1, true) then
+                if id and id:find(possible_icon_name, 1, true) then
                     return self:get_gicon_path(app:get_icon())
                 end
             end
