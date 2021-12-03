@@ -89,7 +89,7 @@ function playerctl:next(player)
     end
 end
 
-function playerctl:set_loop_status(player, loop_status)
+function playerctl:set_loop_status(loop_status, player)
     if player ~= nil then
         awful.spawn.with_shell("playerctl --player=" .. player .. " loop " .. loop_status)
     else
@@ -117,7 +117,7 @@ function playerctl:cycle_loop_status(player)
     end
 end
 
-function playerctl:set_position(player, position)
+function playerctl:set_position(position, player)
     if player ~= nil then
         awful.spawn.with_shell("playerctl --player=" .. player .. " position " .. position)
     else
@@ -125,7 +125,7 @@ function playerctl:set_position(player, position)
     end
 end
 
-function playerctl:set_shuffle(player, shuffle)
+function playerctl:set_shuffle(shuffle, player)
     shuffle = shuffle and "on" or "off"
 
     if player ~= nil then
@@ -146,7 +146,7 @@ function playerctl:cycle_shuffle(player)
     end
 end
 
-function playerctl:set_volume(player, volume)
+function playerctl:set_volume(volume, player)
     if player ~= nil then
         awful.spawn.with_shell("playerctl --player=" .. player .. " volume " .. volume)
     else
