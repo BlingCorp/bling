@@ -43,9 +43,9 @@ local function get_icon_by_icon_name(self, client, apps)
 end
 
 local function get_icon_by_class(self, client, apps)
-    local class = name_lookup[client.class] or client.class:lower()
+    if client.class ~= nil then
+        local class = name_lookup[client.class] or client.class:lower()
 
-    if class ~= nil then
         -- Try to remove dashes
         local class_1 = class:gsub("[%-]", "")
 
