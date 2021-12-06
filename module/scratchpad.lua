@@ -293,10 +293,10 @@ function Scratchpad:turn_on()
                         animate_turn_on(self, anim_y, "y")
                     end
                     self:emit_signal("inital_apply", c1)
-                    self.client.disconnect_signal("manage", inital_apply)
+                    client.disconnect_signal("manage", inital_apply)
                 end
             end
-            self.client.connect_signal("manage", inital_apply)
+            client.connect_signal("manage", inital_apply)
         end
     end
 end
