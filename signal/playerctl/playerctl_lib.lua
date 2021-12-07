@@ -38,6 +38,7 @@ local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local gstring = require("gears.string")
 local beautiful = require("beautiful")
+local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 local setmetatable = setmetatable
 local ipairs = ipairs
 local pairs = pairs
@@ -189,18 +190,11 @@ local function emit_metadata_signal(self, title, artist, artUrl, album, new, pla
     end
 
     if artUrl ~= "" then
-        local get_art_script = awful.util.shell .. [[ -c '
-            tmp_cover_path=]] .. os.tmpname() .. [[.png
-            curl -s ']] .. artUrl .. [[' --output $tmp_cover_path
-            echo "$tmp_cover_path"
-        ']]
-
-        awful.spawn.with_line_callback(get_art_script, {
-            stdout = function(line)
-                capi.awesome.emit_signal("bling::playerctl::title_artist_album", title, artist, line, player_name)
-                self:emit_signal("metadata", title, artist, line, album, new, player_name)
-            end
-        })
+        local art_path = os.tmpname()
+        helpers.filesystem.save_image_async_curl(artUrl, art_path, function()
+            self:emit_signal("metadata", title, artist, art_path, album, new, player_name)
+            capi.awesome.emit_signal("bling::playerctl::title_artist_album", title, artist, art_path, player_name)
+        end)
     else
         capi.awesome.emit_signal("bling::playerctl::title_artist_album", title, artist, "", player_name)
         self:emit_signal("metadata", title, artist, "", album, new, player_name)
