@@ -56,6 +56,8 @@ local function manage_clientspawn(c)
     local parent_client = awful.client.focus.history.get(c.screen, 1)
     if not parent_client then
         return
+    elseif parent_client.type == "dialog" or parent_client.type == "splash" then
+        return
     end
 
     -- io.popen is normally discouraged. Should probably be changed
