@@ -50,6 +50,23 @@ local function check_swallow(parent, child)
     return res
 end
 
+-- async function to get the parent's pid
+-- recieves a child process pid and a callback function
+-- parent_pid in format "init(1)---ancestorA(pidA)---ancestorB(pidB)...---process(pid)"
+function get_parent_pid(child_ppid, callback)
+    local ppid_cmd = string.format("pstree -A -p -s %s", child_ppid)
+    awful.spawn.easy_async(ppid_cmd, function(stdout, stderr, reason, exit_code)
+        -- primitive error checking
+        if stderr and stderr ~= "" then
+            callback(stderr)
+            return
+        end
+        local ppid = stdout
+        callback(nil, ppid)
+    end)
+end
+
+
 -- the function that will be connected to / disconnected from the spawn client signal
 local function manage_clientspawn(c)
     -- get the last focused window to check if it is a parent window
@@ -60,12 +77,12 @@ local function manage_clientspawn(c)
         return
     end
 
-    -- io.popen is normally discouraged. Should probably be changed
-    -- returns "init(1)---ancestorA(pidA)---ancestorB(pidB)...---process(pid)"
-    local handle = io.popen("pstree -A -p -s " .. tostring(c.pid))
-    local parent_pid = handle:read("*a")
-    handle:close()
-
+    get_parent_pid(c.pid, function(err, ppid)
+        if err then
+            error(err)
+            return
+        end
+        parent_pid = ppid
     if
         -- will search for "(parent_client.pid)" inside the parent_pid string
         ( tostring(parent_pid):find("("..tostring(parent_client.pid)..")") )
@@ -79,6 +96,7 @@ local function manage_clientspawn(c)
         helpers.client.sync(c, parent_client)
         helpers.client.turn_off(parent_client)
     end
+    end)
 end
 
 -- without the following functions that module would be autoloaded by require("bling")
