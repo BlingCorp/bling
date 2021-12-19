@@ -79,7 +79,6 @@ local function manage_clientspawn(c)
 
     get_parent_pid(c.pid, function(err, ppid)
         if err then
-            error(err)
             return
         end
         parent_pid = ppid
