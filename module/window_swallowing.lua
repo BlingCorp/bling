@@ -88,8 +88,10 @@ local function manage_clientspawn(c)
         and check_swallow(parent_client.class, c.class)
     then
         c:connect_signal("unmanage", function()
-            helpers.client.turn_on(parent_client)
-            helpers.client.sync(parent_client, c)
+            if parent_client then
+                helpers.client.turn_on(parent_client)
+                helpers.client.sync(parent_client, c)
+            end
         end)
 
         helpers.client.sync(c, parent_client)
