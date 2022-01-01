@@ -281,8 +281,8 @@ local function search(self, text)
             text = text:gsub( "%W", "" )
 
             -- Check if there's a match by the app name or app command
-            if string.find(entry.name, case_insensitive_pattern(text)) ~= nil or
-                self.search_commands and string.find(entry.commandline, case_insensitive_pattern(text)) ~= nil
+            if string.find(entry.name:lower(), text:lower(), 1, true) ~= nil or
+                self.search_commands and string.find(entry.commandline, text:lower(), 1, true) ~= nil
             then
                 table.insert(self._private.matched_entries, {
                     name = entry.name,
