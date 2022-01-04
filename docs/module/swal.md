@@ -13,8 +13,9 @@ bling.module.window_swallowing.toggle() -- toggles window swallowing
 
 ### Theme Variables
 ```lua
-theme.dont_swallow_classname_list   = {"firefox", "Gimp"} -- list of class names that should not be swallowed
-theme.dont_swallow_filter_activated = true                -- whether the filter above should be active
+theme.parent_filter_list   = {"firefox", "Gimp"} -- class names list of parents that should not be swallowed
+theme.child_filter_list    = { "Dragon" }        -- class names list that should not swallow their parents
+theme.swallowing_filter = true                   -- whether the filters above should be active
 ```
 
 ### Preview
