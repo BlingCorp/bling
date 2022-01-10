@@ -68,6 +68,7 @@ local function manage_clientspawn(c)
 
     if not parent_client then return end
 
+    -- Check swallowing rules
     if parent_client.ignore_swallow then return end
     if not c.swallow_parent then return end
 
