@@ -21,7 +21,10 @@ To enable: `playerctl = bling.signal.playerctl.lib/cli()`
 
 To disable: `playerctl:disable()`
 
-Playerctl_lib signals available:
+#### Playerctl_lib Signals
+
+**Note**: When connecting to signals with the new `playerctl` module, the object itself is always given to you as the first parameter.
+
 ```lua
 -- metadata
 --      title (string)
@@ -55,7 +58,8 @@ Playerctl_lib signals available:
 --      (No parameters)
 ```
 
-Playerctl_cli signals available:
+#### Playerctl_cli Signals
+
 ```LUA
 -- metadata
 --      title (string)
@@ -76,6 +80,31 @@ Playerctl_cli signals available:
 --      shuffle (bool)
 -- no_players
 --      (No parameters)
+```
+
+#### Playerctl Functions
+
+With this library we also give the user a way to interact with Playerctl, such as playing, pausing, seeking, etc.
+
+Here are the functions provided:
+
+```lua
+-- disable()
+-- pause(player)
+-- play(player)
+-- stop(player)
+-- play_pause(player)
+-- previous(player)
+-- next(player)
+-- set_loop_status(loop_status, player)
+-- cycle_loop_status(player)
+-- set_position(position, player)
+-- set_shuffle(shuffle, player)
+-- cycle_shuffle(player)
+-- set_volume(volume, player)
+-- get_manager()
+-- get_active_player()
+-- get_player_of_name(name)
 ```
 
 ### Example Implementation
@@ -112,9 +141,9 @@ local artist_widget = wibox.widget {
 }
 
 -- Get Song Info
-playerctl = bling.signal.playerctl.lib()
+local playerctl = bling.signal.playerctl.lib()
 playerctl:connect_signal("metadata",
-                       function(title, artist, album_path, album, new, player_name)
+                       function(_, title, artist, album_path, album, new, player_name)
     -- Set art widget
     art:set_image(gears.surface.load_uncached(album_path))
 
@@ -130,13 +159,25 @@ Here's another example in which you get a notification with the album art, title
 
 ```lua
 local naughty = require("naughty")
+local playerctl = bling.signal.playerctl.lib()
 
 playerctl:connect_signal("metadata",
-                       function(title, artist, album_path, album, new, player_name)
+                       function(_, title, artist, album_path, album, new, player_name)
     if new == true then
         naughty.notify({title = title, text = artist, image = album_path})
     end
 end)
+```
+
+We can also link a playerctl function to a button click!
+
+```lua
+local playerctl = bling.signal.playerctl.lib()
+button:buttons(gears.table.join(
+	awful.button({}, 1, function() 
+		playerctl:play_pause()
+	end)
+))
 ```
 
 ### Theme Variables and Configuration
