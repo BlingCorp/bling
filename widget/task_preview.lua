@@ -17,6 +17,7 @@ local cairo = require("lgi").cairo
 local function draw_widget(
     c,
     opts)
+  
     if not pcall(function()
         return type(c.content)
     end) then
@@ -112,14 +113,15 @@ local enable = function(opts)
 		y = dpi(20),
 		height = dpi(200),
 		width = dpi(200),
-
+		margin = dpi(1),
+		
 		placement_fn = nil,
 		widget_margin = dpi(0),
 		widget_border_radius = dpi(0),
 		widget_bg = "#000000",
 		widget_border_color = "#ffffff",
 		widget_border_width = dpi(3)
-	}, opts)
+}, opts)
 
     local task_preview_box = awful.popup({
         type = "dropdown_menu",
@@ -149,4 +151,4 @@ local enable = function(opts)
     end)
 end
 
-return { enable = enable }
+return { enable = enable, draw_widget = draw_widget}
