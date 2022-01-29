@@ -41,12 +41,12 @@ bling.widget.task_preview.enable {
         }) 
     end,
     -- Your widget will automatically conform to the given size due to a constraint container.
-    widget_structure = {
+    widget_template = {
         {
             {
                 {
                     id = 'icon_role', 
-                    widget = awful.widget.clienticon, -- The client icon
+                    widget = awful.widget.clienticon, -- The client icon, this can be a clienticon or a imagebox
                 },
                 {
                     id = 'name_role' -- The client name / title
@@ -58,7 +58,7 @@ bling.widget.task_preview.enable {
             margins = 5
         },
         {
-            id = 'image_role', -- The client preview
+            id = 'image_role', -- The client preview, must be a imagebox
             resize = true,
             valign = 'center',
             halign = 'center'

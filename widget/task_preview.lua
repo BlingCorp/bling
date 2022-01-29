@@ -99,7 +99,8 @@ local function draw_widget(
     end
 
     for _, w in ipairs(widget:get_children_by_id("icon_role")) do
-        w.image = c.icon -- TODO: detect clienticon
+	  w.image = c.icon -- TODO: detect clienticon
+	  w.client = c
     end
 
     return widget
@@ -108,7 +109,7 @@ end
 local enable = function(opts)
     local opts = helpers.util.retrieveArguments({
 		"task_preview",
-		{ "x" , "y", "height", "width", "placement_fn" },
+		{ "x" , "y", "height", "width", "placement_fn", "widget_template" },
 		x = dpi(20),
 		y = dpi(20),
 		height = dpi(200),
@@ -116,6 +117,7 @@ local enable = function(opts)
 		margin = dpi(1),
 		
 		placement_fn = nil,
+		widget_template = nil,
 		widget_margin = dpi(0),
 		widget_border_radius = dpi(0),
 		widget_bg = "#000000",
