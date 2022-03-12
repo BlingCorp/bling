@@ -61,7 +61,7 @@ bling.widget.task_preview.enable {
             id = 'image_role', -- The client preview
             resize = true,
             valign = 'center',
-            halign = 'center'
+            halign = 'center',
             widget = wibox.widget.imagebox,
         },
         layout = wibox.layout.fixed.vertical
