@@ -26,7 +26,7 @@ bling.module.wallpaper.setup {
 -- wallpapers based on a schedule, like awesome-glorious-widgets dynamic wallpaper
 -- https://github.com/manilarome/awesome-glorious-widgets/tree/master/dynamic-wallpaper
 bling.module.wallpaper.setup {
-    set_function = wallpaper.setters.simple_schedule,
+    set_function = bling.module.wallpaper.setters.simple_schedule,
     wallpaper = {
         ["06:22:00"] = "morning-wallpaper.jpg",
         ["12:00:00"] = "noon-wallpaper.jpg",
