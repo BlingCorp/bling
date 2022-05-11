@@ -1,7 +1,6 @@
 local lgi = require("lgi")
 local Gio = lgi.Gio
 local Gtk = lgi.require("Gtk", "3.0")
-local awful = require("awful")
 local gobject = require("gears.object")
 local gtable = require("gears.table")
 local setmetatable = setmetatable
@@ -75,7 +74,8 @@ function icon_theme:get_client_icon_path(client)
     return  get_icon_by_pid_command(self, client, apps) or
             get_icon_by_icon_name(self, client, apps) or
             get_icon_by_class(self, client, apps) or
-            client.icon
+            client.icon or
+            self:choose_icon({"window", "window-manager", "xfwm4-default", "window_list" })
 end
 
 function icon_theme:choose_icon(icons_names)
