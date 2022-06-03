@@ -10,7 +10,7 @@ This project focuses on that problem - adding new layouts and modules that make 
 
 ## Installation
 - clone this repo into your `~/.config/awesome` folder
-    - `git clone https://github.com/Nooo37/bling.git ~/.config/awesome/bling`
+    - `git clone https://github.com/BlingCorp/bling.git ~/.config/awesome/bling`
 - require the module in your `rc.lua`, and make sure it's under the beautiful module initialization
 
 ```lua
@@ -27,8 +27,8 @@ local bling = require("bling")
 ## Contributors
 A special thanks to all our contributors...
 
-<a href="https://github.com/Nooo37/bling/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Nooo37/bling" />
+<a href="https://github.com/BlingCorp/bling/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=BlingCorp/bling" />
 </a>
 
 Made with [contributors-img](https://contrib.rocks).
