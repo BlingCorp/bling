@@ -60,7 +60,7 @@ To disable: `playerctl:disable()`
 
 #### Playerctl_cli Signals
 
-```LUA
+```lua
 -- metadata
 --      title (string)
 --      artist  (string)
@@ -110,6 +110,7 @@ Here are the functions provided:
 ### Example Implementation
 
 Lets say we have an imagebox. If I wanted to set the imagebox to show the album art, all I have to do is this:
+
 ```lua
 local art = wibox.widget {
     image = "default_image.png",
@@ -153,6 +154,7 @@ playerctl:connect_signal("metadata",
     artist_widget:set_markup_silently(artist)
 end)
 ```
+
 Thats all! You don't even have to worry about updating the widgets, the signals will handle that for you.
 
 Here's another example in which you get a notification with the album art, title, and artist whenever the song changes.
@@ -181,6 +183,7 @@ button:buttons(gears.table.join(
 ```
 
 ### Theme Variables and Configuration
+
 By default, this module will output signals from the most recently active player. If you wish to customize the behavior furthur, the following configuration options are available depending on the selected backend. Here is a summary of the two backends and which configuration options they support.
 
 | Option              | playerctl_cli      | playerctl_lib      |
@@ -203,6 +206,7 @@ By default, this module will output signals from the most recently active player
 This is to help with some players sending multiple signals. It is `0.35` by default.
 
 These options can be set through a call to `bling.signal.playerctl.lib/cli()` or these theme variables:
+
 ```lua
 theme.playerctl_ignore  = {}
 theme.playerctl_player  = {}
@@ -211,6 +215,7 @@ theme.playerctl_position_update_interval = 1
 ```
 
 #### Example Configurations
+
 ```lua
 -- Prioritize ncspot over all other players and ignore firefox players (e.g. YouTube and Twitch tabs) completely
 playerctl = bling.signal.playerctl.lib {
