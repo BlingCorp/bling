@@ -72,7 +72,11 @@ function update_tabbar(
                 c.minimized = true
             end)
         )
-        local client_box = bar.create(c, (idx == top_idx), buttons)
+        local inactive = false
+        if client.focus == awful.client.getmaster() then
+           inactive = true
+        end
+        local client_box = bar.create(c, (idx == top_idx), buttons, inactive)
         clientlist:add(client_box)
     end
 
