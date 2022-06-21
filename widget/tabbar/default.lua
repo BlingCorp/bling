@@ -18,6 +18,8 @@ local position = beautiful.tabbar_position or "top"
 local function create(c, focused_bool, buttons, inactive_bool)
     local flexlist = wibox.layout.flex.horizontal()
     local title_temp = c.name or c.class or "-"
+    title_temp = title_temp:gsub("<", "&lt;")
+    title_temp = title_temp:gsub(">", "&gt;")
     local bg_temp = inactive_bool and bg_normal_inactive or bg_normal
     local fg_temp = inactive_bool and fg_normal_inactive or fg_normal
     if focused_bool then
