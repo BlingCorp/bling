@@ -238,7 +238,7 @@ local enable = function(opts)
             tag_preview_box.widget = nil
             collectgarbage("collect")
         end
-
+        tag_preview_box.screen = awful.screen.focused()
         tag_preview_box.visible = v
     end)
 end

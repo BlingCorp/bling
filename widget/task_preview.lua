@@ -191,7 +191,7 @@ local enable = function(opts)
             task_preview_box.x = s.geometry.x + widget_x
             task_preview_box.y = s.geometry.y + widget_y
         end
-
+        task_preview_box.screen = awful.screen.focused()
         task_preview_box.visible = v
     end)
 end
