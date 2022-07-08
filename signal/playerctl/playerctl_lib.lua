@@ -190,8 +190,8 @@ local function emit_metadata_signal(self, title, artist, artUrl, album, new, pla
     end
 
     if artUrl ~= "" then
-        local art_path = os.tmpname()
-        helpers.filesystem.save_image_async_curl(artUrl, art_path, function()
+        local art_path = "/tmp/bling_album_art/" .. artUrl:gsub("https://", ""):gsub("http://", "")
+        helpers.filesystem.save_image_async_curl(false, true, artUrl, art_path, function()
             self:emit_signal("metadata", title, artist, art_path, album, new, player_name)
             capi.awesome.emit_signal("bling::playerctl::title_artist_album", title, artist, art_path, player_name)
         end)
