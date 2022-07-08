@@ -53,11 +53,9 @@ function _filesystem.list_directory_files(path, exts, recursive)
 end
 
 function _filesystem.save_image_async_curl(redownload, create_dirs, url, filepath, callback)
-    if not redownload then
-        if Gio.File.query_exists(Gio.File.new_for_path(filepath)) then
-            callback()
-            return
-        end
+    if not redownload and Gio.File.query_exists(Gio.File.new_for_path(filepath)) then
+        callback()
+        return
     end
 
     awful.spawn.with_line_callback(string.format("curl -L -s %s -o %s %s", url, filepath, (create_dirs and "--create-dirs" or "")),
