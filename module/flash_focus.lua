@@ -27,11 +27,6 @@ local flashfocus = function(c)
             end
         end)
     end
-
-    -- Bring the focused client to the top
-    if c then
-        c:raise()
-    end
 end
 
 local enable = function()
