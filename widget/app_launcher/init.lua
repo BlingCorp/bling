@@ -770,14 +770,14 @@ local function new(args)
     args.default_app_icon_name = args.default_app_icon_name or nil
     args.default_app_icon_path = args.default_app_icon_path or nil
     args.icon_theme = args.icon_theme or nil
-    args.icons_size = args.icons_size or nil
+    args.icon_size = args.icon_size or nil
 
     args.type = args.type or "dock"
     args.show_on_focused_screen = args.show_on_focused_screen == nil and true or args.show_on_focused_screen
     args.screen = args.screen or capi.screen.primary
     args.placement = args.placement or awful.placement.centered
     args.rubato = args.rubato or nil
-    args.shirnk_width = args.shirnk_width ~= nil and args.shirnk_width or false
+    args.shrink_width = args.shrink_width ~= nil and args.shrink_width or false
     args.shrink_height = args.shrink_height ~= nil and args.shrink_height or false
     args.background = args.background or "#000000"
     args.shape = args.shape or nil
@@ -842,7 +842,7 @@ local function new(args)
     gtable.crush(ret, args)
 
     -- Calculate the grid width and height
-    local grid_width = ret.shirnk_width == false
+    local grid_width = ret.shrink_width == false
         and dpi((ret.app_width * ret.apps_per_column) + ((ret.apps_per_column - 1) * ret.apps_spacing))
         or nil
     local grid_height = ret.shrink_height == false

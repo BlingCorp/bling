@@ -14,6 +14,7 @@
     - [Playerctl](signals/pctl.md)
 
 - Widgets
+    - [App Launcher](widgets/app_launcher.md)
     - [Tag Preview](widgets/tag_preview.md)
     - [Task Preview](widgets/task_preview.md)
     - [Tabbed Misc](widgets/tabbed_misc.md)
