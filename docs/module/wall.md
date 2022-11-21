@@ -18,7 +18,7 @@ bling.module.wallpaper.setup {
 bling.module.wallpaper.setup {
     set_function = bling.module.wallpaper.setters.random,
     wallpaper = {"/path/to/a/folder", "/path/to/another/folder"},
-    change_timer = 631,  -- prime numbers are better for timers
+    change_timer = 631, -- prime numbers are better for timers
     position = "fit",
     background = "#424242"
 }
@@ -26,7 +26,7 @@ bling.module.wallpaper.setup {
 -- wallpapers based on a schedule, like awesome-glorious-widgets dynamic wallpaper
 -- https://github.com/manilarome/awesome-glorious-widgets/tree/master/dynamic-wallpaper
 bling.module.wallpaper.setup {
-    set_function = wallpaper.setters.simple_schedule,
+    set_function = bling.module.wallpaper.setters.simple_schedule,
     wallpaper = {
         ["06:22:00"] = "morning-wallpaper.jpg",
         ["12:00:00"] = "noon-wallpaper.jpg",
@@ -47,6 +47,15 @@ bling.module.wallpaper.setup {
     position = "maximized",
     recursive = false,
     change_timer = 600
+}
+
+-- setup for multiple screens at once
+-- the 'screen' argument can be a table of screen objects
+bling.module.wallpaper.setup {
+    set_function = bling.module.wallpaper.setters.random,
+    screen = screen, -- The awesome 'screen' variable is an array of all screen objects
+    wallpaper = {"/path/to/a/folder", "/path/to/another/folder"},
+    change_timer = 631
 }
 ```
 ### Details
@@ -72,6 +81,11 @@ A wallpaper is one of the following elements:
 * a function that sets a wallpaper
 * everything gears.wallpaper functions can manage (cairo surface, cairo pattern string)
 * a list containing any of the elements above
+
+To set up for multiple screens, two possible methods are:
+* Call the `setup` function for each screen, passing the appropriate configuration and `screen` arg
+* Call the `setup` function once, passing a table of screens as the `screen` arg. This applies the same configuration to all screens in the table
+_Note_: Multiple screen setup only works for the `simple` and `random` setters
 
 ```lua
 -- This is a valid wallpaper definition
@@ -99,14 +113,15 @@ Here are the defaults:
 ```lua
 -- Default parameters
 bling.module.wallpaper.setup {
-    screen = nil,        -- the screen to apply the wallpaper, as seen in gears.wallpaper functions
-    change_timer = nil,  -- the timer in seconds. If set, call the set_function every change_timer seconds
-    set_function = nil,  -- the setter function
+    screen = nil,       -- the screen to apply the wallpaper, as seen in gears.wallpaper functions
+    screens = nil,      -- an array of screens to apply the wallpaper on. If 'screen' is also provided, this is overridden
+    change_timer = nil, -- the timer in seconds. If set, call the set_function every change_timer seconds
+    set_function = nil, -- the setter function
 
     -- parameters used by bling.module.wallpaper.prepare_list
-    wallpaper = nil,                                -- the wallpaper object, see simple or simple_schedule documentation
-    image_formats = {"jpg", "jpeg", "png", "bmp"},  -- when searching in folder, consider these files only
-    recursive = true,                               -- when searching in folder, search also in subfolders
+    wallpaper = nil,                               -- the wallpaper object, see simple or simple_schedule documentation
+    image_formats = {"jpg", "jpeg", "png", "bmp"}, -- when searching in folder, consider these files only
+    recursive = true,                              -- when searching in folder, search also in subfolders
 
     -- parameters used by bling.module.wallpaper.apply
     position = nil,                              -- use a function of gears.wallpaper when applicable ("centered", "fit", "maximized", "tiled")
@@ -116,8 +131,8 @@ bling.module.wallpaper.setup {
     scale = 1,                                   -- see gears.wallpaper.centered
 
     -- parameters that only apply to bling.module.wallpaper.setter.awesome (as a setter or as a wallpaper function)
-    colors = {                      -- see beautiful.theme_assets.wallpaper
-        bg = beautiful.bg_color,    -- the actual default is this color but darkened or lightned
+    colors = {                   -- see beautiful.theme_assets.wallpaper
+        bg = beautiful.bg_color,  -- the actual default is this color but darkened or lightned
         fg = beautiful.fg_color,
         alt_fg = beautiful.fg_focus
     }

@@ -16,7 +16,6 @@ local cairo = require("lgi").cairo
 local gears = require("gears")
 
 function create_tiled_wallpaper(str, s, args_table)
-
     -- user input
     args_table = args_table or {}
     local fg = args_table.fg or "#ff0000"
@@ -27,7 +26,7 @@ function create_tiled_wallpaper(str, s, args_table)
     local font_size = tonumber(args_table.font_size) or 16
     local zickzack_bool = args_table.zickzack or false
     local padding = args_table.padding or 100
-    
+
     -- create cairo image wallpaper
     local img = cairo.ImageSurface(cairo.Format.RGB24, padding, padding)
     cr = cairo.Context(img)
@@ -40,19 +39,18 @@ function create_tiled_wallpaper(str, s, args_table)
     cr:set_font_size(font_size)
     cr:select_font_face(font)
 
-    if zickzack_bool then 
+    if zickzack_bool then
         cr:set_source(gears.color(fg))
-        cr:move_to(padding/2 + font_size, padding/2 + font_size)
+        cr:move_to(padding / 2 + font_size, padding / 2 + font_size)
         cr:show_text(str)
-    end 
-    
+    end
+
     cr:set_source(gears.color(fg))
     cr:move_to(font_size, font_size)
     cr:show_text(str)
-    
+
     -- tile cairo image
-    gears.wallpaper.tiled(img, s, {x=offset_x, y=offset_y})
-end 
+    gears.wallpaper.tiled(img, s, { x = offset_x, y = offset_y })
+end
 
 return create_tiled_wallpaper
-

@@ -4,5 +4,5 @@ return {
     wallpaper = require(... .. ".wallpaper"),
     flash_focus = require(... .. ".flash_focus"),
     tabbed = require(... .. ".tabbed"),
-    scratchpad = require(... .. ".scratchpad")
+    scratchpad = require(... .. ".scratchpad"),
 }
