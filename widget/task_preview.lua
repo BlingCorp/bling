@@ -38,7 +38,7 @@ local function get_widget_geometry(wibox, widget)
 end
 
 function task_preview:show(c, args)
-    args = args or {}
+    args = args or self.args or {}
 
     args.coords = args.coords or self.coords
     args.wibox = args.wibox
