@@ -143,7 +143,7 @@ local function create_app_widget(self, entry)
         widget = wibox.widget.textbox,
         id = "name",
         font = self.app_name_font,
-        markup = entry.name
+        markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, entry.name)
     } or nil
 
     local generic_name = entry.generic_name ~= nil and self.app_show_generic_name == true and
