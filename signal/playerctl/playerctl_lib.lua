@@ -179,7 +179,7 @@ function playerctl:get_player_of_name(name)
     return nil
 end
 
-local function emit_metadata_signal(self, title, artist, artUrl, album, new, player_name)
+local function emit_metadata_signal(self, title, artist, artUrl, album, new, player_name, extra)
     title = gstring.xml_escape(title)
     artist = gstring.xml_escape(artist)
     album = gstring.xml_escape(album)
@@ -192,12 +192,12 @@ local function emit_metadata_signal(self, title, artist, artUrl, album, new, pla
     if artUrl ~= "" then
         local art_path = os.tmpname()
         helpers.filesystem.save_image_async_curl(artUrl, art_path, function()
-            self:emit_signal("metadata", title, artist, art_path, album, new, player_name)
+            self:emit_signal("metadata", title, artist, art_path, album, new, player_name, extra)
             capi.awesome.emit_signal("bling::playerctl::title_artist_album", title, artist, art_path, player_name)
         end)
     else
         capi.awesome.emit_signal("bling::playerctl::title_artist_album", title, artist, "", player_name)
-        self:emit_signal("metadata", title, artist, "", album, new, player_name)
+        self:emit_signal("metadata", title, artist, "", album, new, player_name, extra)
     end
 end
 
@@ -215,6 +215,9 @@ local function metadata_cb(self, player, metadata)
     end
     local artUrl = data["mpris:artUrl"] or ""
     local album = data["xesam:album"] or ""
+    local extra = {}
+    extra.track = data["xesam:trackNumber"] or ""
+    extra.year = data["xesam:contentCreated"] or ""
 
     if player == self._private.manager.players[1] then
         self._private.active_player = player
@@ -238,7 +241,7 @@ local function metadata_cb(self, player, metadata)
                 autostart = true,
                 single_shot = true,
                 callback = function()
-                    emit_metadata_signal(self, title, artist, artUrl, album, true, player.player_name)
+                    emit_metadata_signal(self, title, artist, artUrl, album, true, player.player_name, extra)
                 end
             }
 
@@ -434,8 +437,11 @@ local function get_current_player_info(self, player)
     local artist = player:get_artist() or ""
     local artUrl = player:print_metadata_prop("mpris:artUrl") or ""
     local album = player:get_album() or ""
+    local extra = {}
+    extra.track = player:print_metadata_prop("xesam:trackNumber") or ""
+    extra.year  = player:print_metadata_prop("xesam:contentCreated") or ""
 
-    emit_metadata_signal(self, title, artist, artUrl, album, false, player.player_name)
+    emit_metadata_signal(self, title, artist, artUrl, album, false, player.player_name, extra)
     playback_status_cb(self, player, player.playback_status)
     volume_cb(self, player, player.volume)
     loop_status_cb(self, player, player.loop_status)
