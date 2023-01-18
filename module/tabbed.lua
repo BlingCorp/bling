@@ -242,13 +242,15 @@ tabbed.update_tabbar = function(tabobj)
         flexlist:add(wid_temp)
     end
     -- add tabbar to each tabbed client (clients will be hided anyway)
-    for _, c in ipairs(tabobj.clients) do
-        local titlebar = awful.titlebar(c, {
-            bg = bar.bg_normal,
-            size = bar.size,
-            position = bar.position,
-        })
-        titlebar:setup({ layout = wibox.layout.flex.horizontal, flexlist })
+    if not beautiful.tabbar_disable then
+        for _, c in ipairs(tabobj.clients) do
+            local titlebar = awful.titlebar(c, {
+                bg = bar.bg_normal,
+                size = bar.size,
+                position = bar.position,
+            })
+            titlebar:setup({ layout = wibox.layout.flex.horizontal, flexlist })
+        end
     end
 end
 
