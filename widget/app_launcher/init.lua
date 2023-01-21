@@ -171,7 +171,7 @@ local function create_app_widget(self, entry)
                 expand = "outside",
                 nil,
                 {
-                    layout = wibox.layout.fixed.vertical,
+                    layout = wibox.layout.fixed[self.app_content_layout] or wibox.layout.fixed.vertical,
                     spacing = self.app_content_spacing,
                     icon,
                     {
@@ -822,6 +822,7 @@ local function new(args)
     args.app_selected_hover_color = args.app_selected_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 2.5)) or
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 0.5))
+    args.app_content_layout = args.app_content_layout or 'vertical'
     args.app_content_padding = args.app_content_padding or dpi(10)
     args.app_content_spacing = args.app_content_spacing or dpi(10)
     args.app_show_icon = args.app_show_icon == nil and true or args.app_show_icon

@@ -112,6 +112,7 @@ local args = {
     app_normal_hover_color = "#111111"                                -- App normal hover color
     app_selected_color = "#FFFFFF"                                    -- App selected color
     app_selected_hover_color = "#EEEEEE"                              -- App selected hover color
+    app_content_layout = "vertical"|"horizontal"                      -- App content layout (for icon and app name)
     app_content_padding = dpi(10)                                     -- App content padding
     app_content_spacing = dpi(10)                                     -- App content spacing
     app_show_icon = true                                              -- Should show icon?
