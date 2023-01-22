@@ -20,7 +20,7 @@ end)
 
 ### Preview
 
-![](https://media.discordapp.net/attachments/702548913999314964/773887721294135296/tiled-wallpapers.png?width=1920&height=1080)
+![](https://user-images.githubusercontent.com/70270606/213927382-bdb1b402-0e14-4a00-bfd1-5a1591c71d96.png)
 
 *screenshots by [Nooo37](https://github.com/Nooo37)*
 
