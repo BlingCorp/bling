@@ -1,6 +1,6 @@
 ## 🎨 App Launcher <!-- {docsify-ignore} -->
 
-A popup application launcher similar to Rofi
+A popup application launcher similar to Rofi.
 
 ![](https://user-images.githubusercontent.com/33443763/140196352-07e444fe-cccd-45ad-93fa-5705f09e516b.png)
 

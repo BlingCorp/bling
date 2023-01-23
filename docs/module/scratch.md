@@ -61,7 +61,7 @@ term_scratch:turn_on()  -- turns the scratchpads visibility on
 term_scratch:turn_off() -- turns the scratchpads visibility off
 ```
 
-You can also connect to signals as you are used to for further customization. For example like that:
+You can also connect to signals for further customization. For example:
 
 ```lua
 term_scratch:connect_signal("turn_on", function(c) naughty.notify({title = "Turned on!"}) end)
