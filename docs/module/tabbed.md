@@ -51,7 +51,7 @@ Modern theme:
 *screenshot by [JavaCafe01](https://github.com/JavaCafe01)*
 
 ### Signals
-The tabbed module emits a few signals for the purpose of integration,
+The tabbed module emits a few signals for the purpose of integration:
 ```lua
 -- bling::tabbed::update -- triggered whenever a tabbed object is updated
 --             tabobj -- the object that caused the update

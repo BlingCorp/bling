@@ -62,9 +62,9 @@ bling.module.wallpaper.setup {
 
 The setup function will do 2 things: call the set-function when awesome requests a wallpaper, and manage a timer to call `set_function` periodically.
 
-Its argument is a args table that is passed to ohter functions (setters and wallpaper functions), so you define everything with setup.
+Its argument is an args table that is passed to other functions (setters and wallpaper functions), so you define everything with setup.
 
-The `set_function` is a function called every times a wallpaper is needed.
+The `set_function` is a function called every time a wallpaper is needed.
 
 The module provides some setters:
 

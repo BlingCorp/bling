@@ -108,7 +108,7 @@ awful.widget.tasklist({
 })
 ```
 
-If you need to do something else, it can be used like so
+If you need to do something else, it can be used like so:
 ```lua
 update_callback = function(self, client, index, clients)
     require("bling.widget.tabbed_misc").custom_tasklist(self, client, index, clients)
