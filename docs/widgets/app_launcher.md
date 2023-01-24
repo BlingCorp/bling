@@ -14,7 +14,7 @@ To enable:
 local app_launcher = bling.widget.app_launcher()
 ```
 
-To run the app launcher, call `:toggle()` on the launcher.
+To run the app launcher, call `:toggle()` on the launcher:
 
 ```lua
 app_launcher:toggle()

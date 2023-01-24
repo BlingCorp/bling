@@ -83,8 +83,8 @@ A wallpaper is one of the following elements:
 * a list containing any of the elements above
 
 To set up for multiple screens, two possible methods are:
-* Call the `setup` function for each screen, passing the appropriate configuration and `screen` arg
-* Call the `setup` function once, passing a table of screens as the `screen` arg. This applies the same configuration to all screens in the table
+* Call the `setup` function for each screen, passing the appropriate configuration and `screen` arg.
+* Call the `setup` function once, passing a table of screens as the `screen` arg. This applies the same configuration to all screens in the table.
 _Note_: Multiple screen setup only works for the `simple` and `random` setters
 
 ```lua
@@ -105,8 +105,8 @@ bling.module.wallpaper.setup {
 ```
 The provided setters `simple` and `random` will use 2 internal functions that you can use to write your own setter:
 
-* `bling.module.wallpaper.prepare_list`: return a list of wallpapers directly usable by `apply` (for now, it just explores folders)
-* `bling.module.wallpaper.apply`: a wrapper for gears.wallpaper functions, using the args table of setup
+* `bling.module.wallpaper.prepare_list`: return a list of wallpapers directly usable by `apply` (for now, it just explores folders).
+* `bling.module.wallpaper.apply`: a wrapper for gears.wallpaper functions, using the args table of setup.
 
 Here are the defaults:
 

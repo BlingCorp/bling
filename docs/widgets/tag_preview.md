@@ -49,7 +49,7 @@ By default, the widget is not visible. You must implement when it will update an
 
 ### Example Implementation
 
-We can trigger the widget to show the specific tag when hovering over it in the taglist. The code shown below is the example taglist from the [AwesomeWM docs](https://awesomewm.org/doc/api/classes/awful.widget.taglist.html). Basically, we are going to update the widget and toggle it through the taglist's `create_callback`. (The bling addons are commented)
+We can trigger the widget to show the specific tag when hovering over it in the taglist. The code shown below is the example taglist from the [AwesomeWM docs](https://awesomewm.org/doc/api/classes/awful.widget.taglist.html). We are going to update the widget and toggle it through the taglist's `create_callback` (bling addons are commented).
 ```lua
 s.mytaglist = awful.widget.taglist {
     screen  = s,
