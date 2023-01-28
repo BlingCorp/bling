@@ -69,7 +69,7 @@ term_scratch:connect_signal("turn_on", function(c) naughty.notify({title = "Turn
 
 The following signals are currently available. `turn_on`, `turn_off` and `inital_apply` pass the client on which they operated as an argument:
 
-- `turn_on` fires when the scratchpad is turned on on a tag that it wasn't present on before
-- `turn_off` fires when the scratchpad is turned off on a tag
-- `spawn` fires when the scratchpad is launched with the given command
-- `inital_apply` fires after `spawn`, when a corresponding client has been found and the properties have been applied
+- `turn_on` fires when the scratchpad is turned on on a tag that it wasn't present on before.
+- `turn_off` fires when the scratchpad is turned off on a tag.
+- `spawn` fires when the scratchpad is launched with the given command.
+- `inital_apply` fires after `spawn`, when a corresponding client has been found and the properties have been applied.
