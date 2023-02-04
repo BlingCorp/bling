@@ -186,7 +186,7 @@ local function create_app_widget(self, entry)
         }
     }
 
-    function app.spawn()
+    function app:spawn()
         if entry.terminal == true then
             awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. entry.executable)
         else
@@ -232,11 +232,10 @@ local function create_app_widget(self, entry)
         end
     end)
 
-    app:connect_signal("button::press", function(_self, lx, ly, button, mods, find_widgets_result)
+    app:connect_signal("button::press", function(app, _, __, button)
         if button == 1 then
-            local app = _self
             if self._private.active_widget == app or not self.select_before_spawn then
-                app.spawn()
+                app:spawn()
             else
                 -- Unmark the previous app
                 unselect_app(self)
@@ -865,7 +864,7 @@ local function new(args)
             end
             if key == "Return" then
                 if ret._private.active_widget ~= nil then
-                    ret._private.active_widget.spawn()
+                    ret._private.active_widget:spawn()
                 end
             end
             if key == "Up" then
