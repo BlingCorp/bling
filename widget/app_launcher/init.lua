@@ -413,12 +413,9 @@ local function page_forward(self, direction)
         if direction == "down" then
             select_app(self, 1, 1)
         else
-            local last_col_max_row = math.min(pos.row, #self._private.grid.children % self.apps_per_row)
-            if last_col_max_row ~= 0 then
-                select_app(self, last_col_max_row, 1)
-            else
-                select_app(self, pos.row, 1)
-            end
+            local rows, _ = self._private.grid:get_dimension()
+            local row = math.min(pos.row, rows)
+            select_app(self, row, 1)
         end
     end
 end
@@ -903,11 +900,11 @@ local function new(args)
         layout = wibox.layout.grid,
         forced_width = grid_width,
         forced_height = grid_height,
-        orientation = "horizontal",
+        orientation = "vertical",
         homogeneous     = true,
         expand          = ret.expand_apps,
         spacing = ret.apps_spacing,
-        forced_num_rows = ret.apps_per_row,
+        forced_num_cols = ret.apps_per_column,
         buttons =
         {
             awful.button({}, 4, function() scroll_up(ret) end),
