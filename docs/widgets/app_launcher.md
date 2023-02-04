@@ -35,7 +35,6 @@ local app_launcher = bling.widget.app_launcher(args)
 
 ```lua
 local args = {
-    terminal = "alacritty"                                            -- Set default terminal
     favorites = { "firefox", "wezterm" }                              -- Favorites are given priority and are bubbled to top of the list
     search_commands = true                                            -- Search by app name AND commandline command
     skip_names = { "Discord" }                                        -- List of apps to omit from launcher

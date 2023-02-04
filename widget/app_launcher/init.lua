@@ -19,13 +19,8 @@ local path = ...
 
 local app_launcher  = { mt = {} }
 
-local terminal_commands_lookup =
-{
-    alacritty = "alacritty -e",
-    termite = "termite -e",
-    rxvt = "rxvt -e",
-    terminator = "terminator -e"
-}
+local AWESOME_SENSIBLE_TERMINAL_PATH = debug.getinfo(1).source:match("@?(.*/)") ..
+                                           "awesome-sensible-terminal"
 
 local function string_levenshtein(str1, str2)
 	local len1 = string.len(str1)
@@ -191,16 +186,7 @@ local function create_app_widget(self, entry)
 
     function app.spawn()
         if entry.terminal == true then
-            if self.terminal ~= nil then
-                local terminal_command = terminal_commands_lookup[self.terminal] or self.terminal
-                awful.spawn(terminal_command .. " " .. entry.executable)
-            else
-                awful.spawn.easy_async("gtk-launch " .. entry.executable, function(stdout, stderr)
-                    if stderr then
-                        awful.spawn(entry.executable)
-                    end
-                end)
-            end
+            awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. entry.executable)
         else
             awful.spawn(entry.executable)
         end
@@ -741,7 +727,6 @@ end
 local function new(args)
     args = args or {}
 
-    args.terminal = args.terminal or nil
     args.favorites = args.favorites or {}
     args.search_commands = args.search_commands == nil and true or args.search_commands
     args.skip_names = args.skip_names or {}
