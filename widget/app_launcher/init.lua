@@ -330,6 +330,49 @@ local function search(self, text)
     end
 end
 
+local function page_forward(self, direction)
+    local min_app_index_to_include = 0
+    local max_app_index_to_include = self._private.apps_per_page
+
+    if self._private.current_page < self._private.pages_count then
+        min_app_index_to_include = self._private.apps_per_page * self._private.current_page
+        self._private.current_page = self._private.current_page + 1
+        max_app_index_to_include = self._private.apps_per_page * self._private.current_page
+    elseif self.wrap_page_scrolling and #self._private.matched_entries >= self._private.max_apps_per_page then
+        self._private.current_page = 1
+        min_app_index_to_include = 0
+        max_app_index_to_include = self._private.apps_per_page
+    elseif self.wrap_app_scrolling then
+        unselect_app(self)
+        select_app(self, 1, 1)
+        return
+    else
+        return
+    end
+
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+
+    -- Remove the current page apps from the grid
+    self._private.grid:reset()
+
+    for index, entry in pairs(self._private.matched_entries) do
+        -- Only add widgets that are between this range (part of the current page)
+        if index > min_app_index_to_include and index <= max_app_index_to_include then
+            self._private.grid:add(create_app_widget(self, entry))
+        end
+    end
+
+    if self._private.current_page > 1 or self.wrap_page_scrolling then
+        if direction == "down" then
+            select_app(self, 1, 1)
+        else
+            local rows, _ = self._private.grid:get_dimension()
+            local row = math.min(pos.row, rows)
+            select_app(self, row, 1)
+        end
+    end
+end
+
 local function page_backward(self, direction)
     if self._private.current_page > 1 then
         self._private.current_page = self._private.current_page - 1
@@ -373,49 +416,6 @@ local function page_backward(self, direction)
         else
             -- Keep the same row from last page
             select_app(self, math.min(pos.row, #self._private.grid.children % self.apps_per_row), columns)
-        end
-    end
-end
-
-local function page_forward(self, direction)
-    local min_app_index_to_include = 0
-    local max_app_index_to_include = self._private.apps_per_page
-
-    if self._private.current_page < self._private.pages_count then
-        min_app_index_to_include = self._private.apps_per_page * self._private.current_page
-        self._private.current_page = self._private.current_page + 1
-        max_app_index_to_include = self._private.apps_per_page * self._private.current_page
-    elseif self.wrap_page_scrolling and #self._private.matched_entries >= self._private.max_apps_per_page then
-        self._private.current_page = 1
-        min_app_index_to_include = 0
-        max_app_index_to_include = self._private.apps_per_page
-    elseif self.wrap_app_scrolling then
-        unselect_app(self)
-        select_app(self, 1, 1)
-        return
-    else
-        return
-    end
-
-    local pos = self._private.grid:get_widget_position(self._private.active_widget)
-
-    -- Remove the current page apps from the grid
-    self._private.grid:reset()
-
-    for index, entry in pairs(self._private.matched_entries) do
-        -- Only add widgets that are between this range (part of the current page)
-        if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self._private.grid:add(create_app_widget(self, entry))
-        end
-    end
-
-    if self._private.current_page > 1 or self.wrap_page_scrolling then
-        if direction == "down" then
-            select_app(self, 1, 1)
-        else
-            local rows, _ = self._private.grid:get_dimension()
-            local row = math.min(pos.row, rows)
-            select_app(self, row, 1)
         end
     end
 end
