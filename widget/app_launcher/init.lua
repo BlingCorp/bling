@@ -19,6 +19,8 @@ local path = ...
 
 local app_launcher  = { mt = {} }
 
+local KILL_OLD_INOTIFY_SCRIPT = [[ ps x | grep "inotifywait -e modify /usr/share/applications" | grep -v grep | awk '{print $1}' | xargs kill ]]
+local INOTIFY_SCRIPT = [[ bash -c "while (inotifywait -e modify /usr/share/applications -qq) do echo; done" ]]
 local AWESOME_SENSIBLE_TERMINAL_PATH = debug.getinfo(1).source:match("@?(.*/)") ..
                                            "awesome-sensible-terminal"
 
@@ -996,11 +998,8 @@ local function new(args)
         )
     end
 
-    local kill_old_inotify_process_script = [[ ps x | grep "inotifywait -e modify /usr/share/applications" | grep -v grep | awk '{print $1}' | xargs kill ]]
-    local subscribe_script = [[ bash -c "while (inotifywait -e modify /usr/share/applications -qq) do echo; done" ]]
-
-    awful.spawn.easy_async_with_shell(kill_old_inotify_process_script, function()
-        awful.spawn.with_line_callback(subscribe_script, {stdout = function(_)
+    awful.spawn.easy_async_with_shell(KILL_OLD_INOTIFY_SCRIPT, function()
+        awful.spawn.with_line_callback(INOTIFY_SCRIPT, {stdout = function(_)
             generate_apps(ret)
         end})
     end)
