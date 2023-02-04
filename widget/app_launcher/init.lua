@@ -14,7 +14,6 @@ local table = table
 local math = math
 local ipairs = ipairs
 local pairs = pairs
-local root = root
 local capi = { screen = screen, mouse = mouse }
 local path = ...
 
@@ -277,7 +276,7 @@ local function search(self, text)
     if text == "" then
         self._private.matched_entries = self._private.all_entries
     else
-        for index, entry in pairs(self._private.all_entries) do
+        for _, entry in pairs(self._private.all_entries) do
             text = text:gsub( "%W", "" )
 
             -- Check if there's a match by the app name or app command
@@ -300,7 +299,7 @@ local function search(self, text)
             return string_levenshtein(text, a.name) < string_levenshtein(text, b.name)
         end)
     end
-    for index, entry in pairs(self._private.matched_entries) do
+    for _, entry in pairs(self._private.matched_entries) do
         -- Only add the widgets for apps that are part of the first page
         if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
             self._private.grid:add(create_app_widget(self, entry))
@@ -430,12 +429,12 @@ local function scroll_up(self)
         return
     end
 
-    local rows, columns = self._private.grid:get_dimension()
+    local rows, _ = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
-    local is_bigger_than_first_app = pos.col > 1 or pos.row > 1
+    local can_scroll_up = pos.col > 1 or pos.row > 1
 
     -- Check if the current marked app is not the first
-    if is_bigger_than_first_app then
+    if can_scroll_up then
         unselect_app(self)
         if pos.row == 1 then
             select_app(self, rows, pos.col - 1)
@@ -453,12 +452,12 @@ local function scroll_down(self)
         return
     end
 
-    local rows, columns = self._private.grid:get_dimension()
+    local rows, _ = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
-    local is_less_than_max_app = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
+    local can_scroll_down = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
 
     -- Check if we can scroll down the app list
-    if is_less_than_max_app then
+    if can_scroll_down then
         -- Unmark the previous app
         unselect_app(self)
         if pos.row == rows then
@@ -478,10 +477,9 @@ local function scroll_left(self)
     end
 
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
-    local is_bigger_than_first_column = pos.col > 1
+    local can_scroll_left = pos.col > 1
 
-    -- Check if the current marked app is not the first
-    if is_bigger_than_first_column then
+    if can_scroll_left then
         unselect_app(self)
         select_app(self, pos.row, pos.col - 1)
     else
@@ -495,16 +493,14 @@ local function scroll_right(self)
         return
     end
 
-    local rows, columns = self._private.grid:get_dimension()
+    local _, columns = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
-    local is_less_than_max_column = pos.col < columns
+    local can_scrol_right = pos.col < columns
 
-    -- Check if we can scroll down the app list
-    if is_less_than_max_column then
-        -- Unmark the previous app
+    if can_scrol_right then
         unselect_app(self)
 
-        -- Scroll up to the max app if there are directly to the right of previous app
+        -- Check for a case where the last column has less rows than the previous column
         if self._private.grid:get_widgets_at(pos.row, pos.col + 1) == nil then
             local app = self._private.grid.children[#self._private.grid.children]
             pos = self._private.grid:get_widget_position(app)
@@ -512,7 +508,6 @@ local function scroll_right(self)
         else
             select_app(self, pos.row, pos.col + 1)
         end
-
     else
         page_forward(self, "right")
     end
