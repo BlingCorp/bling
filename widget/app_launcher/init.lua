@@ -388,7 +388,7 @@ local function page_backward(self, dir)
     elseif self.wrap_page_scrolling and #self._private.matched_entries >= self._private.max_apps_per_page then
         self._private.current_page = self._private.pages_count
     elseif self.wrap_app_scrolling then
-        local app = self._private.grid.children{#self._private.grid.children}
+        local app = self._private.grid.children[#self._private.grid.children]
         app:select()
         return
     else
@@ -413,7 +413,7 @@ local function page_backward(self, dir)
     local rows, columns = self._private.grid:get_dimension()
     if self._private.current_page < self._private.pages_count then
         if dir == "up" then
-            local app = self._private.grid.children{#self._private.grid.children}
+            local app = self._private.grid.children[#self._private.grid.children]
             app:select()
         else
             -- Keep the same row from last page
