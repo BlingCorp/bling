@@ -328,7 +328,7 @@ local function search(self, text)
             app:select()
         end
     -- Otherwise select the first app on the list
-    else
+    elseif #self._private.grid.children > 0 then
         local app = self._private.grid:get_widgets_at(1, 1)[1]
         app:select()
     end
