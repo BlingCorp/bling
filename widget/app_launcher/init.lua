@@ -334,7 +334,7 @@ local function search(self, text)
     end
 end
 
-local function page_forward(self, direction)
+local function page_forward(self, dir)
     local min_app_index_to_include = 0
     local max_app_index_to_include = self._private.apps_per_page
 
@@ -367,7 +367,7 @@ local function page_forward(self, direction)
     end
 
     if self._private.current_page > 1 or self.wrap_page_scrolling then
-        if direction == "down" then
+        if dir == "down" then
             local app = self._private.grid:get_widgets_at(1, 1)[1]
             app:select()
         else
@@ -382,7 +382,7 @@ local function page_forward(self, direction)
     end
 end
 
-local function page_backward(self, direction)
+local function page_backward(self, dir)
     if self._private.current_page > 1 then
         self._private.current_page = self._private.current_page - 1
     elseif self.wrap_page_scrolling and #self._private.matched_entries >= self._private.max_apps_per_page then
@@ -412,7 +412,7 @@ local function page_backward(self, direction)
 
     local rows, columns = self._private.grid:get_dimension()
     if self._private.current_page < self._private.pages_count then
-        if direction == "up" then
+        if dir == "up" then
             local app = self._private.grid.children{#self._private.grid.children}
             app:select()
         else
