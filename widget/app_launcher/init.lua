@@ -883,7 +883,7 @@ local function new(args)
         border_color = ret.border_color,
         shape = ret.shape,
         bg =  ret.background,
-        widget =
+        widget = args.widget_template ~= nil and args.widget_template(ret._private.prompt.textbox, ret._private.grid) or
         {
             layout = wibox.layout.fixed.vertical,
             {
