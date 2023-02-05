@@ -89,47 +89,6 @@ local function has_value(tab, val)
     return false
 end
 
-local function select_app(self, x, y)
-    local widgets = self._private.grid:get_widgets_at(x, y)
-    if widgets then
-        self._private.active_widget = widgets[1]
-        if self._private.active_widget ~= nil then
-            if self.app_template == nil then
-                self._private.active_widget:get_children_by_id("background_role")[1].bg = self.app_selected_color
-                local name_widget = self._private.active_widget:get_children_by_id("name_role")[1]
-                if name_widget then
-                    name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_selected_color, name_widget.text)
-                end
-                local generic_name_widget = self._private.active_widget:get_children_by_id("generic_name_role")[1]
-                if generic_name_widget then
-                    generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", self.app_name_selected_color, generic_name_widget.text)
-                end
-            end
-            self._private.active_widget:emit_signal("selected")
-            self._private.active_widget.selected = true
-        end
-    end
-end
-
-local function unselect_app(self)
-    if self._private.active_widget ~= nil then
-        if self.app_template == nil then
-            self._private.active_widget:get_children_by_id("background_role")[1].bg = self.app_normal_color
-            local name_widget = self._private.active_widget:get_children_by_id("name_role")[1]
-            if name_widget then
-                name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, name_widget.text)
-            end
-            local generic_name_widget = self._private.active_widget:get_children_by_id("generic_name_role")[1]
-            if generic_name_widget then
-                generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", self.app_name_normal_color, generic_name_widget.text)
-            end
-        end
-        self._private.active_widget:emit_signal("unselected")
-        self._private.active_widget.selected = false
-        self._private.active_widget = nil
-    end
-end
-
 local function create_app_widget(self, app)
     local app_widget = nil
 
@@ -247,12 +206,7 @@ local function create_app_widget(self, app)
             if self._private.active_widget == app or not self.select_before_spawn then
                 app:spawn()
             else
-                -- Unmark the previous app
-                unselect_app(self)
-
-                -- Mark this app
-                local pos = self._private.grid:get_widget_position(app)
-                select_app(self, pos.row, pos.col)
+                app:select()
             end
         end
     end)
@@ -269,13 +223,53 @@ local function create_app_widget(self, app)
         end
     end
 
+    local _self = self
+    function app_widget:select()
+        if _self._private.active_widget then
+            _self._private.active_widget:unselect()
+        end
+        _self._private.active_widget = self
+        self:emit_signal("selected")
+        self.selected = true
+
+        if _self.app_template == nil then
+            self:get_children_by_id("background_role")[1].bg = _self.app_selected_color
+            local name_widget = self:get_children_by_id("name_role")[1]
+            if name_widget then
+                name_widget.markup = string.format("<span foreground='%s'>%s</span>", _self.app_name_selected_color, name_widget.text)
+            end
+            local generic_name_widget = self:get_children_by_id("generic_name_role")[1]
+            if generic_name_widget then
+                generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", _self.app_name_selected_color, generic_name_widget.text)
+            end
+        end
+    end
+
+    function app_widget:unselect()
+        self:emit_signal("unselected")
+        self.selected = false
+        _self._private.active_widget = nil
+
+        if _self.app_template == nil then
+            self:get_children_by_id("background_role")[1].bg = _self.app_normal_color
+            local name_widget = self:get_children_by_id("name_role")[1]
+            if name_widget then
+                name_widget.markup = string.format("<span foreground='%s'>%s</span>", _self.app_name_normal_color, name_widget.text)
+            end
+            local generic_name_widget = self:get_children_by_id("generic_name_role")[1]
+            if generic_name_widget then
+                generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", _self.app_name_normal_color, generic_name_widget.text)
+            end
+        end
+    end
+
     return app_widget
 end
 
 local function search(self, text)
-    unselect_app(self)
+    self._private.active_widget:unselect()
 
-    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+    local old_pos = self._private.grid:get_widget_position(self._private.active_widget)
 
     -- Reset all the matched entries
     self._private.matched_entries = {}
@@ -328,14 +322,17 @@ local function search(self, text)
     -- it will reselect the app whose index is the same as the app index that was previously selected
     -- and if matched_entries.length < current_index it will instead select the app with the greatest index
     if self.try_to_keep_index_after_searching then
-        if self._private.grid:get_widgets_at(pos.row, pos.col) == nil then
+        if self._private.grid:get_widgets_at(old_pos.row, old_pos.col) == nil then
             local app = self._private.grid.children[#self._private.grid.children]
-            pos = self._private.grid:get_widget_position(app)
+            app:select()
+        else
+            local app = self._private.grid:get_widgets_at(old_pos.row, old_pos.col)[1]
+            app:select()
         end
-        select_app(self, pos.row, pos.col)
     -- Otherwise select the first app on the list
     else
-        select_app(self, 1, 1)
+        local app = self._private.grid:get_widgets_at(1, 1)[1]
+        app:select()
     end
 end
 
@@ -352,8 +349,8 @@ local function page_forward(self, direction)
         min_app_index_to_include = 0
         max_app_index_to_include = self._private.apps_per_page
     elseif self.wrap_app_scrolling then
-        unselect_app(self)
-        select_app(self, 1, 1)
+        local app = self._private.grid:get_widgets_at(1, 1)[1]
+        app:select()
         return
     else
         return
@@ -373,15 +370,15 @@ local function page_forward(self, direction)
 
     if self._private.current_page > 1 or self.wrap_page_scrolling then
         if direction == "down" then
-            select_app(self, 1, 1)
+            local app = self._private.grid:get_widgets_at(1, 1)[1]
+            app:select()
         else
-            local next_app = self._private.grid:get_widgets_at(pos.row, 1)
-            if next_app == nil then
-                local next_app = self._private.grid.children[#self._private.grid.children]
-                local next_app_pos = self._private.grid:get_widget_position(next_app)
-                select_app(self, next_app_pos.row, next_app_pos.col)
+            local app = self._private.grid:get_widgets_at(pos.row, 1)[1]
+            if app == nil then
+                local app = self._private.grid.children[#self._private.grid.children]
+                app:select()
             else
-                select_app(self, pos.row, 1)
+                app:select()
             end
         end
     end
@@ -393,9 +390,8 @@ local function page_backward(self, direction)
     elseif self.wrap_page_scrolling and #self._private.matched_entries >= self._private.max_apps_per_page then
         self._private.current_page = self._private.pages_count
     elseif self.wrap_app_scrolling then
-        local rows, columns = self._private.grid:get_dimension()
-        unselect_app(self)
-        select_app(self, math.min(rows, #self._private.grid.children % self.apps_per_row), columns)
+        local app = self._private.grid.children{#self._private.grid.children}
+        app:select()
         return
     else
         return
@@ -419,15 +415,16 @@ local function page_backward(self, direction)
     local rows, columns = self._private.grid:get_dimension()
     if self._private.current_page < self._private.pages_count then
         if direction == "up" then
-            select_app(self, rows, columns)
+            local app = self._private.grid.children{#self._private.grid.children}
+            app:select()
         else
             -- Keep the same row from last page
-            select_app(self, pos.row, columns)
+            local app = self._private.grid:get_widgets_at(pos.row, columns)[1]
+            app:select()
         end
     elseif self.wrap_page_scrolling then
-        local next_app = self._private.grid.children[#self._private.grid.children]
-        local next_app_pos = self._private.grid:get_widget_position(next_app)
-        select_app(self, next_app_pos.row, next_app_pos.col)
+        local app = self._private.grid.children[#self._private.grid.children]
+        app:select()
     end
 end
 
@@ -439,10 +436,8 @@ local function scroll_up(self)
 
     local can_scroll_up = self._private.grid:index(self._private.active_widget) > 1
     if can_scroll_up then
-        local next_app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, -1)
-        local next_app_pos = self._private.grid:get_widget_position(next_app)
-        unselect_app(self)
-        select_app(self, next_app_pos.row, next_app_pos.col)
+        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, -1)
+        app:select()
     else
        page_backward(self, "up")
     end
@@ -456,10 +451,8 @@ local function scroll_down(self)
 
     local can_scroll_down = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
     if can_scroll_down then
-        local next_app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, 1)
-        local next_app_pos = self._private.grid:get_widget_position(next_app)
-        unselect_app(self)
-        select_app(self, next_app_pos.row, next_app_pos.col)
+        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, 1)
+        app:select()
     else
         page_forward(self, "down")
     end
@@ -474,10 +467,8 @@ local function scroll_left(self)
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local can_scroll_left = self._private.grid:get_widgets_at(pos.row, pos.col - 1) ~= nil
     if can_scroll_left then
-        local next_app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, -self.apps_per_row)
-        local next_app_pos = self._private.grid:get_widget_position(next_app)
-        unselect_app(self)
-        select_app(self, next_app_pos.row, next_app_pos.col)
+        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, -self.apps_per_row)
+        app:select()
     else
        page_backward(self, "left")
     end
@@ -492,10 +483,8 @@ local function scroll_right(self)
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local can_scroll_right = self._private.grid:get_widgets_at(pos.row, pos.col + 1) ~= nil
     if can_scroll_right then
-        local next_app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, self.apps_per_row)
-        local next_app_pos = self._private.grid:get_widget_position(next_app)
-        unselect_app(self)
-        select_app(self, next_app_pos.row, next_app_pos.col)
+        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, self.apps_per_row)
+        app:select()
     else
         page_forward(self, "right")
     end
@@ -517,7 +506,8 @@ local function reset(self)
         end
     end
 
-    select_app(self, 1, 1)
+    local app = self._private.grid:get_widgets_at(1, 1)[1]
+    app:select()
 end
 
 local function generate_apps(self)
