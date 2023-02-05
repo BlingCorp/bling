@@ -799,7 +799,7 @@ local function new(args)
     args.app_name_selected_color = args.app_name_selected_color or beautiful.bg_normal or "#000000"
     args.app_show_generic_name = args.app_show_generic_name ~= nil and args.app_show_generic_name or false
 
-    local ret = gobject({})
+    local ret = gobject {}
     ret._private = {}
     ret._private.text = ""
 
