@@ -1017,7 +1017,7 @@ local function new(args)
     end
 
     awful.spawn.easy_async_with_shell(KILL_OLD_INOTIFY_SCRIPT, function()
-        awful.spawn.with_line_callback(INOTIFY_SCRIPT, {stdout = function(_)
+        awful.spawn.with_line_callback(INOTIFY_SCRIPT, {stdout = function()
             generate_apps(ret)
         end})
     end)
