@@ -62,8 +62,6 @@ local args = {
     screen = awful.screen                                             -- Screen you want the launcher to launch to
     placement = awful.placement.top_left                              -- Where launcher should be placed ("awful.placement.centered").
     rubato = { x = rubato_animation_x, y = rubato_animation_y }       -- Rubato animation to apply to launcher
-    shrink_width = true                                               -- Automatically shrink width of launcher to fit varying numbers of apps in list (works on apps_per_column)
-    shrink_height = true                                              -- Automatically shrink height of launcher to fit varying numbers of apps in list (works on apps_per_row)
     background = "#FFFFFF"                                            -- Set bg color
     border_width = dpi(0)                                             -- Set border width of popup
     border_color = "#FFFFFF"                                          -- Set border color of popup

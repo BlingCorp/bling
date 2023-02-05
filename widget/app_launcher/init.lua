@@ -114,7 +114,7 @@ end
 local function unselect_app(self)
     if self._private.active_widget ~= nil then
         if self.app_template == nil then
-        self._private.active_widget:get_children_by_id("background_role")[1].bg = self.app_normal_color
+            self._private.active_widget:get_children_by_id("background_role")[1].bg = self.app_normal_color
             local name_widget = self._private.active_widget:get_children_by_id("name_role")[1]
             if name_widget then
                 name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, name_widget.text)
@@ -375,9 +375,14 @@ local function page_forward(self, direction)
         if direction == "down" then
             select_app(self, 1, 1)
         else
-            local rows, _ = self._private.grid:get_dimension()
-            local row = math.min(pos.row, rows)
-            select_app(self, row, 1)
+            local next_app = self._private.grid:get_widgets_at(pos.row, 1)
+            if next_app == nil then
+                local next_app = self._private.grid.children[#self._private.grid.children]
+                local next_app_pos = self._private.grid:get_widget_position(next_app)
+                select_app(self, next_app_pos.row, next_app_pos.col)
+            else
+                select_app(self, pos.row, 1)
+            end
         end
     end
 end
@@ -420,12 +425,9 @@ local function page_backward(self, direction)
             select_app(self, pos.row, columns)
         end
     elseif self.wrap_page_scrolling then
-        if direction == "up" then
-            select_app(self, math.min(rows, #self._private.grid.children % self.apps_per_row), columns)
-        else
-            -- Keep the same row from last page
-            select_app(self, math.min(pos.row, #self._private.grid.children % self.apps_per_row), columns)
-        end
+        local next_app = self._private.grid.children[#self._private.grid.children]
+        local next_app_pos = self._private.grid:get_widget_position(next_app)
+        select_app(self, next_app_pos.row, next_app_pos.col)
     end
 end
 
@@ -435,18 +437,12 @@ local function scroll_up(self)
         return
     end
 
-    local rows, _ = self._private.grid:get_dimension()
-    local pos = self._private.grid:get_widget_position(self._private.active_widget)
-    local can_scroll_up = pos.col > 1 or pos.row > 1
-
-    -- Check if the current marked app is not the first
+    local can_scroll_up = self._private.grid:index(self._private.active_widget) > 1
     if can_scroll_up then
+        local next_app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, -1)
+        local next_app_pos = self._private.grid:get_widget_position(next_app)
         unselect_app(self)
-        if pos.row == 1 then
-            select_app(self, rows, pos.col - 1)
-        else
-            select_app(self, pos.row - 1, pos.col)
-        end
+        select_app(self, next_app_pos.row, next_app_pos.col)
     else
        page_backward(self, "up")
     end
@@ -458,19 +454,12 @@ local function scroll_down(self)
         return
     end
 
-    local rows, _ = self._private.grid:get_dimension()
-    local pos = self._private.grid:get_widget_position(self._private.active_widget)
     local can_scroll_down = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
-
-    -- Check if we can scroll down the app list
     if can_scroll_down then
-        -- Unmark the previous app
+        local next_app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, 1)
+        local next_app_pos = self._private.grid:get_widget_position(next_app)
         unselect_app(self)
-        if pos.row == rows then
-            select_app(self, 1, pos.col + 1)
-        else
-            select_app(self, pos.row + 1, pos.col)
-        end
+        select_app(self, next_app_pos.row, next_app_pos.col)
     else
         page_forward(self, "down")
     end
@@ -483,11 +472,12 @@ local function scroll_left(self)
     end
 
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
-    local can_scroll_left = pos.col > 1
-
+    local can_scroll_left = self._private.grid:get_widgets_at(pos.row, pos.col - 1) ~= nil
     if can_scroll_left then
+        local next_app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, -self.apps_per_row)
+        local next_app_pos = self._private.grid:get_widget_position(next_app)
         unselect_app(self)
-        select_app(self, pos.row, pos.col - 1)
+        select_app(self, next_app_pos.row, next_app_pos.col)
     else
        page_backward(self, "left")
     end
@@ -499,21 +489,13 @@ local function scroll_right(self)
         return
     end
 
-    local _, columns = self._private.grid:get_dimension()
     local pos = self._private.grid:get_widget_position(self._private.active_widget)
-    local can_scrol_right = pos.col < columns
-
-    if can_scrol_right then
+    local can_scroll_right = self._private.grid:get_widgets_at(pos.row, pos.col + 1) ~= nil
+    if can_scroll_right then
+        local next_app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, self.apps_per_row)
+        local next_app_pos = self._private.grid:get_widget_position(next_app)
         unselect_app(self)
-
-        -- Check for a case where the last column has less rows than the previous column
-        if self._private.grid:get_widgets_at(pos.row, pos.col + 1) == nil then
-            local app = self._private.grid.children[#self._private.grid.children]
-            pos = self._private.grid:get_widget_position(app)
-            select_app(self, pos.row, pos.col)
-        else
-            select_app(self, pos.row, pos.col + 1)
-        end
+        select_app(self, next_app_pos.row, next_app_pos.col)
     else
         page_forward(self, "right")
     end
@@ -767,18 +749,11 @@ local function new(args)
     args.wrap_page_scrolling = args.wrap_page_scrolling == nil and true or args.wrap_page_scrolling
     args.wrap_app_scrolling = args.wrap_app_scrolling == nil and true or args.wrap_app_scrolling
 
-    args.default_app_icon_name = args.default_app_icon_name or nil
-    args.default_app_icon_path = args.default_app_icon_path or nil
-    args.icon_theme = args.icon_theme or nil
-    args.icon_size = args.icon_size or nil
-
     args.type = args.type or "dock"
     args.show_on_focused_screen = args.show_on_focused_screen == nil and true or args.show_on_focused_screen
     args.screen = args.screen or capi.screen.primary
     args.placement = args.placement or awful.placement.centered
     args.rubato = args.rubato or nil
-    args.shrink_width = args.shrink_width ~= nil and args.shrink_width or false
-    args.shrink_height = args.shrink_height ~= nil and args.shrink_height or false
     args.background = args.background or "#000000"
     args.border_width = args.border_width or beautiful.border_width or dpi(0)
     args.border_color = args.border_color or beautiful.border_color or "#FFFFFF"
@@ -805,12 +780,17 @@ local function new(args)
     args.prompt_text_color = args.prompt_text_color or beautiful.bg_normal or "#000000"
     args.prompt_cursor_color = args.prompt_cursor_color or beautiful.bg_normal or "#000000"
 
+    args.default_app_icon_name = args.default_app_icon_name or nil
+    args.default_app_icon_path = args.default_app_icon_path or nil
+    args.icon_theme = args.icon_theme or nil
+    args.icon_size = args.icon_size or nil
+
     args.apps_per_row = args.apps_per_row or 5
     args.apps_per_column = args.apps_per_column or 3
     args.apps_margin = args.apps_margin or dpi(30)
     args.apps_spacing = args.apps_spacing or dpi(30)
-
     args.expand_apps = args.expand_apps == nil and true or args.expand_apps
+
     args.app_width = args.app_width or dpi(300)
     args.app_height = args.app_height or dpi(120)
     args.app_shape = args.app_shape or nil
@@ -842,14 +822,6 @@ local function new(args)
 
     gtable.crush(ret, app_launcher)
     gtable.crush(ret, args)
-
-    -- Calculate the grid width and height
-    local grid_width = ret.shrink_width == false
-        and dpi((ret.app_width * ret.apps_per_column) + ((ret.apps_per_column - 1) * ret.apps_spacing))
-        or nil
-    local grid_height = ret.shrink_height == false
-        and dpi((ret.app_height * ret.apps_per_row) + ((ret.apps_per_row - 1) * ret.apps_spacing))
-        or nil
 
     -- These widgets need to be later accessed
     ret._private.prompt = prompt
@@ -906,13 +878,12 @@ local function new(args)
     ret._private.grid = wibox.widget
     {
         layout = wibox.layout.grid,
-        forced_width = grid_width,
-        forced_height = grid_height,
-        orientation = "vertical",
+        orientation = "horizontal",
         homogeneous     = true,
         expand          = ret.expand_apps,
         spacing = ret.apps_spacing,
         forced_num_cols = ret.apps_per_column,
+        forced_num_rows = ret.apps_per_row,
         buttons =
         {
             awful.button({}, 4, function() scroll_up(ret) end),
@@ -929,7 +900,7 @@ local function new(args)
         border_color = ret.border_color,
         shape = ret.shape,
         bg =  ret.background,
-        widget = args.widget_template(ret._private.prompt.textbox, ret._private.grid) or
+        widget =
         {
             layout = wibox.layout.fixed.vertical,
             {
