@@ -94,146 +94,155 @@ local function select_app(self, x, y)
     if widgets then
         self._private.active_widget = widgets[1]
         if self._private.active_widget ~= nil then
+            if self.app_template == nil then
+                self._private.active_widget:get_children_by_id("background_role")[1].bg = self.app_selected_color
+                local name_widget = self._private.active_widget:get_children_by_id("name_role")[1]
+                if name_widget then
+                    name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_selected_color, name_widget.text)
+                end
+                local generic_name_widget = self._private.active_widget:get_children_by_id("generic_name_role")[1]
+                if generic_name_widget then
+                    generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", self.app_name_selected_color, generic_name_widget.text)
+                end
+            end
+            self._private.active_widget:emit_signal("selected")
             self._private.active_widget.selected = true
-            self._private.active_widget:get_children_by_id("background_role")[1].bg = self.app_selected_color
-            local name_widget = self._private.active_widget:get_children_by_id("name_role")[1]
-            if name_widget then
-                name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_selected_color, name_widget.text)
-            end
-            local generic_name_widget = self._private.active_widget:get_children_by_id("generic_name_role")[1]
-            if generic_name_widget then
-                generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", self.app_name_selected_color, generic_name_widget.text)
-            end
         end
     end
 end
 
 local function unselect_app(self)
     if self._private.active_widget ~= nil then
-        self._private.active_widget.selected = false
+        if self.app_template == nil then
         self._private.active_widget:get_children_by_id("background_role")[1].bg = self.app_normal_color
-        local name_widget = self._private.active_widget:get_children_by_id("name_role")[1]
-        if name_widget then
-            name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, name_widget.text)
+            local name_widget = self._private.active_widget:get_children_by_id("name_role")[1]
+            if name_widget then
+                name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, name_widget.text)
+            end
+            local generic_name_widget = self._private.active_widget:get_children_by_id("generic_name_role")[1]
+            if generic_name_widget then
+                generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", self.app_name_normal_color, generic_name_widget.text)
+            end
         end
-        local generic_name_widget = self._private.active_widget:get_children_by_id("generic_name_role")[1]
-        if generic_name_widget then
-            generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", self.app_name_normal_color, generic_name_widget.text)
-        end
+        self._private.active_widget:emit_signal("unselected")
+        self._private.active_widget.selected = false
         self._private.active_widget = nil
     end
 end
 
-local function create_app_widget(self, entry)
-    local icon = self.app_show_icon == true and
-    {
-        widget = wibox.widget.imagebox,
-        id = "icon_role",
-        halign = self.app_icon_halign,
-        forced_width = self.app_icon_width,
-        forced_height = self.app_icon_height,
-        image = entry.icon
-    } or nil
+local function create_app_widget(self, app)
+    local app_widget = nil
 
-    local name = self.app_show_name == true and
-    {
-        widget = wibox.widget.textbox,
-        id = "name_role",
-        font = self.app_name_font,
-        markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, entry.name)
-    } or nil
-
-    local generic_name = entry.generic_name ~= nil and self.app_show_generic_name == true and
-    {
-        widget = wibox.widget.textbox,
-        id = "generic_name_role",
-        font = self.app_name_font,
-        markup = entry.generic_name ~= "" and "<span weight='300'> <i>(" .. entry.generic_name .. ")</i></span>" or ""
-    } or nil
-
-    local app = wibox.widget
-    {
-        widget = wibox.container.background,
-        id = "background_role",
-        forced_width = self.app_width,
-        forced_height = self.app_height,
-        shape = self.app_shape,
-        bg = self.app_normal_color,
+    if self.app_template == nil then
+        local icon = self.app_show_icon == true and
         {
-            widget = wibox.container.margin,
-            margins = self.app_content_padding,
+            widget = wibox.widget.imagebox,
+            id = "icon_role",
+            halign = self.app_icon_halign,
+            forced_width = self.app_icon_width,
+            forced_height = self.app_icon_height,
+            image = app.icon
+        } or nil
+
+        local name = self.app_show_name == true and
+        {
+            widget = wibox.widget.textbox,
+            id = "name_role",
+            font = self.app_name_font,
+            markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, app.name)
+        } or nil
+
+        local generic_name = app.generic_name ~= nil and self.app_show_generic_name == true and
+        {
+            widget = wibox.widget.textbox,
+            id = "generic_name_role",
+            font = self.app_name_font,
+            markup = app.generic_name ~= "" and "<span weight='300'> <i>(" .. app.generic_name .. ")</i></span>" or ""
+        } or nil
+
+        app_widget = wibox.widget
+        {
+            widget = wibox.container.background,
+            id = "background_role",
+            forced_width = self.app_width,
+            forced_height = self.app_height,
+            shape = self.app_shape,
+            bg = self.app_normal_color,
             {
-                -- Using this hack instead of container.place because that will fuck with the name/icon halign
-                layout = wibox.layout.align.vertical,
-                expand = "outside",
-                nil,
+                widget = wibox.container.margin,
+                margins = self.app_content_padding,
                 {
-                    layout = wibox.layout.fixed.vertical,
-                    spacing = self.app_content_spacing,
-                    icon,
+                    -- Using this hack instead of container.place because that will fuck with the name/icon halign
+                    layout = wibox.layout.align.vertical,
+                    expand = "outside",
+                    nil,
                     {
-                        widget = wibox.container.place,
-                        halign = self.app_name_halign,
+                        layout = wibox.layout.fixed.vertical,
+                        spacing = self.app_content_spacing,
+                        icon,
                         {
-                            layout = wibox.layout.fixed.horizontal,
-                            spacing = self.app_name_generic_name_spacing,
-                            name,
-                            generic_name
+                            widget = wibox.container.place,
+                            halign = self.app_name_halign,
+                            {
+                                layout = wibox.layout.fixed.horizontal,
+                                spacing = self.app_name_generic_name_spacing,
+                                name,
+                                generic_name
+                            }
                         }
-                    }
-                },
-                nil
+                    },
+                    nil
+                }
             }
         }
-    }
 
-    function app:spawn()
-        if entry.terminal == true then
-            awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. entry.executable)
-        else
-            awful.spawn(entry.executable)
+        app_widget:connect_signal("mouse::enter", function()
+            local widget = capi.mouse.current_wibox
+            if widget then
+                widget.cursor = "hand2"
+            end
+
+            if app_widget.selected then
+                app_widget:get_children_by_id("background_role")[1].bg = self.app_selected_hover_color
+            else
+                app_widget:get_children_by_id("background_role")[1].bg = self.app_normal_hover_color
+            end
+        end)
+
+        app_widget:connect_signal("mouse::leave", function()
+            local widget = capi.mouse.current_wibox
+            if widget then
+                widget.cursor = "left_ptr"
+            end
+
+            if app_widget.selected then
+                app_widget:get_children_by_id("background_role")[1].bg = self.app_selected_color
+            else
+                app_widget:get_children_by_id("background_role")[1].bg = self.app_normal_color
+            end
+        end)
+    else
+        app_widget = self.app_template(app)
+
+        local icon = app_widget:get_children_by_id("icon_role")[1]
+        if icon then
+            icon.image = app.icon
         end
-
-        if self.hide_on_launch then
-            self:hide()
+        local name = app_widget:get_children_by_id("name_role")[1]
+        if name then
+            name.text = app.name
+        end
+        local generic_name = app_widget:get_children_by_id("generic_name_role")[1]
+        if generic_name then
+            generic_name.text = app.generic_name
+        end
+        local command = app_widget:get_children_by_id("command_role")[1]
+        if command then
+            command.text = app.executable
         end
     end
 
-    app:connect_signal("mouse::enter", function(_self)
-        local widget = capi.mouse.current_wibox
-        if widget then
-            widget.cursor = "hand2"
-        end
-
-        local app = _self
-        if app.selected then
-            app:get_children_by_id("background_role")[1].bg = self.app_selected_hover_color
-        else
-            local is_opaque = color.is_opaque(self.app_normal_color)
-            local is_dark = color.is_dark(self.app_normal_color)
-            local app_normal_color = color.hex_to_rgba(self.app_normal_color)
-            local hover_color = (is_dark or is_opaque) and
-                color.rgba_to_hex(color.multiply(app_normal_color, 2.5)) or
-                color.rgba_to_hex(color.multiply(app_normal_color, 0.5))
-            app:get_children_by_id("background_role")[1].bg = self.app_normal_hover_color
-        end
-    end)
-
-    app:connect_signal("mouse::leave", function(_self)
-        local widget = capi.mouse.current_wibox
-        if widget then
-            widget.cursor = "left_ptr"
-        end
-
-        local app = _self
-        if app.selected then
-            app:get_children_by_id("background_role")[1].bg = self.app_selected_color
-        else
-            app:get_children_by_id("background_role")[1].bg = self.app_normal_color
-        end
-    end)
-
-    app:connect_signal("button::press", function(app, _, __, button)
+    app_widget:connect_signal("button::press", function(app, _, __, button)
         if button == 1 then
             if self._private.active_widget == app or not self.select_before_spawn then
                 app:spawn()
@@ -248,7 +257,19 @@ local function create_app_widget(self, entry)
         end
     end)
 
-    return app
+    function app_widget:spawn()
+        if app.terminal == true then
+            awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. app.executable)
+        else
+            awful.spawn(app.executable)
+        end
+
+        if self.hide_on_launch then
+            self:hide()
+        end
+    end
+
+    return app_widget
 end
 
 local function search(self, text)
