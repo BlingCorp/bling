@@ -978,9 +978,6 @@ local function new(args)
     ret._private.pages_count = 0
     ret._private.current_page = 1
 
-    generate_apps(ret)
-    reset(ret)
-
     if ret.rubato and ret.rubato.x then
         ret.rubato.x:subscribe(function(pos)
             ret._private.widget.x = pos
@@ -1024,6 +1021,9 @@ local function new(args)
             generate_apps(ret)
         end})
     end)
+
+    generate_apps(ret)
+    reset(ret)
 
     return ret
 end
