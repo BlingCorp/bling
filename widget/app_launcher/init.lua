@@ -864,8 +864,8 @@ local function new(args)
     {
         layout = wibox.layout.grid,
         orientation = "horizontal",
-        homogeneous     = true,
-        expand          = ret.expand_apps,
+        homogeneous = true,
+        expand = ret.expand_apps,
         spacing = ret.apps_spacing,
         forced_num_cols = ret.apps_per_column,
         forced_num_rows = ret.apps_per_row,
