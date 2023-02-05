@@ -426,6 +426,43 @@ local function page_backward(self, direction)
     end
 end
 
+local function scroll(self, dir)
+    if #self._private.grid.children < 1 then
+        self._private.active_widget = nil
+        return
+    end
+
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+    local can_scroll = false
+    local step_size = 0
+    local if_cant_scroll_func = nil
+
+    if dir == "up" then
+        can_scroll = self._private.grid:index(self._private.active_widget) > 1
+        step_size = -1
+        if_cant_scroll_func = function() page_backward(self, "up") end
+    elseif dir == "down" then
+        can_scroll = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
+        step_size = 1
+        if_cant_scroll_func = function() page_forward(self, "down") end
+    elseif dir == "left" then
+        can_scroll = self._private.grid:get_widgets_at(pos.row, pos.col - 1) ~= nil
+        step_size = -self.apps_per_row
+        if_cant_scroll_func = function() page_backward(self, "left") end
+    elseif dir == "right" then
+        can_scroll = self._private.grid:get_widgets_at(pos.row, pos.col + 1) ~= nil
+        step_size = self.apps_per_row
+        if_cant_scroll_func = function() page_forward(self, "right") end
+    end
+
+    if can_scroll then
+        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, step_size)
+        app:select()
+    else
+        if_cant_scroll_func()
+    end
+end
+
 local function reset(self)
     self._private.grid:reset()
     self._private.matched_entries = self._private.all_entries
@@ -533,43 +570,6 @@ local function generate_apps(self)
                 end
             end
         end
-    end
-end
-
-local function scroll(self, dir)
-    if #self._private.grid.children < 1 then
-        self._private.active_widget = nil
-        return
-    end
-
-    local pos = self._private.grid:get_widget_position(self._private.active_widget)
-    local can_scroll = false
-    local step_size = 0
-    local if_cant_scroll_func = nil
-
-    if dir == "up" then
-        can_scroll = self._private.grid:index(self._private.active_widget) > 1
-        step_size = -1
-        if_cant_scroll_func = function() page_backward(self, "up") end
-    elseif dir == "down" then
-        can_scroll = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
-        step_size = 1
-        if_cant_scroll_func = function() page_forward(self, "down") end
-    elseif dir == "left" then
-        can_scroll = self._private.grid:get_widgets_at(pos.row, pos.col - 1) ~= nil
-        step_size = -self.apps_per_row
-        if_cant_scroll_func = function() page_backward(self, "left") end
-    elseif dir == "right" then
-        can_scroll = self._private.grid:get_widgets_at(pos.row, pos.col + 1) ~= nil
-        step_size = self.apps_per_row
-        if_cant_scroll_func = function() page_forward(self, "right") end
-    end
-
-    if can_scroll then
-        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, step_size)
-        app:select()
-    else
-        if_cant_scroll_func()
     end
 end
 
