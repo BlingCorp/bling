@@ -428,68 +428,6 @@ local function page_backward(self, direction)
     end
 end
 
-local function scroll_up(self)
-    if #self._private.grid.children < 1 then
-        self._private.active_widget = nil
-        return
-    end
-
-    local can_scroll_up = self._private.grid:index(self._private.active_widget) > 1
-    if can_scroll_up then
-        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, -1)
-        app:select()
-    else
-       page_backward(self, "up")
-    end
-end
-
-local function scroll_down(self)
-    if #self._private.grid.children < 1 then
-        self._private.active_widget = nil
-        return
-    end
-
-    local can_scroll_down = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
-    if can_scroll_down then
-        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, 1)
-        app:select()
-    else
-        page_forward(self, "down")
-    end
-end
-
-local function scroll_left(self)
-    if #self._private.grid.children < 1 then
-        self._private.active_widget = nil
-        return
-    end
-
-    local pos = self._private.grid:get_widget_position(self._private.active_widget)
-    local can_scroll_left = self._private.grid:get_widgets_at(pos.row, pos.col - 1) ~= nil
-    if can_scroll_left then
-        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, -self.apps_per_row)
-        app:select()
-    else
-       page_backward(self, "left")
-    end
-end
-
-local function scroll_right(self)
-    if #self._private.grid.children < 1 then
-        self._private.active_widget = nil
-        return
-    end
-
-    local pos = self._private.grid:get_widget_position(self._private.active_widget)
-    local can_scroll_right = self._private.grid:get_widgets_at(pos.row, pos.col + 1) ~= nil
-    if can_scroll_right then
-        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, self.apps_per_row)
-        app:select()
-    else
-        page_forward(self, "right")
-    end
-end
-
 local function reset(self)
     self._private.grid:reset()
     self._private.matched_entries = self._private.all_entries
@@ -598,6 +536,63 @@ local function generate_apps(self)
             end
         end
     end
+end
+
+local function scroll(self, dir)
+    if #self._private.grid.children < 1 then
+        self._private.active_widget = nil
+        return
+    end
+
+    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+    local can_scroll = false
+    local step_size = 0
+    local if_cant_scroll_func = nil
+
+    if dir == "up" then
+        can_scroll = self._private.grid:index(self._private.active_widget) > 1
+        step_size = -1
+        if_cant_scroll_func = function() page_backward(self, "up") end
+    elseif dir == "down" then
+        can_scroll = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
+        step_size = 1
+        if_cant_scroll_func = function() page_forward(self, "down") end
+    elseif dir == "left" then
+        can_scroll = self._private.grid:get_widgets_at(pos.row, pos.col - 1) ~= nil
+        step_size = -self.apps_per_row
+        if_cant_scroll_func = function() page_backward(self, "left") end
+    elseif dir == "right" then
+        can_scroll = self._private.grid:get_widgets_at(pos.row, pos.col + 1) ~= nil
+        step_size = self.apps_per_row
+        if_cant_scroll_func = function() page_forward(self, "right") end
+    end
+
+    if can_scroll then
+        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, step_size)
+        app:select()
+    else
+        if_cant_scroll_func()
+    end
+end
+
+--- Scrolls up
+function app_launcher:scroll_up()
+    scroll(self, "up")
+end
+
+--- Scrolls down
+function app_launcher:scroll_down()
+    scroll(self, "down")
+end
+
+--- Scrolls to the left
+function app_launcher:scroll_left()
+    scroll(self, "left")
+end
+
+--- Scrolls to the right
+function app_launcher:scroll_right()
+    scroll(self, "right")
 end
 
 --- Shows the app launcher
@@ -852,16 +847,16 @@ local function new(args)
                 end
             end
             if key == "Up" then
-                scroll_up(ret)
+                ret:scroll_up()
             end
             if key == "Down" then
-                scroll_down(ret)
+                ret:scroll_down()
             end
             if key == "Left" then
-                scroll_left(ret)
+                ret:scroll_left()
             end
             if key == "Right" then
-                scroll_right(ret)
+                ret:scroll_right()
             end
         end
     }
@@ -876,8 +871,8 @@ local function new(args)
         forced_num_rows = ret.apps_per_row,
         buttons =
         {
-            awful.button({}, 4, function() scroll_up(ret) end),
-            awful.button({}, 5, function() scroll_down(ret) end)
+            awful.button({}, 4, function() ret:scroll_up() end),
+            awful.button({}, 5, function() ret:scroll_down() end)
         }
     }
     ret._private.widget = awful.popup
