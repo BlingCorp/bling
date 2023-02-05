@@ -742,6 +742,17 @@ local function new(args)
     args.border_color = args.border_color or beautiful.border_color or "#FFFFFF"
     args.shape = args.shape or nil
 
+    args.default_app_icon_name = args.default_app_icon_name or nil
+    args.default_app_icon_path = args.default_app_icon_path or nil
+    args.icon_theme = args.icon_theme or nil
+    args.icon_size = args.icon_size or nil
+
+    args.apps_per_row = args.apps_per_row or 5
+    args.apps_per_column = args.apps_per_column or 3
+    args.apps_margin = args.apps_margin or dpi(30)
+    args.apps_spacing = args.apps_spacing or dpi(30)
+    args.expand_apps = args.expand_apps == nil and true or args.expand_apps
+
     args.prompt_height = args.prompt_height or dpi(100)
     args.prompt_margins = args.prompt_margins or dpi(0)
     args.prompt_paddings = args.prompt_paddings or dpi(30)
@@ -762,17 +773,6 @@ local function new(args)
     args.prompt_font = args.prompt_font or beautiful.font
     args.prompt_text_color = args.prompt_text_color or beautiful.bg_normal or "#000000"
     args.prompt_cursor_color = args.prompt_cursor_color or beautiful.bg_normal or "#000000"
-
-    args.default_app_icon_name = args.default_app_icon_name or nil
-    args.default_app_icon_path = args.default_app_icon_path or nil
-    args.icon_theme = args.icon_theme or nil
-    args.icon_size = args.icon_size or nil
-
-    args.apps_per_row = args.apps_per_row or 5
-    args.apps_per_column = args.apps_per_column or 3
-    args.apps_margin = args.apps_margin or dpi(30)
-    args.apps_spacing = args.apps_spacing or dpi(30)
-    args.expand_apps = args.expand_apps == nil and true or args.expand_apps
 
     args.app_width = args.app_width or dpi(300)
     args.app_height = args.app_height or dpi(120)
