@@ -211,6 +211,7 @@ local function create_app_widget(self, app)
         end
     end)
 
+    local _self = self
     function app_widget:spawn()
         if app.terminal == true then
             awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. app.executable)
@@ -218,12 +219,11 @@ local function create_app_widget(self, app)
             awful.spawn(app.executable)
         end
 
-        if self.hide_on_launch then
-            self:hide()
+        if _self.hide_on_launch then
+            _self:hide()
         end
     end
 
-    local _self = self
     function app_widget:select()
         if _self._private.active_widget then
             _self._private.active_widget:unselect()
