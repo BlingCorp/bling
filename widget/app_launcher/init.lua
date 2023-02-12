@@ -89,8 +89,8 @@ local function has_value(tab, val)
     return false
 end
 
-local function create_app_widget(self, app)
-    local app_widget = nil
+local function app_widget(self, app)
+    local widget = nil
 
     if self.app_template == nil then
         local icon = self.app_show_icon == true and
@@ -119,7 +119,7 @@ local function create_app_widget(self, app)
             markup = app.generic_name ~= "" and "<span weight='300'> <i>(" .. app.generic_name .. ")</i></span>" or ""
         } or nil
 
-        app_widget = wibox.widget
+        widget = wibox.widget
         {
             widget = wibox.container.background,
             id = "background_role",
@@ -155,53 +155,53 @@ local function create_app_widget(self, app)
             }
         }
 
-        app_widget:connect_signal("mouse::enter", function()
+        widget:connect_signal("mouse::enter", function()
             local widget = capi.mouse.current_wibox
             if widget then
                 widget.cursor = "hand2"
             end
 
-            if app_widget.selected then
-                app_widget:get_children_by_id("background_role")[1].bg = self.app_selected_hover_color
+            if widget.selected then
+                widget:get_children_by_id("background_role")[1].bg = self.app_selected_hover_color
             else
-                app_widget:get_children_by_id("background_role")[1].bg = self.app_normal_hover_color
+                widget:get_children_by_id("background_role")[1].bg = self.app_normal_hover_color
             end
         end)
 
-        app_widget:connect_signal("mouse::leave", function()
+        widget:connect_signal("mouse::leave", function()
             local widget = capi.mouse.current_wibox
             if widget then
                 widget.cursor = "left_ptr"
             end
 
-            if app_widget.selected then
-                app_widget:get_children_by_id("background_role")[1].bg = self.app_selected_color
+            if widget.selected then
+                widget:get_children_by_id("background_role")[1].bg = self.app_selected_color
             else
-                app_widget:get_children_by_id("background_role")[1].bg = self.app_normal_color
+                widget:get_children_by_id("background_role")[1].bg = self.app_normal_color
             end
         end)
     else
-        app_widget = self.app_template(app)
+        widget = self.app_template(app)
 
-        local icon = app_widget:get_children_by_id("icon_role")[1]
+        local icon = widget:get_children_by_id("icon_role")[1]
         if icon then
             icon.image = app.icon
         end
-        local name = app_widget:get_children_by_id("name_role")[1]
+        local name = widget:get_children_by_id("name_role")[1]
         if name then
             name.text = app.name
         end
-        local generic_name = app_widget:get_children_by_id("generic_name_role")[1]
+        local generic_name = widget:get_children_by_id("generic_name_role")[1]
         if generic_name then
             generic_name.text = app.generic_name
         end
-        local command = app_widget:get_children_by_id("command_role")[1]
+        local command = widget:get_children_by_id("command_role")[1]
         if command then
             command.text = app.executable
         end
     end
 
-    app_widget:connect_signal("button::press", function(app, _, __, button)
+    widget:connect_signal("button::press", function(app, _, __, button)
         if button == 1 then
             if self._private.active_widget == app or not self.select_before_spawn then
                 app:spawn()
@@ -212,7 +212,7 @@ local function create_app_widget(self, app)
     end)
 
     local _self = self
-    function app_widget:spawn()
+    function widget:spawn()
         if app.terminal == true then
             awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. app.executable)
         else
@@ -224,7 +224,7 @@ local function create_app_widget(self, app)
         end
     end
 
-    function app_widget:select()
+    function widget:select()
         if _self._private.active_widget then
             _self._private.active_widget:unselect()
         end
@@ -245,7 +245,7 @@ local function create_app_widget(self, app)
         end
     end
 
-    function app_widget:unselect()
+    function widget:unselect()
         self:emit_signal("unselected")
         self.selected = false
         _self._private.active_widget = nil
@@ -263,7 +263,7 @@ local function create_app_widget(self, app)
         end
     end
 
-    return app_widget
+    return widget
 end
 
 local function search(self, text)
@@ -303,7 +303,7 @@ local function search(self, text)
     for _, entry in pairs(self._private.matched_entries) do
         -- Only add the widgets for apps that are part of the first page
         if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
-            self._private.grid:add(create_app_widget(self, entry))
+            self._private.grid:add(app_widget(self, entry))
         end
     end
 
@@ -362,7 +362,7 @@ local function page_forward(self, dir)
     for index, entry in pairs(self._private.matched_entries) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self._private.grid:add(create_app_widget(self, entry))
+            self._private.grid:add(app_widget(self, entry))
         end
     end
 
@@ -406,7 +406,7 @@ local function page_backward(self, dir)
     for index, entry in pairs(self._private.matched_entries) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self._private.grid:add(create_app_widget(self, entry))
+            self._private.grid:add(app_widget(self, entry))
         end
     end
 
@@ -473,7 +473,7 @@ local function reset(self)
     for index, entry in pairs(self._private.all_entries) do
         -- Only add the apps that are part of the first page
         if index <= self._private.apps_per_page then
-            self._private.grid:add(create_app_widget(self, entry))
+            self._private.grid:add(app_widget(self, entry))
         else
             break
         end
