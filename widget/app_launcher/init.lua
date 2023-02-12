@@ -573,6 +573,12 @@ local function generate_apps(self)
     end
 end
 
+-- Sets favorites
+function app_launcher:set_favorites(favorites)
+    self.favorites = favorites
+    generate_apps(self)
+end
+
 --- Scrolls up
 function app_launcher:scroll_up()
     scroll(self, "up")
