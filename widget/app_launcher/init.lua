@@ -8,6 +8,7 @@ local wibox = require("wibox")
 local beautiful = require("beautiful")
 local color = require(tostring(...):match(".*bling") .. ".helpers.color")
 local prompt = require(... .. ".prompt")
+local helpers = require(tostring(path):match(".*bling") .. ".helpers")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
 local table = table
@@ -532,14 +533,12 @@ local function generate_apps(self)
         end)
     end
 
-    local icon_theme = require(tostring(path):match(".*bling") .. ".helpers.icon_theme")(self.icon_theme, self.icon_size)
-
     for _, app in ipairs(apps) do
         if app.should_show(app) then
             local name = app_info.get_name(app)
             local commandline = app_info.get_commandline(app)
             local executable = app_info.get_executable(app)
-            local icon = icon_theme:get_gicon_path(app_info.get_icon(app))
+            local icon = helpers.icon_theme.get_gicon_path(app_info.get_icon(app), self.icon_theme, self.icon_size)
 
             -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
             if not has_value(self.skip_names, name) and not has_value(self.skip_commands, commandline) then
@@ -547,11 +546,13 @@ local function generate_apps(self)
                 if icon ~= "" or self.skip_empty_icons == false then
                     if icon == "" then
                         if self.default_app_icon_name ~= nil then
-                            icon = icon_theme:get_icon_path(self.default_app_icon_name)
+                            icon = helpers.icon_theme.get_icon_path(self.default_app_icon_name, self.icon_theme, self.icon_size)
                         elseif self.default_app_icon_path ~= nil then
                             icon = self.default_app_icon_path
                         else
-                            icon = icon_theme:choose_icon({"application-all", "application", "application-default-icon", "app"})
+                            icon = helpers.icon_theme.choose_icon(
+                                {"application-all", "application", "application-default-icon", "app"},
+                                self.icon_theme, self.icon_size)
                         end
                     end
 
