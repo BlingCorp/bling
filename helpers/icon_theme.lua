@@ -1,3 +1,7 @@
+-------------------------------------------
+-- @author https://github.com/Kasper24
+-- @copyright 2021-2022 Kasper24
+-------------------------------------------
 local lgi = require("lgi")
 local Gio = lgi.Gio
 local DesktopAppInfo = Gio.DesktopAppInfo
@@ -72,8 +76,8 @@ function _icon_theme.get_icon_path(icon_name, icon_theme, icon_size)
     return ""
 end
 
-function _icon_theme.get_client_icon_path(client, icon_theme, icon_size)
-    local desktop_app_info_filename_arr = DesktopAppInfo.search(client.class)[1]
+local function _get_client_icon_path(name, icon_theme, icon_size)
+    local desktop_app_info_filename_arr = DesktopAppInfo.search(name)[1]
     if desktop_app_info_filename_arr then
         local desktop_app_info_filename = desktop_app_info_filename_arr[1]
         if desktop_app_info_filename then
@@ -86,8 +90,12 @@ function _icon_theme.get_client_icon_path(client, icon_theme, icon_size)
             end
         end
     end
+end
 
-    return _icon_theme.choose_icon({"window", "window-manager", "xfwm4-default", "window_list"}, icon_theme, icon_size)
+function _icon_theme.get_client_icon_path(client, icon_theme, icon_size)
+    return _get_client_icon_path(client.class, icon_theme, icon_size) or
+            _get_client_icon_path(client.name, icon_theme, icon_size) or
+            _icon_theme.choose_icon({"window", "window-manager", "xfwm4-default", "window_list"}, icon_theme, icon_size)
 end
 
 return _icon_theme
