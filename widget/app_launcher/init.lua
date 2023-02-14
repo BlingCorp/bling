@@ -493,11 +493,11 @@ local function generate_apps(self)
     if self.sort_alphabetically then
         table.sort(apps, function(a, b)
             local app_a_score = app_info.get_name(a):lower()
-            if has_value(self.favorites, app_info.get_name(a)) then
+            if has_value(self.favorites, app_info.get_id(a)) then
                 app_a_score = "aaaaaaaaaaa" .. app_a_score
             end
             local app_b_score = app_info.get_name(b):lower()
-            if has_value(self.favorites, app_info.get_name(b)) then
+            if has_value(self.favorites, app_info.get_id(b)) then
                 app_b_score = "aaaaaaaaaaa" .. app_b_score
             end
 
@@ -506,11 +506,11 @@ local function generate_apps(self)
     elseif self.reverse_sort_alphabetically then
         table.sort(apps, function(a, b)
             local app_a_score = app_info.get_name(a):lower()
-            if has_value(self.favorites, app_info.get_name(a)) then
+            if has_value(self.favorites, app_info.get_id(a)) then
                 app_a_score = "zzzzzzzzzzz" .. app_a_score
             end
             local app_b_score = app_info.get_name(b):lower()
-            if has_value(self.favorites, app_info.get_name(b)) then
+            if has_value(self.favorites, app_info.get_id(b)) then
                 app_b_score = "zzzzzzzzzzz" .. app_b_score
             end
 
@@ -518,8 +518,8 @@ local function generate_apps(self)
         end)
     else
         table.sort(apps, function(a, b)
-            local app_a_favorite = has_value(self.favorites, app_info.get_name(a))
-            local app_b_favorite = has_value(self.favorites, app_info.get_name(b))
+            local app_a_favorite = has_value(self.favorites, app_info.get_id(a))
+            local app_b_favorite = has_value(self.favorites, app_info.get_id(b))
 
             if app_a_favorite and not app_b_favorite then
                 return true
