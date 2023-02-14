@@ -12,21 +12,6 @@ local GTK_THEME = Gtk.IconTheme.get_default()
 
 local _icon_theme = {}
 
-function _icon_theme.get_client_icon_path(client, icon_theme, icon_size)
-    local desktop_app_info_filename = DesktopAppInfo.search(client.class)[1][1]
-    if desktop_app_info_filename then
-        local desktop_app_info = DesktopAppInfo.new(desktop_app_info_filename)
-        if desktop_app_info then
-            local icon_name = desktop_app_info:get_string("Icon")
-            if icon_name then
-                return _icon_theme.get_icon_path(icon_name, icon_theme, icon_size)
-            end
-        end
-    end
-
-    return _icon_theme.choose_icon({"window", "window-manager", "xfwm4-default", "window_list"}, icon_theme, icon_size)
-end
-
 function _icon_theme.choose_icon(icons_names, icon_theme, icon_size)
     if icon_theme then
         GTK_THEME = Gtk.IconTheme.new()
@@ -89,6 +74,21 @@ function _icon_theme.get_icon_path(icon_name, icon_theme, icon_size)
     end
 
     return ""
+end
+
+function _icon_theme.get_client_icon_path(client, icon_theme, icon_size)
+    local desktop_app_info_filename = DesktopAppInfo.search(client.class)[1][1]
+    if desktop_app_info_filename then
+        local desktop_app_info = DesktopAppInfo.new(desktop_app_info_filename)
+        if desktop_app_info then
+            local icon_name = desktop_app_info:get_string("Icon")
+            if icon_name then
+                return _icon_theme.get_icon_path(icon_name, icon_theme, icon_size)
+            end
+        end
+    end
+
+    return _icon_theme.choose_icon({"window", "window-manager", "xfwm4-default", "window_list"}, icon_theme, icon_size)
 end
 
 return _icon_theme
