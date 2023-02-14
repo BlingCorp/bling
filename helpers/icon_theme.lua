@@ -24,7 +24,7 @@ function _icon_theme.get_client_icon_path(client, icon_theme, icon_size)
         end
     end
 
-    _icon_theme.choose_icon({"window", "window-manager", "xfwm4-default", "window_list"}, icon_theme, icon_size)
+    return _icon_theme.choose_icon({"window", "window-manager", "xfwm4-default", "window_list"}, icon_theme, icon_size)
 end
 
 function _icon_theme.choose_icon(icons_names, icon_theme, icon_size)
