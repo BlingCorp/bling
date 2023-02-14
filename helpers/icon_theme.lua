@@ -5,7 +5,10 @@
 local lgi = require("lgi")
 local Gio = lgi.Gio
 local DesktopAppInfo = Gio.DesktopAppInfo
+local AppInfo = Gio.DesktopAppInfo
 local Gtk = lgi.require("Gtk", "3.0")
+local string = string
+local ipairs = ipairs
 
 local ICON_SIZE = 48
 local GTK_THEME = Gtk.IconTheme.get_default()
@@ -76,26 +79,35 @@ function _icon_theme.get_icon_path(icon_name, icon_theme, icon_size)
     return ""
 end
 
-local function _get_client_icon_path(name, icon_theme, icon_size)
-    local desktop_app_info_filename_arr = DesktopAppInfo.search(name)[1]
-    if desktop_app_info_filename_arr then
-        local desktop_app_info_filename = desktop_app_info_filename_arr[1]
-        if desktop_app_info_filename then
-            local desktop_app_info = DesktopAppInfo.new(desktop_app_info_filename)
-            if desktop_app_info then
-                local icon_name = desktop_app_info:get_string("Icon")
-                if icon_name then
-                    return _icon_theme.get_icon_path(icon_name, icon_theme, icon_size)
+function _icon_theme.get_client_icon_path(client, icon_theme, icon_size)
+    local app_list = AppInfo.get_all()
+
+    local class = string.lower(client.class)
+    local name = string.lower(client.name)
+
+    for _, app in ipairs(app_list) do
+        local id = app:get_id()
+        local desktop_app_info = DesktopAppInfo.new(id)
+        if desktop_app_info then
+            local props = {
+                string.lower(desktop_app_info:get_string("Name") or ""),
+                string.lower(desktop_app_info:get_filename() or ""),
+                string.lower(desktop_app_info:get_startup_wm_class() or ""),
+                string.lower(desktop_app_info:get_string("Icon") or ""),
+                string.lower(desktop_app_info:get_string("Exec") or ""),
+                string.lower(desktop_app_info:get_string("Keywords") or "")
+            }
+
+            for _, prop in ipairs(props) do
+                if prop ~= "" and (prop == class or prop == name) then
+                    local icon = desktop_app_info:get_string("Icon")
+                    return _icon_theme.get_icon_path(icon, icon_theme, icon_size)
                 end
             end
         end
     end
-end
 
-function _icon_theme.get_client_icon_path(client, icon_theme, icon_size)
-    return _get_client_icon_path(client.class, icon_theme, icon_size) or
-            _get_client_icon_path(client.name, icon_theme, icon_size) or
-            _icon_theme.choose_icon({"window", "window-manager", "xfwm4-default", "window_list"}, icon_theme, icon_size)
+    return _icon_theme.choose_icon({"window", "window-manager", "xfwm4-default", "window_list"}, icon_theme, icon_size)
 end
 
 return _icon_theme
