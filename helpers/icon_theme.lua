@@ -90,18 +90,21 @@ function _icon_theme.get_client_icon_path(client, icon_theme, icon_size)
         local desktop_app_info = DesktopAppInfo.new(id)
         if desktop_app_info then
             local props = {
-                string.lower(desktop_app_info:get_string("Name") or ""),
-                string.lower(desktop_app_info:get_filename() or ""),
-                string.lower(desktop_app_info:get_startup_wm_class() or ""),
-                string.lower(desktop_app_info:get_string("Icon") or ""),
-                string.lower(desktop_app_info:get_string("Exec") or ""),
-                string.lower(desktop_app_info:get_string("Keywords") or "")
+                id:gsub(".desktop", ""),
+                desktop_app_info:get_string("Name"),
+                desktop_app_info:get_filename(),
+                desktop_app_info:get_startup_wm_class(),
+                desktop_app_info:get_string("Icon"),
+                desktop_app_info:get_string("Exec"),
+                desktop_app_info:get_string("Keywords")
             }
 
             for _, prop in ipairs(props) do
-                if prop ~= "" and (prop == class or prop == name) then
+                if prop ~= nil and (prop:lower() == class or prop:lower() == name) then
                     local icon = desktop_app_info:get_string("Icon")
-                    return _icon_theme.get_icon_path(icon, icon_theme, icon_size)
+                    if icon ~= nil then
+                        return _icon_theme.get_icon_path(icon, icon_theme, icon_size)
+                    end
                 end
             end
         end
