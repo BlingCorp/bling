@@ -7,7 +7,7 @@ local gfilesystem = require("gears.filesystem")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local color = require(tostring(...):match(".*bling") .. ".helpers.color")
-local prompt = require(... .. ".prompt")
+local prompt_widget = require(... .. ".prompt")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
 local table = table
@@ -563,6 +563,111 @@ local function generate_apps(self)
     end
 end
 
+local function build_widget(self)
+    local widget = self.widget_template()
+
+    self._private.prompt = widget:get_children_by_id("prompt_role")[1] or prompt_widget
+    {
+        prompt = self.prompt_label,
+        font = self.prompt_font,
+        reset_on_stop = self.reset_on_hide,
+        bg_cursor = beautiful.bg_normal or "#000000",
+        history_path = self.save_history == true and gfilesystem.get_cache_dir() .. "/history" or nil,
+    }
+    self._private.grid = widget:get_children_by_id("grid_role")[1] or wibox.widget
+    {
+        layout = wibox.layout.grid,
+        orientation = "horizontal",
+        homogeneous = true,
+        expand = self.expand_apps,
+        spacing = self.apps_spacing,
+        forced_num_cols = self.apps_per_column,
+        forced_num_rows = self.apps_per_row,
+        buttons =
+        {
+            awful.button({}, 4, function() self:scroll_up() end),
+            awful.button({}, 5, function() self:scroll_down() end)
+        }
+    }
+    self._private.widget = awful.popup
+    {
+        type = self.type,
+        visible = false,
+        ontop = true,
+        placement = self.placement,
+        border_width = self.border_width,
+        border_color = self.border_color,
+        shape = self.shape,
+        bg =  self.background,
+        widget = self.widget_template() or
+        {
+            layout = wibox.layout.fixed.vertical,
+            {
+                widget = wibox.container.background,
+                forced_height = dpi(100),
+                bg = self.prompt_bg_color,
+                fg = self.prompt_text_color,
+                {
+                    widget = wibox.container.margin,
+                    margins = dpi(30),
+                    {
+                        widget = wibox.container.place,
+                        halign = "left",
+                        valign = "center",
+                        {
+                            layout = wibox.layout.fixed.horizontal,
+                            spacing = dpi(10),
+                            {
+                                widget = wibox.widget.textbox,
+                                font = self.prompt_icon_font,
+                                markup = string.format("<span size='xx-large' foreground='%s'>%s</span>", args.prompt_icon_color, args.prompt_icon)
+                            },
+                            self._private.prompt.textbox
+                        }
+                    }
+                }
+            },
+            {
+                widget = wibox.container.margin,
+                margins = dpi(30),
+                self._private.grid
+            }
+        }
+    }
+
+    self._private.prompt:connect_signal("text::changed", function(text)
+        if text == self._private.text then
+            return
+        end
+
+        self._private.text = text
+        self._private.search_timer:again()
+    end)
+
+    self._private.prompt:connect_signal("key::press", function(mod, key, cmd)
+        if key == "Escape" then
+            self:hide()
+        end
+        if key == "Return" then
+            if self._private.active_widget ~= nil then
+                self._private.active_widget:spawn()
+            end
+        end
+        if key == "Up" then
+            self:scroll_up()
+        end
+        if key == "Down" then
+            self:scroll_down()
+        end
+        if key == "Left" then
+            self:scroll_left()
+        end
+        if key == "Right" then
+            self:scroll_right()
+        end
+    end)
+end
+
 -- Sets favorites
 function app_launcher:set_favorites(favorites)
     self.favorites = favorites
@@ -777,106 +882,6 @@ local function new(args)
         end
     }
 
-
-    ret._private.prompt = prompt
-    {
-        prompt = ret.prompt_label,
-        font = ret.prompt_font,
-        reset_on_stop = ret.reset_on_hide,
-        bg_cursor = beautiful.bg_normal or "#000000",
-        history_path = ret.save_history == true and gfilesystem.get_cache_dir() .. "/history" or nil,
-        changed_callback = function(text)
-            if text == ret._private.text then
-                return
-            end
-
-            ret._private.text = text
-            ret._private.search_timer:again()
-        end,
-        keypressed_callback = function(mod, key, cmd)
-            if key == "Escape" then
-                ret:hide()
-            end
-            if key == "Return" then
-                if ret._private.active_widget ~= nil then
-                    ret._private.active_widget:spawn()
-                end
-            end
-            if key == "Up" then
-                ret:scroll_up()
-            end
-            if key == "Down" then
-                ret:scroll_down()
-            end
-            if key == "Left" then
-                ret:scroll_left()
-            end
-            if key == "Right" then
-                ret:scroll_right()
-            end
-        end
-    }
-    ret._private.grid = wibox.widget
-    {
-        layout = wibox.layout.grid,
-        orientation = "horizontal",
-        homogeneous = true,
-        expand = ret.expand_apps,
-        spacing = ret.apps_spacing,
-        forced_num_cols = ret.apps_per_column,
-        forced_num_rows = ret.apps_per_row,
-        buttons =
-        {
-            awful.button({}, 4, function() ret:scroll_up() end),
-            awful.button({}, 5, function() ret:scroll_down() end)
-        }
-    }
-    ret._private.widget = awful.popup
-    {
-        type = args.type,
-        visible = false,
-        ontop = true,
-        placement = ret.placement,
-        border_width = ret.border_width,
-        border_color = ret.border_color,
-        shape = ret.shape,
-        bg =  ret.background,
-        widget = args.widget_template ~= nil and args.widget_template(ret._private.prompt.textbox, ret._private.grid) or
-        {
-            layout = wibox.layout.fixed.vertical,
-            {
-                widget = wibox.container.background,
-                forced_height = dpi(100),
-                bg = ret.prompt_bg_color,
-                fg = ret.prompt_text_color,
-                {
-                    widget = wibox.container.margin,
-                    margins = dpi(30),
-                    {
-                        widget = wibox.container.place,
-                        halign = "left",
-                        valign = "center",
-                        {
-                            layout = wibox.layout.fixed.horizontal,
-                            spacing = dpi(10),
-                            {
-                                widget = wibox.widget.textbox,
-                                font = ret.prompt_icon_font,
-                                markup = string.format("<span size='xx-large' foreground='%s'>%s</span>", args.prompt_icon_color, args.prompt_icon)
-                            },
-                            ret._private.prompt.textbox
-                        }
-                    }
-                }
-            },
-            {
-                widget = wibox.container.margin,
-                margins = dpi(30),
-                ret._private.grid
-            }
-        }
-    }
-
     if ret.rubato and ret.rubato.x then
         ret.rubato.x:subscribe(function(pos)
             ret._private.widget.x = pos
@@ -921,6 +926,7 @@ local function new(args)
         end})
     end)
 
+    build_widget(ret)
     generate_apps(ret)
     reset(ret)
 
