@@ -755,8 +755,8 @@ local function new(args)
     ret._private = {}
     ret._private.text = ""
 
-    gtable.crush(ret, app_launcher)
-    gtable.crush(ret, args)
+    gtable.crush(ret, app_launcher, true)
+    gtable.crush(ret, args, true)
 
     -- These widgets need to be later accessed
     ret._private.prompt = prompt
