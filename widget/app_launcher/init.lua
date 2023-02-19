@@ -731,7 +731,7 @@ local function new(args)
     args.apps_spacing = args.apps_spacing or dpi(30)
     args.expand_apps = args.expand_apps == nil and true or args.expand_apps
 
-    args.prompt_color = args.prompt_color or beautiful.fg_normal or "#FFFFFF"
+    args.prompt_bg_color = args.prompt_bg_color or beautiful.fg_normal or "#FFFFFF"
     args.prompt_icon_font = args.prompt_icon_font or beautiful.font
     args.prompt_icon_color = args.prompt_icon_color or beautiful.bg_normal or "#000000"
     args.prompt_icon = args.prompt_icon or ""
@@ -840,7 +840,7 @@ local function new(args)
             {
                 widget = wibox.container.background,
                 forced_height = dpi(100),
-                bg = ret.prompt_color,
+                bg = ret.prompt_bg_color,
                 fg = ret.prompt_text_color,
                 {
                     widget = wibox.container.margin,
