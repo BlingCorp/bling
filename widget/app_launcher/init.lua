@@ -94,43 +94,33 @@ local function app_widget(self, app)
     local widget = nil
 
     if self.app_template == nil then
-        local icon = self.app_show_icon == true and
+        local icon = wibox.widget
         {
             widget = wibox.widget.imagebox,
             id = "icon_role",
-            halign = self.app_icon_halign,
-            forced_width = self.app_icon_width,
-            forced_height = self.app_icon_height,
+            forced_width = dpi(70),
+            forced_height = dpi(70),
             image = app.icon
-        } or nil
+        }
 
-        local name = self.app_show_name == true and
+        local name = wibox.widget
         {
             widget = wibox.widget.textbox,
             id = "name_role",
             font = self.app_name_font,
             markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, app.name)
-        } or nil
-
-        local generic_name = app.generic_name ~= nil and self.app_show_generic_name == true and
-        {
-            widget = wibox.widget.textbox,
-            id = "generic_name_role",
-            font = self.app_name_font,
-            markup = app.generic_name ~= "" and "<span weight='300'> <i>(" .. app.generic_name .. ")</i></span>" or ""
-        } or nil
+        }
 
         widget = wibox.widget
         {
             widget = wibox.container.background,
             id = "background_role",
-            forced_width = self.app_width,
-            forced_height = self.app_height,
-            shape = self.app_shape,
+            forced_width = dpi(300),
+            forced_height = dpi(120),
             bg = self.app_normal_color,
             {
                 widget = wibox.container.margin,
-                margins = self.app_content_padding,
+                margins = dpi(10),
                 {
                     -- Using this hack instead of container.place because that will fuck with the name/icon halign
                     layout = wibox.layout.align.vertical,
@@ -138,18 +128,9 @@ local function app_widget(self, app)
                     nil,
                     {
                         layout = wibox.layout.fixed.vertical,
-                        spacing = self.app_content_spacing,
+                        spacing = dpi(10),
                         icon,
-                        {
-                            widget = wibox.container.place,
-                            halign = self.app_name_halign,
-                            {
-                                layout = wibox.layout.fixed.horizontal,
-                                spacing = self.app_name_generic_name_spacing,
-                                name,
-                                generic_name
-                            }
-                        }
+                        name
                     },
                     nil
                 }
@@ -750,30 +731,14 @@ local function new(args)
     args.apps_spacing = args.apps_spacing or dpi(30)
     args.expand_apps = args.expand_apps == nil and true or args.expand_apps
 
-    args.prompt_height = args.prompt_height or dpi(100)
-    args.prompt_margins = args.prompt_margins or dpi(0)
-    args.prompt_paddings = args.prompt_paddings or dpi(30)
-    args.prompt_shape = args.prompt_shape or nil
     args.prompt_color = args.prompt_color or beautiful.fg_normal or "#FFFFFF"
-    args.prompt_border_width = args.prompt_border_width or beautiful.border_width or dpi(0)
-    args.prompt_border_color = args.prompt_border_color or beautiful.border_color or args.prompt_color
-    args.prompt_text_halign = args.prompt_text_halign or "left"
-    args.prompt_text_valign = args.prompt_text_valign or "center"
-    args.prompt_icon_text_spacing = args.prompt_icon_text_spacing or dpi(10)
-    args.prompt_show_icon = args.prompt_show_icon == nil and true or args.prompt_show_icon
     args.prompt_icon_font = args.prompt_icon_font or beautiful.font
     args.prompt_icon_color = args.prompt_icon_color or beautiful.bg_normal or "#000000"
     args.prompt_icon = args.prompt_icon or ""
-    args.prompt_icon_markup = args.prompt_icon_markup or string.format("<span size='xx-large' foreground='%s'>%s</span>", args.prompt_icon_color, args.prompt_icon)
-    args.prompt_text = args.prompt_text or "<b>Search</b>: "
-    args.prompt_start_text = args.prompt_start_text or ""
+    args.prompt_label = args.prompt_label or "<b>Search</b>: "
     args.prompt_font = args.prompt_font or beautiful.font
     args.prompt_text_color = args.prompt_text_color or beautiful.bg_normal or "#000000"
-    args.prompt_cursor_color = args.prompt_cursor_color or beautiful.bg_normal or "#000000"
 
-    args.app_width = args.app_width or dpi(300)
-    args.app_height = args.app_height or dpi(120)
-    args.app_shape = args.app_shape or nil
     args.app_normal_color = args.app_normal_color or beautiful.bg_normal or "#000000"
     args.app_normal_hover_color = args.app_normal_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_normal_color), 2.5)) or
@@ -782,19 +747,9 @@ local function new(args)
     args.app_selected_hover_color = args.app_selected_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 2.5)) or
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 0.5))
-    args.app_content_padding = args.app_content_padding or dpi(10)
-    args.app_content_spacing = args.app_content_spacing or dpi(10)
-    args.app_show_icon = args.app_show_icon == nil and true or args.app_show_icon
-    args.app_icon_halign = args.app_icon_halign or "center"
-    args.app_icon_width = args.app_icon_width or dpi(70)
-    args.app_icon_height = args.app_icon_height or dpi(70)
-    args.app_show_name = args.app_show_name == nil and true or args.app_show_name
-    args.app_name_generic_name_spacing = args.app_name_generic_name_spacing or dpi(0)
-    args.app_name_halign = args.app_name_halign or "center"
-    args.app_name_font = args.app_name_font or beautiful.font
     args.app_name_normal_color = args.app_name_normal_color or beautiful.fg_normal or "#FFFFFF"
     args.app_name_selected_color = args.app_name_selected_color or beautiful.bg_normal or "#000000"
-    args.app_show_generic_name = args.app_show_generic_name ~= nil and args.app_show_generic_name or false
+    args.app_name_font = args.app_name_font or beautiful.font
 
     local ret = gobject {}
     ret._private = {}
@@ -806,11 +761,10 @@ local function new(args)
     -- These widgets need to be later accessed
     ret._private.prompt = prompt
     {
-        prompt = ret.prompt_text,
-        text = ret.prompt_start_text,
+        prompt = ret.prompt_label,
         font = ret.prompt_font,
         reset_on_stop = ret.reset_on_hide,
-        bg_cursor = ret.prompt_cursor_color,
+        bg_cursor = beautiful.bg_normal or "#000000",
         history_path = ret.save_history == true and gfilesystem.get_cache_dir() .. "/history" or nil,
         changed_callback = function(text)
             if text == ret._private.text then
@@ -884,33 +838,26 @@ local function new(args)
         {
             layout = wibox.layout.fixed.vertical,
             {
-                widget = wibox.container.margin,
-                margins = ret.prompt_margins,
+                widget = wibox.container.background,
+                forced_height = dpi(100),
+                bg = ret.prompt_color,
+                fg = ret.prompt_text_color,
                 {
-                    widget = wibox.container.background,
-                    forced_height = ret.prompt_height,
-                    shape = ret.prompt_shape,
-                    bg = ret.prompt_color,
-                    fg = ret.prompt_text_color,
-                    border_width = ret.prompt_border_width,
-                    border_color = ret.prompt_border_color,
+                    widget = wibox.container.margin,
+                    margins = dpi(30),
                     {
-                        widget = wibox.container.margin,
-                        margins = ret.prompt_paddings,
+                        widget = wibox.container.place,
+                        halign = "left",
+                        valign = "center",
                         {
-                            widget = wibox.container.place,
-                            halign = ret.prompt_text_halign,
-                            valign = ret.prompt_text_valign,
+                            layout = wibox.layout.fixed.horizontal,
+                            spacing = dpi(10),
                             {
-                                layout = wibox.layout.fixed.horizontal,
-                                spacing = ret.prompt_icon_text_spacing,
-                                {
-                                    widget = wibox.widget.textbox,
-                                    font = ret.prompt_icon_font,
-                                    markup = ret.prompt_icon_markup
-                                },
-                                ret._private.prompt.textbox
-                            }
+                                widget = wibox.widget.textbox,
+                                font = ret.prompt_icon_font,
+                                markup = string.format("<span size='xx-large' foreground='%s'>%s</span>", args.prompt_icon_color, args.prompt_icon)
+                            },
+                            ret._private.prompt.textbox
                         }
                     }
                 }
@@ -977,25 +924,6 @@ local function new(args)
     reset(ret)
 
     return ret
-end
-
-function app_launcher.text(args)
-    args = args or {}
-
-    args.prompt_height = args.prompt_height or dpi(50)
-    args.prompt_margins = args.prompt_margins or dpi(30)
-    args.prompt_paddings = args.prompt_paddings or dpi(15)
-    args.app_width = args.app_width or dpi(400)
-    args.app_height = args.app_height or dpi(40)
-    args.apps_spacing = args.apps_spacing or dpi(10)
-    args.apps_per_row = args.apps_per_row or 15
-    args.apps_per_column = args.apps_per_column or 1
-    args.app_name_halign = args.app_name_halign or "left"
-    args.app_show_icon = args.app_show_icon ~= nil and args.app_show_icon or false
-    args.app_show_generic_name = args.app_show_generic_name == nil and true or args.app_show_generic_name
-    args.apps_margin = args.apps_margin or { left = dpi(40), right  = dpi(40), bottom = dpi(30) }
-
-    return new(args)
 end
 
 function app_launcher.mt:__call(...)
