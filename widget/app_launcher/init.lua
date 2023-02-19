@@ -758,7 +758,15 @@ local function new(args)
     gtable.crush(ret, app_launcher, true)
     gtable.crush(ret, args, true)
 
-    -- These widgets need to be later accessed
+    ret._private.search_timer = gtimer {
+        timeout = 0.05,
+        autostart = true,
+        single_shot = true,
+        callback = function()
+            search(ret, ret._private.text)
+        end
+    }
+
     ret._private.prompt = prompt
     {
         prompt = ret.prompt_label,
@@ -771,20 +779,8 @@ local function new(args)
                 return
             end
 
-            if ret._private.search_timer ~= nil and ret._private.search_timer.started then
-                ret._private.search_timer:stop()
-            end
-
-            ret._private.search_timer = gtimer {
-                timeout = 0.05,
-                autostart = true,
-                single_shot = true,
-                callback = function()
-                    search(ret, text)
-                end
-            }
-
             ret._private.text = text
+            ret._private.search_timer:again()
         end,
         keypressed_callback = function(mod, key, cmd)
             if key == "Escape" then
