@@ -25,6 +25,14 @@ local INOTIFY_SCRIPT = [[ bash -c "while (inotifywait -e modify /usr/share/appli
 local AWESOME_SENSIBLE_TERMINAL_PATH = debug.getinfo(1).source:match("@?(.*/)") ..
                                            "awesome-sensible-terminal"
 
+local function default_value(value, default)
+    if value == nil then
+        return default
+    else
+        return value
+    end
+end
+
 local function string_levenshtein(str1, str2)
 	local len1 = string.len(str1)
 	local len2 = string.len(str2)
@@ -693,51 +701,50 @@ end
 local function new(args)
     args = args or {}
 
-    args.favorites = args.favorites or {}
-    args.search_commands = args.search_commands == nil and true or args.search_commands
-    args.skip_names = args.skip_names or {}
-    args.skip_commands = args.skip_commands or {}
-    args.skip_empty_icons = args.skip_empty_icons ~= nil and args.skip_empty_icons or false
-    args.sort_alphabetically = args.sort_alphabetically == nil and true or args.sort_alphabetically
-    args.reverse_sort_alphabetically = args.reverse_sort_alphabetically ~= nil and args.reverse_sort_alphabetically or false
-    args.select_before_spawn = args.select_before_spawn == nil and true or args.select_before_spawn
-    args.hide_on_left_clicked_outside = args.hide_on_left_clicked_outside == nil and true or args.hide_on_left_clicked_outside
-    args.hide_on_right_clicked_outside = args.hide_on_right_clicked_outside == nil and true or args.hide_on_right_clicked_outside
-    args.hide_on_launch = args.hide_on_launch == nil and true or args.hide_on_launch
-    args.try_to_keep_index_after_searching = args.try_to_keep_index_after_searching ~= nil and args.try_to_keep_index_after_searching or false
-    args.reset_on_hide = args.reset_on_hide == nil and true or args.reset_on_hide
-    args.save_history = args.save_history == nil and true or args.save_history
-    args.wrap_page_scrolling = args.wrap_page_scrolling == nil and true or args.wrap_page_scrolling
-    args.wrap_app_scrolling = args.wrap_app_scrolling == nil and true or args.wrap_app_scrolling
+    args.favorites = default_value(args.favorites, {})
+    args.search_commands = default_value(args.search_commands, true)
+    args.skip_names = default_value(args.skip_names, {})
+    args.skip_commands = default_value(args.skip_commands, {})
+    args.skip_empty_icons = default_value(args.skip_empty_icons, false)
+    args.sort_alphabetically = default_value(args.sort_alphabetically, true)
+    args.reverse_sort_alphabetically = default_value(args.reverse_sort_alphabetically, false)
+    args.select_before_spawn = default_value(args.select_before_spawn, true)
+    args.hide_on_left_clicked_outside = default_value(args.hide_on_left_clicked_outside, true)
+    args.hide_on_right_clicked_outside = default_value(args.hide_on_right_clicked_outside, true)
+    args.hide_on_launch = default_value(args.hide_on_launch, true)
+    args.try_to_keep_index_after_searching = default_value(args.try_to_keep_index_after_searching, false)
+    args.reset_on_hide = default_value(args.reset_on_hide, true)
+    args.save_history = default_value(args.save_history, true)
+    args.wrap_page_scrolling = default_value(args.wrap_page_scrolling, true)
+    args.wrap_app_scrolling = default_value(args.wrap_app_scrolling, true)
 
-    args.type = args.type or "dock"
-    args.show_on_focused_screen = args.show_on_focused_screen == nil and true or args.show_on_focused_screen
-    args.screen = args.screen or capi.screen.primary
-    args.placement = args.placement or awful.placement.centered
-    args.rubato = args.rubato or nil
-    args.background = args.background or "#000000"
-    args.border_width = args.border_width or beautiful.border_width or dpi(0)
-    args.border_color = args.border_color or beautiful.border_color or "#FFFFFF"
-    args.shape = args.shape or nil
+    args.type = default_value(args.type, "dock")
+    args.show_on_focused_screen = default_value(args.show_on_focused_screen, true)
+    args.screen = default_value(args.screen, capi.screen.primary)
+    args.placement = default_value(args.placement, awful.placement.centered)
+    args.rubato = default_value(args.rubato, nil)
+    args.background = default_value(args.background, "#000000")
+    args.border_width = default_value(args.border_width, beautiful.border_width or dpi(0))
+    args.border_color = default_value(args.border_color, beautiful.border_color or "#FFFFFF")
+    args.shape = default_value(args.shape, nil)
 
-    args.default_app_icon_name = args.default_app_icon_name or nil
-    args.default_app_icon_path = args.default_app_icon_path or nil
-    args.icon_theme = args.icon_theme or nil
-    args.icon_size = args.icon_size or nil
+    args.default_app_icon_name = default_value(args.default_app_icon_name, nil)
+    args.default_app_icon_path = default_value(args.default_app_icon_path, nil)
+    args.icon_theme = default_value(args.icon_theme, nil)
+    args.icon_size = default_value(args.icon_size, nil)
 
-    args.apps_per_row = args.apps_per_row or 5
-    args.apps_per_column = args.apps_per_column or 3
-    args.apps_margin = args.apps_margin or dpi(30)
-    args.apps_spacing = args.apps_spacing or dpi(30)
-    args.expand_apps = args.expand_apps == nil and true or args.expand_apps
+    args.apps_per_row = default_value(args.apps_per_row, 5)
+    args.apps_per_column = default_value(args.apps_per_column, 3)
+    args.apps_spacing = default_value(args.apps_spacing, dpi(30))
+    args.expand_apps = default_value(args.expand_apps, true)
 
-    args.prompt_bg_color = args.prompt_bg_color or beautiful.fg_normal or "#FFFFFF"
-    args.prompt_icon_font = args.prompt_icon_font or beautiful.font
-    args.prompt_icon_color = args.prompt_icon_color or beautiful.bg_normal or "#000000"
-    args.prompt_icon = args.prompt_icon or ""
-    args.prompt_label = args.prompt_label or "<b>Search</b>: "
-    args.prompt_font = args.prompt_font or beautiful.font
-    args.prompt_text_color = args.prompt_text_color or beautiful.bg_normal or "#000000"
+    args.prompt_bg_color = default_value(args.prompt_bg_color, beautiful.fg_normal or "#FFFFFF")
+    args.prompt_icon_font = default_value(args.prompt_icon_font, beautiful.font)
+    args.prompt_icon_color = default_value(args.prompt_icon_color, beautiful.bg_normal or "#000000")
+    args.prompt_icon = default_value(args.prompt_icon, "")
+    args.prompt_label = default_value(args.prompt_label, "<b>Search</b>: ")
+    args.prompt_font = default_value(args.prompt_font, beautiful.font)
+    args.prompt_text_color = default_value(args.prompt_text_color, beautiful.bg_normal or "#000000")
 
     args.app_normal_color = args.app_normal_color or beautiful.bg_normal or "#000000"
     args.app_normal_hover_color = args.app_normal_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
@@ -747,9 +754,9 @@ local function new(args)
     args.app_selected_hover_color = args.app_selected_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 2.5)) or
         color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 0.5))
-    args.app_name_normal_color = args.app_name_normal_color or beautiful.fg_normal or "#FFFFFF"
-    args.app_name_selected_color = args.app_name_selected_color or beautiful.bg_normal or "#000000"
-    args.app_name_font = args.app_name_font or beautiful.font
+    args.app_name_normal_color = default_value(args.app_name_normal_color, beautiful.fg_normal or "#FFFFFF")
+    args.app_name_selected_color = default_value(args.app_name_selected_color, beautiful.bg_normal or "#000000")
+    args.app_name_font = default_value(args.app_name_font, beautiful.font)
 
     local ret = gobject {}
     ret._private = {}
@@ -860,7 +867,7 @@ local function new(args)
             },
             {
                 widget = wibox.container.margin,
-                margins = ret.apps_margin,
+                margins = dpi(30),
                 ret._private.grid
             }
         }
