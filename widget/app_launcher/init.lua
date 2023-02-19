@@ -759,12 +759,15 @@ local function new(args)
     args.app_name_font = default_value(args.app_name_font, beautiful.font)
 
     local ret = gobject {}
-    ret._private = {}
-    ret._private.text = ""
-
     gtable.crush(ret, app_launcher, true)
     gtable.crush(ret, args, true)
 
+    ret._private = {}
+    ret._private.text = ""
+    ret._private.max_apps_per_page = ret.apps_per_column * ret.apps_per_row
+    ret._private.apps_per_page = ret._private.max_apps_per_page
+    ret._private.pages_count = 0
+    ret._private.current_page = 1
     ret._private.search_timer = gtimer {
         timeout = 0.05,
         autostart = true,
@@ -773,6 +776,7 @@ local function new(args)
             search(ret, ret._private.text)
         end
     }
+
 
     ret._private.prompt = prompt
     {
@@ -872,12 +876,6 @@ local function new(args)
             }
         }
     }
-
-    -- Private variables to be used to be used by the scrolling and searching functions
-    ret._private.max_apps_per_page = ret.apps_per_column * ret.apps_per_row
-    ret._private.apps_per_page = ret._private.max_apps_per_page
-    ret._private.pages_count = 0
-    ret._private.current_page = 1
 
     if ret.rubato and ret.rubato.x then
         ret.rubato.x:subscribe(function(pos)
