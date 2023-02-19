@@ -624,28 +624,18 @@ function app_launcher:show()
         if animation.x then
             animation.x.ended:unsubscribe()
             animation.x:set(self._private.widget.goal_x)
-            gtimer {
-                timeout = 0.01,
-                call_now = false,
-                autostart = true,
-                single_shot = true,
-                callback = function()
-                    screen.app_launcher.visible = true
-                end
-            }
+            gtimer.start_new(0.01, function()
+                screen.app_launcher.visible = true
+                return false
+            end)
         end
         if animation.y then
             animation.y.ended:unsubscribe()
             animation.y:set(self._private.widget.goal_y)
-            gtimer {
-                timeout = 0.01,
-                call_now = false,
-                autostart = true,
-                single_shot = true,
-                callback = function()
-                    screen.app_launcher.visible = true
-                end
-            }
+            gtimer.start_new(0.01, function()
+                screen.app_launcher.visible = true
+                return false
+            end)
         end
     else
         screen.app_launcher.visible = true
