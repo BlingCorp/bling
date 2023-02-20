@@ -13,6 +13,7 @@ local tonumber = tonumber
 local ceil = math.ceil
 local ipairs = ipairs
 local string = string
+local type = type
 local capi = {
     awesome = awesome,
     root = root,
@@ -78,7 +79,6 @@ end
 local function generate_markup(self)
     local wp = self._private
 
-    local icon_size = dpi(ceil(wp.icon_size * 1024))
     local label_size = dpi(ceil(wp.label_size * 1024))
     local text_size = dpi(ceil(wp.text_size * 1024))
     local cursor_size = dpi(ceil(wp.cursor_size * 1024))
@@ -90,9 +90,17 @@ local function generate_markup(self)
 
     local markup = ""
     if wp.icon ~= nil then
-        markup = string.format(
-            '<span font_family="%s" font_size="%s" foreground="%s">%s  </span>',
-            wp.icon.font, icon_size, wp.icon_color, wp.icon.icon)
+        if type(wp.icon) == "table" then
+            local icon_size = dpi(ceil(wp.icon.size * 1024))
+            markup = string.format(
+                '<span font_family="%s" font_size="%s" foreground="%s">%s  </span>',
+                wp.icon.font, icon_size, wp.icon.color, wp.icon.icon)
+        else
+            local icon_size = dpi(ceil(wp.icon_size * 1024))
+            markup = string.format(
+                '<span font_family="%s" font_size="%s" foreground="%s">%s  </span>',
+                wp.icon_font, icon_size, wp.icon_color, wp.icon)
+        end
     end
 
     if self._private.state == true then
