@@ -600,7 +600,7 @@ local function build_widget(self)
         border_width = self.border_width,
         border_color = self.border_color,
         shape = self.shape,
-        bg =  self.background,
+        bg =  self.bg,
         widget = widget
     }
 
@@ -725,7 +725,7 @@ local function new(args)
     args.show_on_focused_screen = default_value(args.show_on_focused_screen, true)
     args.screen = default_value(args.screen, capi.screen.primary)
     args.placement = default_value(args.placement, awful.placement.centered)
-    args.background = default_value(args.background, "#000000")
+    args.bg = default_value(args.bg, "#000000")
     args.border_width = default_value(args.border_width, beautiful.border_width or dpi(0))
     args.border_color = default_value(args.border_color, beautiful.border_color or "#FFFFFF")
     args.shape = default_value(args.shape, nil)
