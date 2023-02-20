@@ -538,6 +538,7 @@ local function build_widget(self)
         self._private.prompt = wibox.widget
         {
             widget = prompt_widget,
+            always_on = true,
             reset_on_stop = self.reset_on_hide,
             icon_font = self.prompt_icon_font,
             icon_size = self.prompt_icon_size,
