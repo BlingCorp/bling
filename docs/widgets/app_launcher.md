@@ -58,38 +58,28 @@ local args = {
     icon_size = 24                                                    -- Set icon size
 
     type = "dock"                                                     -- awful.popup type ("dock", "desktop", "normal"...).  See awesomewm docs for more detail
-    show_on_focused_screen = true                                     -- Should app launcher show on currently focused screen
-    screen = awful.screen                                             -- Screen you want the launcher to launch to
-    placement = awful.placement.top_left                              -- Where launcher should be placed ("awful.placement.centered").
-    background = "#FFFFFF"                                            -- Set bg color
-    border_width = dpi(0)                                             -- Set border width of popup
-    border_color = "#FFFFFF"                                          -- Set border color of popup
-    shape = function(cr, width, height)                               -- Set shape for launcher
+    show_on_focused_screen = true                                     -- Should the app launcher popup show on currently focused screen
+    screen = awful.screen                                             -- Screen you want the launcher popup to open on
+    placement = awful.placement.top_left                              -- Where launcher popup should be placed
+    bg = "#FFFFFF"                                                    -- Set launcher popup bg color
+    border_width = dpi(0)                                             -- Set launcher popup border width of popup
+    border_color = "#FFFFFF"                                          -- Set launcher popup border color of popup
+    shape = function(cr, width, height)                               -- Set launcher popup shape
       gears.shape.rectangle(cr, width, height)
     end
 
-    prompt_height = dpi(50)                                           -- Prompt height
-    prompt_margins = dpi(30)                                          -- Prompt margins
-    prompt_paddings = dpi(15)                                         -- Prompt padding
-    prompt_color = "#000000"                                          -- Prompt background color
-    prompt_border_width = dpi(0)                                      -- Prompt border width
-    prompt_border_color = "#000000"                                   -- Prompt border color
-    prompt_text_halign = "center"                                     -- Prompt text horizontal alignment
-    prompt_text_valign = "center"                                     -- Prompt text vertical alignment
-    prompt_icon_text_spacing = dpi(10)                                -- Prompt icon text spacing
-    prompt_show_icon = true                                           -- Should prompt show icon (?)
+    prompt_bg_color = "#000000"                                       -- Prompt background color
     prompt_icon_font = "Comic Sans"                                   -- Prompt icon font
-    prompt_icon_color = "#000000"                                     -- Prompt icon color
+    prompt_icon_size = 15                                             -- Prompt icon size
+    prompt_icon_color = "#FFFFFF"                                     -- Prompt icon color
     prompt_icon = ""                                                 -- Prompt icon
-    prompt_icon_markup = string.format(
-        "<span size='xx-large' foreground='%s'>%s</span>",
-        args.prompt_icon_color, args.prompt_icon
-    )                                                                 -- Prompt icon markup
-    prompt_text = "<b>Search</b>:"                                    -- Prompt text
-    prompt_start_text = "manager"                                     -- Set string for prompt to start with
-    prompt_font = "Comic Sans"                                        -- Prompt font
-    prompt_text_color = "#FFFFFF"                                     -- Prompt text color
-    prompt_cursor_color = "#000000"                                   -- Prompt cursor color
+    prompt_label_font = "Comic Sans"                                  -- Prompt labe font
+    prompt_label_size = 15                                            -- Prompt labe font
+    prompt_label_color = "#FFFFFF"                                    -- Prompt labe font
+    prompt_label = "Search"                                           -- Prompt labe font
+    prompt_text_font =  "Comic Sans"                                  -- Prompt text font
+    prompt_text_size = 15                                             -- Prompt text font
+    prompt_text_color = "#FFFFFF"                                     -- Prompt text font
 
     apps_per_row = 3                                                  -- Set how many apps should appear in each row
     apps_per_column = 3                                               -- Set how many apps should appear in each column
