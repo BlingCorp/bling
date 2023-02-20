@@ -406,11 +406,11 @@ local function scroll(self, dir)
         if_cant_scroll_func = function() page_forward(self, "down") end
     elseif dir == "left" then
         can_scroll = self._private.grid:get_widgets_at(pos.row, pos.col - 1) ~= nil
-        step_size = -self.apps_per_row
+        step_size = -self._private.grid.forced_num_rows
         if_cant_scroll_func = function() page_backward(self, "left") end
     elseif dir == "right" then
         can_scroll = self._private.grid:get_widgets_at(pos.row, pos.col + 1) ~= nil
-        step_size = self.apps_per_row
+        step_size = self._private.grid.forced_num_cols
         if_cant_scroll_func = function() page_forward(self, "right") end
     end
 
@@ -560,11 +560,6 @@ local function build_widget(self)
             spacing = self.apps_spacing,
             forced_num_cols = self.apps_per_column,
             forced_num_rows = self.apps_per_row,
-            buttons =
-            {
-                awful.button({}, 4, function() self:scroll_up() end),
-                awful.button({}, 5, function() self:scroll_down() end)
-            }
         }
         widget = wibox.widget
         {
@@ -608,6 +603,14 @@ local function build_widget(self)
         widget = widget
     }
 
+    self._private.grid:connect_signal("button::press", function(_, lx, ly, button, mods, find_widgets_result)
+        if button == 4 then
+            self:scroll_up()
+        elseif button == 5 then
+            self:scroll_down()
+        end
+    end)
+
     self._private.prompt:connect_signal("text::changed", function(_, text)
         if text == self._private.text then
             return
@@ -639,6 +642,9 @@ local function build_widget(self)
             self:scroll_right()
         end
     end)
+
+    self._private.max_apps_per_page = self._private.grid.forced_num_cols * self._private.grid.forced_num_rows
+    self._private.apps_per_page = self._private.max_apps_per_page
 end
 
 -- Sets favorites
@@ -839,8 +845,6 @@ local function new(args)
 
     ret._private = {}
     ret._private.text = ""
-    ret._private.max_apps_per_page = ret.apps_per_column * ret.apps_per_row
-    ret._private.apps_per_page = ret._private.max_apps_per_page
     ret._private.pages_count = 0
     ret._private.current_page = 1
     ret._private.search_timer = gtimer {
