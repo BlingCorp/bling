@@ -675,106 +675,27 @@ end
 
 --- Shows the app launcher
 function app_launcher:show()
-    local screen = self.screen
     if self.show_on_focused_screen then
-        screen = awful.screen.focused()
-    end
-
-    screen.app_launcher = self._private.widget
-    screen.app_launcher.screen = screen
-    self._private.prompt:start()
-
-    local animation = self.rubato
-    if animation ~= nil then
-        if self._private.widget.goal_x == nil then
-            self._private.widget.goal_x = self._private.widget.x
-        end
-        if self._private.widget.goal_y == nil then
-            self._private.widget.goal_y = self._private.widget.y
-            self._private.widget.placement = nil
-        end
-
-        if animation.x then
-            animation.x.ended:unsubscribe()
-            animation.x:set(self._private.widget.goal_x)
-            gtimer.start_new(0.01, function()
-                screen.app_launcher.visible = true
-                return false
-            end)
-        end
-        if animation.y then
-            animation.y.ended:unsubscribe()
-            animation.y:set(self._private.widget.goal_y)
-            gtimer.start_new(0.01, function()
-                screen.app_launcher.visible = true
-                return false
-            end)
-        end
+        self._private.widget.screen = awful.screen.focused()
     else
-        screen.app_launcher.visible = true
+        self._private.widget.screen = capi.screen.primary
     end
 
-    self:emit_signal("bling::app_launcher::visibility", true)
+    self._private.widget.visible = true
+    self._private.prompt:start()
+    self:emit_signal("visibility", true)
 end
 
 --- Hides the app launcher
 function app_launcher:hide()
-    local screen = self.screen
-    if self.show_on_focused_screen then
-        screen = awful.screen.focused()
-    end
-
-    if screen.app_launcher == nil or screen.app_launcher.visible == false then
-        return
-    end
-
+    self._private.widget.visible = false
     self._private.prompt:stop()
-
-    local animation = self.rubato
-    if animation ~= nil then
-        if animation.x then
-            animation.x:set(animation.x:initial())
-        end
-        if animation.y then
-            animation.y:set(animation.y:initial())
-        end
-
-        local anim_x_duration = (animation.x and animation.x.duration) or 0
-        local anim_y_duration = (animation.y and animation.y.duration) or 0
-        local turn_off_on_anim_x_end = (anim_x_duration >= anim_y_duration) and true or false
-
-        if turn_off_on_anim_x_end then
-            animation.x.ended:subscribe(function()
-                if self.reset_on_hide == true then reset(self) end
-                screen.app_launcher.visible = false
-                screen.app_launcher = nil
-                animation.x.ended:unsubscribe()
-            end)
-        else
-            animation.y.ended:subscribe(function()
-                if self.reset_on_hide == true then reset(self) end
-                screen.app_launcher.visible = false
-                screen.app_launcher = nil
-                animation.y.ended:unsubscribe()
-            end)
-        end
-    else
-        if self.reset_on_hide == true then reset(self) end
-        screen.app_launcher.visible = false
-        screen.app_launcher = nil
-    end
-
-    self:emit_signal("bling::app_launcher::visibility", false)
+    self:emit_signal("visibility", false)
 end
 
 --- Toggles the app launcher
 function app_launcher:toggle()
-    local screen = self.screen
-    if self.show_on_focused_screen then
-        screen = awful.screen.focused()
-    end
-
-    if screen.app_launcher and screen.app_launcher.visible then
+    if self._private.widget.visible then
         self:hide()
     else
         self:show()
@@ -805,7 +726,6 @@ local function new(args)
     args.show_on_focused_screen = default_value(args.show_on_focused_screen, true)
     args.screen = default_value(args.screen, capi.screen.primary)
     args.placement = default_value(args.placement, awful.placement.centered)
-    args.rubato = default_value(args.rubato, nil)
     args.background = default_value(args.background, "#000000")
     args.border_width = default_value(args.border_width, beautiful.border_width or dpi(0))
     args.border_color = default_value(args.border_color, beautiful.border_color or "#FFFFFF")
@@ -855,17 +775,6 @@ local function new(args)
             search(ret, ret._private.text)
         end
     }
-
-    if ret.rubato and ret.rubato.x then
-        ret.rubato.x:subscribe(function(pos)
-            ret._private.widget.x = pos
-        end)
-    end
-    if ret.rubato and ret.rubato.y then
-        ret.rubato.y:subscribe(function(pos)
-            ret._private.widget.y = pos
-        end)
-    end
 
     if ret.hide_on_left_clicked_outside then
         awful.mouse.append_client_mousebinding(
