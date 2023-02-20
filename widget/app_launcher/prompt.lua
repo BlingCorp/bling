@@ -75,7 +75,7 @@ local function have_multibyte_char_at(text, position)
     return text:sub(position, position):wlen() == -1
 end
 
-local function generate_markup(self, show_cursor)
+local function generate_markup(self)
     local wp = self._private
 
     local icon_size = dpi(ceil(wp.icon_size * 1024))
@@ -95,7 +95,7 @@ local function generate_markup(self, show_cursor)
             wp.icon.font, icon_size, wp.icon_color, wp.icon.icon)
     end
 
-    if show_cursor == true then
+    if self._private.state == true then
         local char, spacer, text_start, text_end
 
         if #text < wp.cur_pos then
@@ -147,7 +147,7 @@ local function paste(self)
 
             wp.text = wp.text:sub(1, wp.cur_pos - 1) .. stdout .. self.text:sub(wp.cur_pos)
             wp.cur_pos = wp.cur_pos + #stdout
-            generate_markup(self, true)
+            generate_markup(self)
         end
     end)
 end
@@ -160,7 +160,7 @@ local function build_properties(prototype, prop_names)
                     self._private[prop] = value
                     self:emit_signal("widget::redraw_needed")
                     self:emit_signal("property::" .. prop, value)
-                    generate_markup(self, self._private.state)
+                    generate_markup(self)
                 end
                 return self
             end
@@ -180,7 +180,7 @@ end
 function prompt:set_text(text)
     self._private.text = text
     self._private.cur_pos = #text + 1
-    generate_markup(self, self._private.state)
+    generate_markup(self)
 end
 
 function prompt:get_text()
@@ -192,7 +192,7 @@ function prompt:start()
     wp.state = true
 
     capi.awesome.emit_signal("prompt::toggled_on", self)
-    generate_markup(self, true)
+    generate_markup(self)
 
     wp.grabber = awful.keygrabber.run(function(modifiers, key, event)
         -- Convert index array to hash table
@@ -335,7 +335,7 @@ function prompt:start()
             wp.cur_pos = #wp.text + 1
         end
 
-        generate_markup(self, true)
+        generate_markup(self)
         self:emit_signal("text::changed", wp.text)
     end)
 end
@@ -352,7 +352,7 @@ function prompt:stop()
     end
 
     awful.keygrabber.stop(wp.grabber)
-    generate_markup(self, false)
+    generate_markup(self)
 
     self:emit_signal("stopped", wp.text)
 end
