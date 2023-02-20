@@ -15,7 +15,6 @@ local pairs = pairs
 local capi = { screen = screen, mouse = mouse }
 local path = ...
 local helpers = require(tostring(path):match(".*bling") .. ".helpers")
-local color = helpers.color
 
 local app_launcher  = { mt = {} }
 
@@ -101,23 +100,6 @@ local function app_widget(self, app)
     local widget = nil
 
     if self.app_template == nil then
-        local icon = wibox.widget
-        {
-            widget = wibox.widget.imagebox,
-            id = "icon_role",
-            forced_width = dpi(70),
-            forced_height = dpi(70),
-            image = app.icon
-        }
-
-        local name = wibox.widget
-        {
-            widget = wibox.widget.textbox,
-            id = "name_role",
-            font = self.app_name_font,
-            markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, app.name)
-        }
-
         widget = wibox.widget
         {
             widget = wibox.container.background,
@@ -128,17 +110,30 @@ local function app_widget(self, app)
                 widget = wibox.container.margin,
                 margins = dpi(10),
                 {
-                    -- Using this hack instead of container.place because that will fuck with the name/icon halign
-                    layout = wibox.layout.align.vertical,
-                    expand = "outside",
-                    nil,
+                    layout = wibox.layout.fixed.vertical,
+                    spacing = dpi(10),
                     {
-                        layout = wibox.layout.fixed.vertical,
-                        spacing = dpi(10),
-                        icon,
-                        name
+                        widget = wibox.container.place,
+                        halign = "center",
+                        valign = "center",
+                        {
+                            widget = wibox.widget.imagebox,
+                            id = "icon_role",
+                            forced_width = dpi(70),
+                            forced_height = dpi(70),
+                            image = app.icon
+                        },
                     },
-                    nil
+                    {
+                        widget = wibox.container.place,
+                        halign = "center",
+                        valign = "center",
+                        {
+                            widget = wibox.widget.textbox,
+                            id = "name_role",
+                            markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, app.name)
+                        }
+                    }
                 }
             }
         }
@@ -148,24 +143,12 @@ local function app_widget(self, app)
             if widget then
                 widget.cursor = "hand2"
             end
-
-            if widget.selected then
-                widget.bg = self.app_selected_hover_color
-            else
-                widget.bg = self.app_normal_hover_color
-            end
         end)
 
         widget:connect_signal("mouse::leave", function()
             local widget = capi.mouse.current_wibox
             if widget then
                 widget.cursor = "left_ptr"
-            end
-
-            if widget.selected then
-                widget.bg = self.app_selected_color
-            else
-                widget.bg = self.app_normal_color
             end
         end)
     else
@@ -221,15 +204,9 @@ local function app_widget(self, app)
         self.selected = true
 
         if _self.app_template == nil then
-            self:get_children_by_id("background_role")[1].bg = _self.app_selected_color
+            widget.bg = _self.app_selected_color
             local name_widget = self:get_children_by_id("name_role")[1]
-            if name_widget then
-                name_widget.markup = string.format("<span foreground='%s'>%s</span>", _self.app_name_selected_color, name_widget.text)
-            end
-            local generic_name_widget = self:get_children_by_id("generic_name_role")[1]
-            if generic_name_widget then
-                generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", _self.app_name_selected_color, generic_name_widget.text)
-            end
+            name_widget.markup = string.format("<span foreground='%s'>%s</span>", _self.app_name_selected_color, name_widget.text)
         end
     end
 
@@ -239,15 +216,9 @@ local function app_widget(self, app)
         _self._private.active_widget = nil
 
         if _self.app_template == nil then
-            self:get_children_by_id("background_role")[1].bg = _self.app_normal_color
+            widget.bg = _self.app_normal_color
             local name_widget = self:get_children_by_id("name_role")[1]
-            if name_widget then
-                name_widget.markup = string.format("<span foreground='%s'>%s</span>", _self.app_name_normal_color, name_widget.text)
-            end
-            local generic_name_widget = self:get_children_by_id("generic_name_role")[1]
-            if generic_name_widget then
-                generic_name_widget.markup = string.format("<i><span weight='300'foreground='%s'>%s</span></i>", _self.app_name_normal_color, generic_name_widget.text)
-            end
+            name_widget.markup = string.format("<span foreground='%s'>%s</span>", _self.app_name_normal_color, name_widget.text)
         end
     end
 
@@ -563,17 +534,22 @@ end
 
 local function build_widget(self)
     local widget = self.widget_template
-    if widget ~= nil then
-        self._private.prompt = widget:get_children_by_id("prompt_role")[1]
-        self._private.grid = widget:get_children_by_id("grid_role")[1]
-    else
+    if widget == nil then
         self._private.prompt = wibox.widget
         {
             widget = prompt_widget,
-            label = self.prompt_label,
-            font = self.prompt_font,
             reset_on_stop = self.reset_on_hide,
-            bg_cursor = beautiful.bg_normal or "#000000",
+            icon_font = self.prompt_icon_font,
+            icon_size = self.prompt_icon_size,
+            icon_color = self.prompt_icon_color,
+            icon = self.prompt_icon,
+            label_font = self.prompt_label_font,
+            label_size = self.prompt_label_size,
+            label_color = self.prompt_label_color,
+            label = self.prompt_label,
+            text_font = self.prompt_text_font,
+            text_size = self.prompt_text_size,
+            text_color = self.prompt_text_color,
         }
         self._private.grid = wibox.widget
         {
@@ -595,7 +571,7 @@ local function build_widget(self)
             layout = wibox.layout.fixed.vertical,
             {
                 widget = wibox.container.background,
-                forced_height = dpi(100),
+                forced_height = dpi(120),
                 bg = self.prompt_bg_color,
                 {
                     widget = wibox.container.margin,
@@ -614,6 +590,9 @@ local function build_widget(self)
                 self._private.grid
             }
         }
+    else
+        self._private.prompt = widget:get_children_by_id("prompt_role")[1]
+        self._private.grid = widget:get_children_by_id("grid_role")[1]
     end
 
     self._private.widget = awful.popup
@@ -836,26 +815,23 @@ local function new(args)
     args.apps_spacing = default_value(args.apps_spacing, dpi(30))
     args.expand_apps = default_value(args.expand_apps, true)
 
-    args.prompt_bg_color = default_value(args.prompt_bg_color, beautiful.fg_normal or "#FFFFFF")
-    args.prompt_icon_font = default_value(args.prompt_icon, "")
-    args.prompt_icon_color = default_value(args.prompt_icon_color, beautiful.bg_normal or "#000000")
+    args.prompt_bg_color = default_value(args.prompt_bg_color, "#000000")
+    args.prompt_icon_font = default_value(args.prompt_icon_font, beautiful.font)
+    args.prompt_icon_size = default_value(args.prompt_icon_size, 12)
+    args.prompt_icon_color = default_value(args.prompt_icon_color, "#FFFFFF")
     args.prompt_icon = default_value(args.prompt_icon, "")
-    args.prompt_label_font = default_value(args.prompt_icon, "")
+    args.prompt_label_font = default_value(args.prompt_label_font, beautiful.font)
+    args.prompt_label_size = default_value(args.prompt_label_size, 12)
+    args.prompt_label_color = default_value(args.prompt_label_color, "#FFFFFF")
     args.prompt_label = default_value(args.prompt_label, "<b>Search</b>: ")
-    args.prompt_text_font = default_value(args.prompt_font, beautiful.font)
-    args.prompt_text_color = default_value(args.prompt_text_color, beautiful.bg_normal or "#000000")
+    args.prompt_text_font = default_value(args.prompt_text_font, beautiful.font)
+    args.prompt_text_size = default_value(args.prompt_text_size, 12)
+    args.prompt_text_color = default_value(args.prompt_text_color, "#FFFFFF")
 
-    args.app_normal_color = args.app_normal_color or beautiful.bg_normal or "#000000"
-    args.app_normal_hover_color = args.app_normal_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
-        color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_normal_color), 2.5)) or
-        color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_normal_color), 0.5))
-    args.app_selected_color = args.app_selected_color or beautiful.fg_normal or "#FFFFFF"
-    args.app_selected_hover_color = args.app_selected_hover_color or (color.is_dark(args.app_normal_color) or color.is_opaque(args.app_normal_color)) and
-        color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 2.5)) or
-        color.rgba_to_hex(color.multiply(color.hex_to_rgba(args.app_selected_color), 0.5))
-    args.app_name_normal_color = default_value(args.app_name_normal_color, beautiful.fg_normal or "#FFFFFF")
-    args.app_name_selected_color = default_value(args.app_name_selected_color, beautiful.bg_normal or "#000000")
-    args.app_name_font = default_value(args.app_name_font, beautiful.font)
+    args.app_normal_color = default_value(args.app_normal_color, "#000000")
+    args.app_selected_color = default_value(args.app_selected_color, "#FFFFFF")
+    args.app_name_normal_color = default_value( args.app_name_normal_color, "#FFFFFF")
+    args.app_name_selected_color = default_value(args.app_name_selected_color, "#000000")
 
     local ret = gobject {}
     gtable.crush(ret, app_launcher, true)
