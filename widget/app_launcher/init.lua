@@ -5,7 +5,6 @@ local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
-local color = require(tostring(...):match(".*bling") .. ".helpers.color")
 local prompt_widget = require(... .. ".prompt")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
@@ -16,6 +15,7 @@ local pairs = pairs
 local capi = { screen = screen, mouse = mouse }
 local path = ...
 local helpers = require(tostring(path):match(".*bling") .. ".helpers")
+local color = helpers.color
 
 local app_launcher  = { mt = {} }
 
