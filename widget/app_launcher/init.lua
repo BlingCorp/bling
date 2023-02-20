@@ -122,7 +122,6 @@ local function app_widget(self, app)
         widget = wibox.widget
         {
             widget = wibox.container.background,
-            id = "background_role",
             forced_width = dpi(300),
             forced_height = dpi(120),
             bg = self.app_normal_color,
@@ -152,9 +151,9 @@ local function app_widget(self, app)
             end
 
             if widget.selected then
-                widget:get_children_by_id("background_role")[1].bg = self.app_selected_hover_color
+                widget.bg = self.app_selected_hover_color
             else
-                widget:get_children_by_id("background_role")[1].bg = self.app_normal_hover_color
+                widget.bg = self.app_normal_hover_color
             end
         end)
 
@@ -165,9 +164,9 @@ local function app_widget(self, app)
             end
 
             if widget.selected then
-                widget:get_children_by_id("background_role")[1].bg = self.app_selected_color
+                widget.bg = self.app_selected_color
             else
-                widget:get_children_by_id("background_role")[1].bg = self.app_normal_color
+                widget.bg = self.app_normal_color
             end
         end)
     else
