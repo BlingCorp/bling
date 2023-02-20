@@ -352,11 +352,8 @@ function prompt:stop()
     local wp = self._private
     wp.state = false
 
-    if self.reset_on_stop == true or wp.cur_pos == nil then
-        wp.cur_pos = wp.text:wlen() + 1
-    end
     if self.reset_on_stop == true then
-        wp.text = ""
+        self:set_text("")
     end
 
     awful.keygrabber.stop(wp.grabber)
