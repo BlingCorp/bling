@@ -593,6 +593,7 @@ local function build_widget(self)
 
     self._private.widget = awful.popup
     {
+        screen = self.screen,
         type = self.type,
         visible = false,
         ontop = true,
@@ -678,8 +679,6 @@ end
 function app_launcher:show()
     if self.show_on_focused_screen then
         self._private.widget.screen = awful.screen.focused()
-    else
-        self._private.widget.screen = capi.screen.primary
     end
 
     self._private.widget.visible = true
