@@ -557,7 +557,7 @@ local function build_widget(self)
             layout = wibox.layout.grid,
             orientation = "horizontal",
             homogeneous = true,
-            spacing = self.apps_spacing,
+            spacing = dpi(30),
             forced_num_cols = self.apps_per_column,
             forced_num_rows = self.apps_per_row,
         }
@@ -737,7 +737,6 @@ local function new(args)
 
     args.apps_per_row = default_value(args.apps_per_row, 5)
     args.apps_per_column = default_value(args.apps_per_column, 3)
-    args.apps_spacing = default_value(args.apps_spacing, dpi(30))
 
     args.prompt_bg_color = default_value(args.prompt_bg_color, "#000000")
     args.prompt_icon_font = default_value(args.prompt_icon_font, beautiful.font)
