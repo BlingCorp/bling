@@ -562,31 +562,60 @@ local function generate_apps(self)
 end
 
 local function build_widget(self)
-    local widget = self.widget_template()
-
-    self._private.prompt = widget:get_children_by_id("prompt_role")[1] or prompt_widget
-    {
-        prompt = self.prompt_label,
-        font = self.prompt_font,
-        reset_on_stop = self.reset_on_hide,
-        bg_cursor = beautiful.bg_normal or "#000000",
-        history_path = self.save_history == true and gfilesystem.get_cache_dir() .. "/history" or nil,
-    }
-    self._private.grid = widget:get_children_by_id("grid_role")[1] or wibox.widget
-    {
-        layout = wibox.layout.grid,
-        orientation = "horizontal",
-        homogeneous = true,
-        expand = self.expand_apps,
-        spacing = self.apps_spacing,
-        forced_num_cols = self.apps_per_column,
-        forced_num_rows = self.apps_per_row,
-        buttons =
+    local widget = self.widget_template
+    if widget ~= nil then
+        self._private.prompt = widget:get_children_by_id("prompt_role")[1]
+        self._private.grid = widget:get_children_by_id("grid_role")[1]
+    else
+        self._private.prompt = wibox.widget
         {
-            awful.button({}, 4, function() self:scroll_up() end),
-            awful.button({}, 5, function() self:scroll_down() end)
+            widget = prompt_widget,
+            label = self.prompt_label,
+            font = self.prompt_font,
+            reset_on_stop = self.reset_on_hide,
+            bg_cursor = beautiful.bg_normal or "#000000",
         }
-    }
+        self._private.grid = wibox.widget
+        {
+            layout = wibox.layout.grid,
+            orientation = "horizontal",
+            homogeneous = true,
+            expand = self.expand_apps,
+            spacing = self.apps_spacing,
+            forced_num_cols = self.apps_per_column,
+            forced_num_rows = self.apps_per_row,
+            buttons =
+            {
+                awful.button({}, 4, function() self:scroll_up() end),
+                awful.button({}, 5, function() self:scroll_down() end)
+            }
+        }
+        widget = wibox.widget
+        {
+            layout = wibox.layout.fixed.vertical,
+            {
+                widget = wibox.container.background,
+                forced_height = dpi(100),
+                bg = self.prompt_bg_color,
+                {
+                    widget = wibox.container.margin,
+                    margins = dpi(30),
+                    {
+                        widget = wibox.container.place,
+                        halign = "left",
+                        valign = "center",
+                        self._private.prompt
+                    }
+                }
+            },
+            {
+                widget = wibox.container.margin,
+                margins = dpi(30),
+                self._private.grid
+            }
+        }
+    end
+
     self._private.widget = awful.popup
     {
         type = self.type,
@@ -597,43 +626,10 @@ local function build_widget(self)
         border_color = self.border_color,
         shape = self.shape,
         bg =  self.background,
-        widget = self.widget_template() or
-        {
-            layout = wibox.layout.fixed.vertical,
-            {
-                widget = wibox.container.background,
-                forced_height = dpi(100),
-                bg = self.prompt_bg_color,
-                fg = self.prompt_text_color,
-                {
-                    widget = wibox.container.margin,
-                    margins = dpi(30),
-                    {
-                        widget = wibox.container.place,
-                        halign = "left",
-                        valign = "center",
-                        {
-                            layout = wibox.layout.fixed.horizontal,
-                            spacing = dpi(10),
-                            {
-                                widget = wibox.widget.textbox,
-                                font = self.prompt_icon_font,
-                                markup = string.format("<span size='xx-large' foreground='%s'>%s</span>", args.prompt_icon_color, args.prompt_icon)
-                            },
-                            self._private.prompt.textbox
-                        }
-                    }
-                }
-            },
-            {
-                widget = wibox.container.margin,
-                margins = dpi(30),
-                self._private.grid
-            }
-        }
+        widget = widget
     }
 
-    self._private.prompt:connect_signal("text::changed", function(text)
+    self._private.prompt:connect_signal("text::changed", function(_, text)
         if text == self._private.text then
             return
         end
@@ -642,7 +638,7 @@ local function build_widget(self)
         self._private.search_timer:again()
     end)
 
-    self._private.prompt:connect_signal("key::press", function(mod, key, cmd)
+    self._private.prompt:connect_signal("key::press", function(_, mod, key, cmd)
         if key == "Escape" then
             self:hide()
         end
@@ -817,7 +813,6 @@ local function new(args)
     args.hide_on_launch = default_value(args.hide_on_launch, true)
     args.try_to_keep_index_after_searching = default_value(args.try_to_keep_index_after_searching, false)
     args.reset_on_hide = default_value(args.reset_on_hide, true)
-    args.save_history = default_value(args.save_history, true)
     args.wrap_page_scrolling = default_value(args.wrap_page_scrolling, true)
     args.wrap_app_scrolling = default_value(args.wrap_app_scrolling, true)
 
@@ -842,11 +837,12 @@ local function new(args)
     args.expand_apps = default_value(args.expand_apps, true)
 
     args.prompt_bg_color = default_value(args.prompt_bg_color, beautiful.fg_normal or "#FFFFFF")
-    args.prompt_icon_font = default_value(args.prompt_icon_font, beautiful.font)
+    args.prompt_icon_font = default_value(args.prompt_icon, "")
     args.prompt_icon_color = default_value(args.prompt_icon_color, beautiful.bg_normal or "#000000")
     args.prompt_icon = default_value(args.prompt_icon, "")
+    args.prompt_label_font = default_value(args.prompt_icon, "")
     args.prompt_label = default_value(args.prompt_label, "<b>Search</b>: ")
-    args.prompt_font = default_value(args.prompt_font, beautiful.font)
+    args.prompt_text_font = default_value(args.prompt_font, beautiful.font)
     args.prompt_text_color = default_value(args.prompt_text_color, beautiful.bg_normal or "#000000")
 
     args.app_normal_color = args.app_normal_color or beautiful.bg_normal or "#000000"
