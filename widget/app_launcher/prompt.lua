@@ -378,8 +378,8 @@ local function new()
     wp.always_on = false
     wp.reset_on_stop = false
     wp.obscure = false
-    wp.stop_on_focus_lost = true
-    wp.stop_on_tag_changed = true
+    wp.stop_on_focus_lost = false
+    wp.stop_on_tag_changed = false
     wp.stop_on_clicked_outside = true
 
     wp.icon_font = beautiful.font
