@@ -492,6 +492,7 @@ local function generate_apps(self)
                     end
 
                     table.insert(self._private.all_apps, {
+                        desktop_app_info = desktop_app_info,
                         path = desktop_app_info:get_filename(),
                         id = id,
                         name = name,
