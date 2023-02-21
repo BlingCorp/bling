@@ -79,38 +79,4 @@ function _icon_theme.get_icon_path(icon_name, icon_theme, icon_size)
     return ""
 end
 
-function _icon_theme.get_client_icon_path(client, icon_theme, icon_size)
-    local app_list = AppInfo.get_all()
-
-    local class = string.lower(client.class)
-    local name = string.lower(client.name)
-
-    for _, app in ipairs(app_list) do
-        local id = app:get_id()
-        local desktop_app_info = DesktopAppInfo.new(id)
-        if desktop_app_info then
-            local props = {
-                id:gsub(".desktop", ""),
-                desktop_app_info:get_string("Name"),
-                desktop_app_info:get_filename(),
-                desktop_app_info:get_startup_wm_class(),
-                desktop_app_info:get_string("Icon"),
-                desktop_app_info:get_string("Exec"),
-                desktop_app_info:get_string("Keywords")
-            }
-
-            for _, prop in ipairs(props) do
-                if prop ~= nil and (prop:lower() == class or prop:lower() == name) then
-                    local icon = desktop_app_info:get_string("Icon")
-                    if icon ~= nil then
-                        return _icon_theme.get_icon_path(icon, icon_theme, icon_size)
-                    end
-                end
-            end
-        end
-    end
-
-    return _icon_theme.choose_icon({"window", "window-manager", "xfwm4-default", "window_list"}, icon_theme, icon_size)
-end
-
 return _icon_theme
