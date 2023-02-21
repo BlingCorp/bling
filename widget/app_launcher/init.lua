@@ -153,23 +153,6 @@ local function app_widget(self, app)
         end)
     else
         widget = self.app_template(app)
-
-        local icon = widget:get_children_by_id("icon_role")[1]
-        if icon then
-            icon.image = app.icon
-        end
-        local name = widget:get_children_by_id("name_role")[1]
-        if name then
-            name.text = app.name
-        end
-        local generic_name = widget:get_children_by_id("generic_name_role")[1]
-        if generic_name then
-            generic_name.text = app.generic_name
-        end
-        local command = widget:get_children_by_id("command_role")[1]
-        if command then
-            command.text = app.executable
-        end
     end
 
     widget:connect_signal("button::press", function(app, _, __, button)
