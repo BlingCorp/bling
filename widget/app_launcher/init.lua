@@ -228,56 +228,56 @@ end
 local function search(self, text)
     local old_pos = self._private.grid:get_widget_position(self._private.active_widget)
 
-    -- Reset all the matched entries
-    self._private.matched_entries = {}
+    -- Reset all the matched apps
+    self._private.matched_apps = {}
     -- Remove all the grid widgets
     self._private.grid:reset()
 
     if text == "" then
-        self._private.matched_entries = self._private.all_entries
+        self._private.matched_apps = self._private.all_apps
     else
-        for _, entry in pairs(self._private.all_entries) do
+        for _, app in pairs(self._private.all_apps) do
             text = text:gsub( "%W", "" )
 
             -- Check if there's a match by the app name or app command
-            if string.find(entry.name:lower(), text:lower(), 1, true) ~= nil or
-                self.search_commands and string.find(entry.commandline, text:lower(), 1, true) ~= nil
+            if string.find(app.name:lower(), text:lower(), 1, true) ~= nil or
+                self.search_commands and string.find(app.commandline, text:lower(), 1, true) ~= nil
             then
-                table.insert(self._private.matched_entries, {
-                    name = entry.name,
-                    generic_name = entry.generic_name,
-                    commandline = entry.commandline,
-                    executable = entry.executable,
-                    terminal = entry.terminal,
-                    icon = entry.icon
+                table.insert(self._private.matched_apps, {
+                    name = app.name,
+                    generic_name = app.generic_name,
+                    commandline = app.commandline,
+                    executable = app.executable,
+                    terminal = app.terminal,
+                    icon = app.icon
                 })
             end
         end
 
         -- Sort by string similarity
-        table.sort(self._private.matched_entries, function(a, b)
+        table.sort(self._private.matched_apps, function(a, b)
             return string_levenshtein(text, a.name) < string_levenshtein(text, b.name)
         end)
     end
-    for _, entry in pairs(self._private.matched_entries) do
+    for _, app in pairs(self._private.matched_apps) do
         -- Only add the widgets for apps that are part of the first page
         if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
-            self._private.grid:add(app_widget(self, entry))
+            self._private.grid:add(app_widget(self, app))
         end
     end
 
-    -- Recalculate the apps per page based on the current matched entries
-    self._private.apps_per_page = math.min(#self._private.matched_entries, self._private.max_apps_per_page)
+    -- Recalculate the apps per page based on the current matched apps
+    self._private.apps_per_page = math.min(#self._private.matched_apps, self._private.max_apps_per_page)
 
     -- Recalculate the pages count based on the current apps per page
-    self._private.pages_count = math.ceil(math.max(1, #self._private.matched_entries) / math.max(1, self._private.apps_per_page))
+    self._private.pages_count = math.ceil(math.max(1, #self._private.matched_apps) / math.max(1, self._private.apps_per_page))
 
     -- Page should be 1 after a search
     self._private.current_page = 1
 
     -- This is an option to mimic rofi behaviour where after a search
     -- it will reselect the app whose index is the same as the app index that was previously selected
-    -- and if matched_entries.length < current_index it will instead select the app with the greatest index
+    -- and if matched_apps.length < current_index it will instead select the app with the greatest index
     if self.try_to_keep_index_after_searching then
         if self._private.grid:get_widgets_at(old_pos.row, old_pos.col) == nil then
             local app = self._private.grid.children[#self._private.grid.children]
@@ -301,7 +301,7 @@ local function page_forward(self, dir)
         min_app_index_to_include = self._private.apps_per_page * self._private.current_page
         self._private.current_page = self._private.current_page + 1
         max_app_index_to_include = self._private.apps_per_page * self._private.current_page
-    elseif self.wrap_page_scrolling and #self._private.matched_entries >= self._private.max_apps_per_page then
+    elseif self.wrap_page_scrolling and #self._private.matched_apps >= self._private.max_apps_per_page then
         self._private.current_page = 1
         min_app_index_to_include = 0
         max_app_index_to_include = self._private.apps_per_page
@@ -318,10 +318,10 @@ local function page_forward(self, dir)
     -- Remove the current page apps from the grid
     self._private.grid:reset()
 
-    for index, entry in pairs(self._private.matched_entries) do
+    for index, app in pairs(self._private.matched_apps) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self._private.grid:add(app_widget(self, entry))
+            self._private.grid:add(app_widget(self, app))
         end
     end
 
@@ -344,7 +344,7 @@ end
 local function page_backward(self, dir)
     if self._private.current_page > 1 then
         self._private.current_page = self._private.current_page - 1
-    elseif self.wrap_page_scrolling and #self._private.matched_entries >= self._private.max_apps_per_page then
+    elseif self.wrap_page_scrolling and #self._private.matched_apps >= self._private.max_apps_per_page then
         self._private.current_page = self._private.pages_count
     elseif self.wrap_app_scrolling then
         local app = self._private.grid.children[#self._private.grid.children]
@@ -362,10 +362,10 @@ local function page_backward(self, dir)
     local max_app_index_to_include = self._private.apps_per_page * self._private.current_page
     local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
 
-    for index, entry in pairs(self._private.matched_entries) do
+    for index, app in pairs(self._private.matched_apps) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self._private.grid:add(app_widget(self, entry))
+            self._private.grid:add(app_widget(self, app))
         end
     end
 
@@ -424,15 +424,15 @@ end
 
 local function reset(self)
     self._private.grid:reset()
-    self._private.matched_entries = self._private.all_entries
+    self._private.matched_apps = self._private.all_apps
     self._private.apps_per_page = self._private.max_apps_per_page
-    self._private.pages_count = math.ceil(#self._private.all_entries / self._private.apps_per_page)
+    self._private.pages_count = math.ceil(#self._private.all_apps / self._private.apps_per_page)
     self._private.current_page = 1
 
-    for index, entry in pairs(self._private.all_entries) do
+    for index, app in pairs(self._private.all_apps) do
         -- Only add the apps that are part of the first page
         if index <= self._private.apps_per_page then
-            self._private.grid:add(app_widget(self, entry))
+            self._private.grid:add(app_widget(self, app))
         else
             break
         end
@@ -443,8 +443,8 @@ local function reset(self)
 end
 
 local function generate_apps(self)
-    self._private.all_entries = {}
-    self._private.matched_entries = {}
+    self._private.all_apps = {}
+    self._private.matched_apps = {}
 
     local app_info = Gio.AppInfo
     local apps = app_info.get_all()
@@ -518,7 +518,7 @@ local function generate_apps(self)
                     local terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true" and true or false
                     local generic_name = Gio.DesktopAppInfo.get_string(desktop_app_info, "GenericName") or nil
 
-                    table.insert(self._private.all_entries, {
+                    table.insert(self._private.all_apps, {
                         name = name,
                         generic_name = generic_name,
                         commandline = commandline,
