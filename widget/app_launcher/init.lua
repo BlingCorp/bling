@@ -168,9 +168,9 @@ local function app_widget(self, app)
     local _self = self
     function widget:spawn()
         if app.terminal == true then
-            awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. app.executable)
+            awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. app.exec)
         else
-            awful.spawn(app.executable)
+            awful.spawn(app.exec)
         end
 
         if _self.hide_on_launch then
@@ -224,16 +224,9 @@ local function search(self, text)
 
             -- Check if there's a match by the app name or app command
             if string.find(app.name:lower(), text:lower(), 1, true) ~= nil or
-                self.search_commands and string.find(app.commandline, text:lower(), 1, true) ~= nil
+                self.search_commands and string.find(app.exec, text:lower(), 1, true) ~= nil
             then
-                table.insert(self._private.matched_apps, {
-                    name = app.name,
-                    generic_name = app.generic_name,
-                    commandline = app.commandline,
-                    executable = app.executable,
-                    terminal = app.terminal,
-                    icon = app.icon
-                })
+                table.insert(self._private.matched_apps, app)
             end
         end
 
@@ -475,15 +468,16 @@ local function generate_apps(self)
     end
 
     for _, app in ipairs(apps) do
-        if app.should_show(app) then
-            local name = app_info.get_name(app)
-            local commandline = app_info.get_commandline(app)
-            local executable = app_info.get_executable(app)
-            local icon = helpers.icon_theme.get_gicon_path(app_info.get_icon(app), self.icon_theme, self.icon_size)
+        if app:should_show() then
+            local id = app:get_id()
+            local desktop_app_info = Gio.DesktopAppInfo.new(id)
+            local name = desktop_app_info:get_string("Name")
+            local exec = desktop_app_info:get_string("Exec")
 
             -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
-            if not has_value(self.skip_names, name) and not has_value(self.skip_commands, commandline) then
+            if not has_value(self.skip_names, name) and not has_value(self.skip_commands, exec) then
                 -- Check if this app should be skipped becuase it's iconless depanding on skip_empty_icons
+                local icon = helpers.icon_theme.get_gicon_path(app_info.get_icon(app), self.icon_theme, self.icon_size)
                 if icon ~= "" or self.skip_empty_icons == false then
                     if icon == "" then
                         if self.default_app_icon_name ~= nil then
@@ -497,17 +491,17 @@ local function generate_apps(self)
                         end
                     end
 
-                    local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
-                    local terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true" and true or false
-                    local generic_name = Gio.DesktopAppInfo.get_string(desktop_app_info, "GenericName") or nil
-
                     table.insert(self._private.all_apps, {
+                        path = desktop_app_info:get_filename(),
+                        id = id,
                         name = name,
-                        generic_name = generic_name,
-                        commandline = commandline,
-                        executable = executable,
-                        terminal = terminal,
-                        icon = icon
+                        generic_name = desktop_app_info:get_string("GenericName"),
+                        startup_wm_class = desktop_app_info:get_startup_wm_class(),
+                        keywords = desktop_app_info:get_string("Keywords"),
+                        icon = icon,
+                        icon_name = desktop_app_info:get_string("Icon"),
+                        terminal = desktop_app_info:get_string("Terminal") == "true" and true or false,
+                        exec = exec,
                     })
                 end
             end
