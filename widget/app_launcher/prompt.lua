@@ -350,13 +350,19 @@ end
 
 function prompt:stop()
     local wp = self._private
+    if wp.state == false then
+        return
+    end
+
     wp.state = false
 
     if self.reset_on_stop == true then
         self:set_text("")
     end
 
-    awful.keygrabber.stop(wp.grabber)
+    if wp.grabber then
+        awful.keygrabber.stop(wp.grabber)
+    end
     generate_markup(self)
 
     self:emit_signal("stopped", wp.text)

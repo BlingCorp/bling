@@ -665,6 +665,10 @@ end
 
 --- Hides the app launcher
 function app_launcher:hide()
+    if self._private.widget.visible == false then
+        return
+    end
+
     self._private.widget.visible = false
     self._private.prompt:stop()
     self:emit_signal("visibility", false)
