@@ -170,8 +170,8 @@ function playerctl:get_active_player()
 end
 
 function playerctl:get_player_of_name(name)
-    for _, player in ipairs(self._private.manager.players[1]) do
-        if player.name == name then
+    for _, player in ipairs(self._private.manager.players) do
+        if player.player_name == name then
             return player
         end
     end
