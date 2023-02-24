@@ -521,8 +521,11 @@ local function new(args)
     -- Grab settings from beautiful variables if not set explicitly
     args.ignore = args.ignore or beautiful.playerctl_ignore
     args.player = args.player or beautiful.playerctl_player
-    ret.update_on_activity = args.update_on_activity or
-                              beautiful.playerctl_update_on_activity or true
+    if args.update_on_activity ~= nil then
+        ret.update_on_activity = args.update_on_activity
+    else
+        ret.update_on_activity = beautiful.playerctl_update_on_activity ~= false
+    end
     ret.interval = args.interval or beautiful.playerctl_position_update_interval or 1
     ret.debounce_delay = args.debounce_delay or beautiful.playerctl_debounce_delay or 0.35
     parse_args(ret, args)
