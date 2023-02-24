@@ -291,18 +291,16 @@ local function page_forward(self, dir)
     end
 
     if self._private.current_page > 1 or self.wrap_page_scrolling then
+        local app = nil
         if dir == "down" then
-            local app = self._private.grid:get_widgets_at(1, 1)[1]
-            app:select()
-        else
-            local app = self._private.grid:get_widgets_at(pos.row, 1)[1]
+            app = self._private.grid:get_widgets_at(1, 1)[1]
+        elseif dir == "right" then
+            app = self._private.grid:get_widgets_at(pos.row, 1)[1]
             if app == nil then
-                local app = self._private.grid.children[#self._private.grid.children]
-                app:select()
-            else
-                app:select()
+                app = self._private.grid.children[#self._private.grid.children]
             end
         end
+        app:select()
     end
 end
 
@@ -334,20 +332,19 @@ local function page_backward(self, dir)
         end
     end
 
-    local rows, columns = self._private.grid:get_dimension()
+    local app = nil
     if self._private.current_page < self._private.pages_count then
         if dir == "up" then
-            local app = self._private.grid.children[#self._private.grid.children]
-            app:select()
+            app = self._private.grid.children[#self._private.grid.children]
         else
             -- Keep the same row from last page
-            local app = self._private.grid:get_widgets_at(pos.row, columns)[1]
-            app:select()
+            local _, columns = self._private.grid:get_dimension()
+            app = self._private.grid:get_widgets_at(pos.row, columns)[1]
         end
     elseif self.wrap_page_scrolling then
-        local app = self._private.grid.children[#self._private.grid.children]
-        app:select()
+        app = self._private.grid.children[#self._private.grid.children]
     end
+    app:select()
 end
 
 local function scroll(self, dir)
