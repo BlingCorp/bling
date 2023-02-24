@@ -406,55 +406,35 @@ local function reset(self)
     app:select()
 end
 
+local function sort_apps(self)
+    table.sort(self._private.all_apps, function(a, b)
+        local is_a_favorite = has_value(self.favorites, a.id)
+        local is_b_favorite = has_value(self.favorites, b.id)
+
+        -- Sort the favorite apps first
+        if is_a_favorite and not is_b_favorite then
+            return true
+        elseif not is_a_favorite and is_b_favorite then
+            return false
+        end
+
+        -- Sort alphabetically if specified
+        if self.sort_alphabetically then
+            return a.name:lower() < b.name:lower()
+        elseif self.reverse_sort_alphabetically then
+            return b.name:lower() > a.name:lower()
+        else
+            return true
+        end
+    end)
+end
+
 local function generate_apps(self)
     self._private.all_apps = {}
     self._private.matched_apps = {}
 
     local app_info = Gio.AppInfo
     local apps = app_info.get_all()
-    if self.sort_alphabetically then
-        table.sort(apps, function(a, b)
-            local app_a_score = app_info.get_name(a):lower()
-            if has_value(self.favorites, app_info.get_id(a)) then
-                app_a_score = "aaaaaaaaaaa" .. app_a_score
-            end
-            local app_b_score = app_info.get_name(b):lower()
-            if has_value(self.favorites, app_info.get_id(b)) then
-                app_b_score = "aaaaaaaaaaa" .. app_b_score
-            end
-
-            return app_a_score < app_b_score
-        end)
-    elseif self.reverse_sort_alphabetically then
-        table.sort(apps, function(a, b)
-            local app_a_score = app_info.get_name(a):lower()
-            if has_value(self.favorites, app_info.get_id(a)) then
-                app_a_score = "zzzzzzzzzzz" .. app_a_score
-            end
-            local app_b_score = app_info.get_name(b):lower()
-            if has_value(self.favorites, app_info.get_id(b)) then
-                app_b_score = "zzzzzzzzzzz" .. app_b_score
-            end
-
-            return app_a_score > app_b_score
-        end)
-    else
-        table.sort(apps, function(a, b)
-            local app_a_favorite = has_value(self.favorites, app_info.get_id(a))
-            local app_b_favorite = has_value(self.favorites, app_info.get_id(b))
-
-            if app_a_favorite and not app_b_favorite then
-                return true
-            elseif app_b_favorite and not app_a_favorite then
-                return false
-            elseif app_a_favorite and app_b_favorite then
-                return app_info.get_name(a):lower() < app_info.get_name(b):lower()
-            else
-                return false
-            end
-        end)
-    end
-
     for _, app in ipairs(apps) do
         if app:should_show() then
             local id = app:get_id()
@@ -496,6 +476,8 @@ local function generate_apps(self)
             end
         end
     end
+
+    sort_apps(self)
 end
 
 local function build_widget(self)
