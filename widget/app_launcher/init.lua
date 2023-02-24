@@ -570,7 +570,7 @@ local function build_widget(self)
         self._private.search_timer:again()
     end)
 
-    self._private.prompt:connect_signal("key::press", function(_, mod, key, cmd)
+    self._private.prompt:connect_signal("key::release", function(_, mod, key, cmd)
         if key == "Escape" then
             self:hide()
         end
