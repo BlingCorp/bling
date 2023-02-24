@@ -223,7 +223,7 @@ local function search(self, text)
     if text == "" then
         self._private.matched_apps = self._private.all_apps
     else
-        for _, app in pairs(self._private.all_apps) do
+        for _, app in ipairs(self._private.all_apps) do
             text = text:gsub( "%W", "" )
 
             -- Check if there's a match by the app name or app command
@@ -409,7 +409,7 @@ local function reset(self)
     self._private.pages_count = math.ceil(#self._private.all_apps / self._private.apps_per_page)
     self._private.current_page = 1
 
-    for index, app in pairs(self._private.all_apps) do
+    for index, app in ipairs(self._private.all_apps) do
         -- Only add the apps that are part of the first page
         if index <= self._private.apps_per_page then
             self._private.grid:add(app_widget(self, app))
