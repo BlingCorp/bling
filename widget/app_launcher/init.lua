@@ -198,12 +198,12 @@ end
 
 local function search(self)
     local text = self._private.text
-    local old_pos = self._private.grid:get_widget_position(self._private.active_widget)
+    local old_pos = self:get_grid():get_widget_position(self._private.active_widget)
 
     -- Reset all the matched apps
     self._private.matched_apps = {}
     -- Remove all the grid widgets
-    self._private.grid:reset()
+    self:get_grid():reset()
 
     if text == "" then
         self._private.matched_apps = self._private.all_apps
@@ -226,8 +226,8 @@ local function search(self)
     end
     for _, app in ipairs(self._private.matched_apps) do
         -- Only add the widgets for apps that are part of the first page
-        if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
-            self._private.grid:add(app_widget(self, app))
+        if #self:get_grid().children + 1 <= self._private.max_apps_per_page then
+            self:get_grid():add(app_widget(self, app))
         end
     end
 
@@ -244,16 +244,16 @@ local function search(self)
     -- it will reselect the app whose index is the same as the app index that was previously selected
     -- and if matched_apps.length < current_index it will instead select the app with the greatest index
     if self.try_to_keep_index_after_searching then
-        if self._private.grid:get_widgets_at(old_pos.row, old_pos.col) == nil then
-            local app = self._private.grid.children[#self._private.grid.children]
+        if self:get_grid():get_widgets_at(old_pos.row, old_pos.col) == nil then
+            local app = self:get_grid().children[#self:get_grid().children]
             app:select()
         else
-            local app = self._private.grid:get_widgets_at(old_pos.row, old_pos.col)[1]
+            local app = self:get_grid():get_widgets_at(old_pos.row, old_pos.col)[1]
             app:select()
         end
     -- Otherwise select the first app on the list
-    elseif #self._private.grid.children > 0 then
-        local app = self._private.grid:get_widgets_at(1, 1)[1]
+    elseif #self:get_grid().children > 0 then
+        local app = self:get_grid():get_widgets_at(1, 1)[1]
         app:select()
     end
 end
@@ -271,36 +271,36 @@ local function page_forward(self, dir)
         min_app_index_to_include = 0
         max_app_index_to_include = self._private.apps_per_page
     elseif self.wrap_app_scrolling then
-        local app = self._private.grid:get_widgets_at(1, 1)[1]
+        local app = self:get_grid():get_widgets_at(1, 1)[1]
         app:select()
         return
     else
         return
     end
 
-    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+    local pos = self:get_grid():get_widget_position(self._private.active_widget)
 
     -- Remove the current page apps from the grid
-    self._private.grid:reset()
+    self:get_grid():reset()
 
     for index, app in ipairs(self._private.matched_apps) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self._private.grid:add(app_widget(self, app))
+            self:get_grid():add(app_widget(self, app))
         end
     end
 
     if self._private.current_page > 1 or self.wrap_page_scrolling then
         local app = nil
         if dir == "down" then
-            app = self._private.grid:get_widgets_at(1, 1)[1]
+            app = self:get_grid():get_widgets_at(1, 1)[1]
         elseif dir == "right" then
-            app = self._private.grid:get_widgets_at(pos.row, 1)
+            app = self:get_grid():get_widgets_at(pos.row, 1)
             if app then
                 app = app[1]
             end
             if app == nil then
-                app = self._private.grid.children[#self._private.grid.children]
+                app = self:get_grid().children[#self:get_grid().children]
             end
         end
         app:select()
@@ -313,17 +313,17 @@ local function page_backward(self, dir)
     elseif self.wrap_page_scrolling and #self._private.matched_apps >= self._private.max_apps_per_page then
         self._private.current_page = self._private.pages_count
     elseif self.wrap_app_scrolling then
-        local app = self._private.grid.children[#self._private.grid.children]
+        local app = self:get_grid().children[#self:get_grid().children]
         app:select()
         return
     else
         return
     end
 
-    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+    local pos = self:get_grid():get_widget_position(self._private.active_widget)
 
     -- Remove the current page apps from the grid
-    self._private.grid:reset()
+    self:get_grid():reset()
 
     local max_app_index_to_include = self._private.apps_per_page * self._private.current_page
     local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
@@ -331,56 +331,56 @@ local function page_backward(self, dir)
     for index, app in ipairs(self._private.matched_apps) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self._private.grid:add(app_widget(self, app))
+            self:get_grid():add(app_widget(self, app))
         end
     end
 
     local app = nil
     if self._private.current_page < self._private.pages_count then
         if dir == "up" then
-            app = self._private.grid.children[#self._private.grid.children]
+            app = self:get_grid().children[#self:get_grid().children]
         else
             -- Keep the same row from last page
-            local _, columns = self._private.grid:get_dimension()
-            app = self._private.grid:get_widgets_at(pos.row, columns)[1]
+            local _, columns = self:get_grid():get_dimension()
+            app = self:get_grid():get_widgets_at(pos.row, columns)[1]
         end
     elseif self.wrap_page_scrolling then
-        app = self._private.grid.children[#self._private.grid.children]
+        app = self:get_grid().children[#self:get_grid().children]
     end
     app:select()
 end
 
 local function scroll(self, dir)
-    if #self._private.grid.children < 1 then
+    if #self:get_grid().children < 1 then
         self._private.active_widget = nil
         return
     end
 
-    local pos = self._private.grid:get_widget_position(self._private.active_widget)
+    local pos = self:get_grid():get_widget_position(self._private.active_widget)
     local can_scroll = false
     local step_size = 0
     local if_cant_scroll_func = nil
 
     if dir == "up" then
-        can_scroll = self._private.grid:index(self._private.active_widget) > 1
+        can_scroll = self:get_grid():index(self._private.active_widget) > 1
         step_size = -1
         if_cant_scroll_func = function() page_backward(self, "up") end
     elseif dir == "down" then
-        can_scroll = self._private.grid:index(self._private.active_widget) < #self._private.grid.children
+        can_scroll = self:get_grid():index(self._private.active_widget) < #self:get_grid().children
         step_size = 1
         if_cant_scroll_func = function() page_forward(self, "down") end
     elseif dir == "left" then
-        can_scroll = self._private.grid:get_widgets_at(pos.row, pos.col - 1) ~= nil
-        step_size = -self._private.grid.forced_num_rows
+        can_scroll = self:get_grid():get_widgets_at(pos.row, pos.col - 1) ~= nil
+        step_size = -self:get_grid().forced_num_rows
         if_cant_scroll_func = function() page_backward(self, "left") end
     elseif dir == "right" then
-        can_scroll = self._private.grid:get_widgets_at(pos.row, pos.col + 1) ~= nil
-        step_size = self._private.grid.forced_num_cols
+        can_scroll = self:get_grid():get_widgets_at(pos.row, pos.col + 1) ~= nil
+        step_size = self:get_grid().forced_num_cols
         if_cant_scroll_func = function() page_forward(self, "right") end
     end
 
     if can_scroll then
-        local app = gtable.cycle_value(self._private.grid.children, self._private.active_widget, step_size)
+        local app = gtable.cycle_value(self:get_grid().children, self._private.active_widget, step_size)
         app:select()
     else
         if_cant_scroll_func()
@@ -533,7 +533,7 @@ local function build_widget(self)
         widget = widget
     }
 
-    self._private.grid:connect_signal("button::press", function(_, lx, ly, button, mods, find_widgets_result)
+    self:get_grid():connect_signal("button::press", function(_, lx, ly, button, mods, find_widgets_result)
         if button == 4 then
             self:scroll_up()
         elseif button == 5 then
@@ -541,7 +541,7 @@ local function build_widget(self)
         end
     end)
 
-    self._private.prompt:connect_signal("text::changed", function(_, text)
+    self:get_prompt():connect_signal("text::changed", function(_, text)
         if text == self._private.text then
             return
         end
@@ -550,7 +550,7 @@ local function build_widget(self)
         self._private.search_timer:again()
     end)
 
-    self._private.prompt:connect_signal("key::release", function(_, mod, key, cmd)
+    self:get_prompt():connect_signal("key::release", function(_, mod, key, cmd)
         if key == "Escape" then
             self:hide()
         end
@@ -573,11 +573,10 @@ local function build_widget(self)
         end
     end)
 
-    self._private.max_apps_per_page = self._private.grid.forced_num_cols * self._private.grid.forced_num_rows
+    self._private.max_apps_per_page = self:get_grid().forced_num_cols * self:get_grid().forced_num_rows
     self._private.apps_per_page = self._private.max_apps_per_page
 end
 
--- Sets favorites
 function app_launcher:set_favorites(favorites)
     self.favorites = favorites
     sort_apps(self)
@@ -585,40 +584,34 @@ function app_launcher:set_favorites(favorites)
     search(self)
 end
 
---- Scrolls up
 function app_launcher:scroll_up()
     scroll(self, "up")
 end
 
---- Scrolls down
 function app_launcher:scroll_down()
     scroll(self, "down")
 end
 
---- Scrolls to the left
 function app_launcher:scroll_left()
     scroll(self, "left")
 end
 
---- Scrolls to the right
 function app_launcher:scroll_right()
     scroll(self, "right")
 end
 
---- Shows the app launcher
 function app_launcher:show()
     if self.show_on_focused_screen then
-        self._private.widget.screen = awful.screen.focused()
+        self:get_widget().screen = awful.screen.focused()
     end
 
-    self._private.widget.visible = true
-    self._private.prompt:start()
+    self:get_widget().visible = true
+    self:get_prompt():start()
     self:emit_signal("visibility", true)
 end
 
---- Hides the app launcher
 function app_launcher:hide()
-    if self._private.widget.visible == false then
+    if self:get_widget().visible == false then
         return
     end
 
@@ -626,23 +619,21 @@ function app_launcher:hide()
         self:reset()
     end
 
-    self._private.widget.visible = false
-    self._private.prompt:stop()
+    self:get_widget().visible = false
+    self:get_prompt():stop()
     self:emit_signal("visibility", false)
 end
 
---- Toggles the app launcher
 function app_launcher:toggle()
-    if self._private.widget.visible then
+    if self:get_widget().visible then
         self:hide()
     else
         self:show()
     end
 end
 
--- Reset the app page into the initial state
 function app_launcher:reset()
-    self._private.grid:reset()
+    self:get_grid():reset()
     self._private.matched_apps = self._private.all_apps
     self._private.apps_per_page = self._private.max_apps_per_page
     self._private.pages_count = math.ceil(#self._private.all_apps / self._private.apps_per_page)
@@ -651,19 +642,30 @@ function app_launcher:reset()
     for index, app in ipairs(self._private.all_apps) do
         -- Only add the apps that are part of the first page
         if index <= self._private.apps_per_page then
-            self._private.grid:add(app_widget(self, app))
+            self:get_grid():add(app_widget(self, app))
         else
             break
         end
     end
 
-    local app = self._private.grid:get_widgets_at(1, 1)[1]
+    local app = self:get_grid():get_widgets_at(1, 1)[1]
     app:select()
 
-    self._private.prompt:set_text("")
+    self:get_prompt():set_text("")
 end
 
--- Returns a new app launcher
+function app_launcher:get_widget()
+    return self._private.widget
+end
+
+function app_launcher:get_prompt()
+    return self._private.prompt
+end
+
+function app_launcher:get_grid()
+    return self._private.grid
+end
+
 local function new(args)
     args = args or {}
 
