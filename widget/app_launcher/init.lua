@@ -11,7 +11,6 @@ local string = string
 local table = table
 local math = math
 local ipairs = ipairs
-local pairs = pairs
 local capi = { screen = screen, mouse = mouse }
 local path = ...
 local helpers = require(tostring(path):match(".*bling") .. ".helpers")
@@ -239,7 +238,7 @@ local function search(self, text)
             return string_levenshtein(text, a.name) < string_levenshtein(text, b.name)
         end)
     end
-    for _, app in pairs(self._private.matched_apps) do
+    for _, app in ipairs(self._private.matched_apps) do
         -- Only add the widgets for apps that are part of the first page
         if #self._private.grid.children + 1 <= self._private.max_apps_per_page then
             self._private.grid:add(app_widget(self, app))
@@ -298,7 +297,7 @@ local function page_forward(self, dir)
     -- Remove the current page apps from the grid
     self._private.grid:reset()
 
-    for index, app in pairs(self._private.matched_apps) do
+    for index, app in ipairs(self._private.matched_apps) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
             self._private.grid:add(app_widget(self, app))
@@ -342,7 +341,7 @@ local function page_backward(self, dir)
     local max_app_index_to_include = self._private.apps_per_page * self._private.current_page
     local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
 
-    for index, app in pairs(self._private.matched_apps) do
+    for index, app in ipairs(self._private.matched_apps) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
             self._private.grid:add(app_widget(self, app))
