@@ -205,6 +205,10 @@ local function app_widget(self, app)
         end
     end
 
+    app.spawn = widget.spawn
+    app.select = widget.select
+    app.unselect = widget.unselect
+
     return widget
 end
 
