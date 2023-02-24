@@ -295,7 +295,10 @@ local function page_forward(self, dir)
         if dir == "down" then
             app = self._private.grid:get_widgets_at(1, 1)[1]
         elseif dir == "right" then
-            app = self._private.grid:get_widgets_at(pos.row, 1)[1]
+            app = self._private.grid:get_widgets_at(pos.row, 1)
+            if app then
+                app = app[1]
+            end
             if app == nil then
                 app = self._private.grid.children[#self._private.grid.children]
             end
