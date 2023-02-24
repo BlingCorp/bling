@@ -2,6 +2,9 @@
 -- @author https://github.com/Kasper24
 -- @copyright 2021-2022 Kasper24
 -------------------------------------------
+local lgi = require('lgi')
+local Gtk = lgi.require('Gtk', '3.0')
+local Gdk = lgi.require('Gdk', '3.0')
 local awful = require("awful")
 local gtable = require("gears.table")
 local gstring = require("gears.string")
@@ -146,13 +149,8 @@ end
 local function paste(self)
     local wp = self._private
 
-    awful.spawn.easy_async_with_shell("xclip -selection clipboard -o", function(stdout)
-        if stdout ~= nil then
-            local n = stdout:find("\n")
-            if n then
-                stdout = stdout:sub(1, n - 1)
-            end
-
+    wp.clipboard:request_text(function(clipboard, text)
+        if text then
             wp.text = wp.text:sub(1, wp.cur_pos - 1) .. stdout .. self.text:sub(wp.cur_pos)
             wp.cur_pos = wp.cur_pos + #stdout
             generate_markup(self)
@@ -413,6 +411,7 @@ local function new()
 
     wp.cur_pos = #wp.text + 1 or 1
     wp.state = false
+    wp.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
 
     widget:connect_signal("mouse::enter", function(self, find_widgets_result)
         capi.root.cursor("xterm")
