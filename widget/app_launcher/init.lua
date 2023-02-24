@@ -196,7 +196,8 @@ local function app_widget(self, app)
     return widget
 end
 
-local function search(self, text)
+local function search(self)
+    local text = self._private.text
     local old_pos = self._private.grid:get_widget_position(self._private.active_widget)
 
     -- Reset all the matched apps
@@ -601,7 +602,7 @@ function app_launcher:set_favorites(favorites)
     self.favorites = favorites
     sort_apps(self)
     -- Refresh the app list
-    search(self, self._private.text)
+    search(self)
 end
 
 --- Scrolls up
@@ -723,7 +724,7 @@ local function new(args)
         autostart = true,
         single_shot = true,
         callback = function()
-            search(ret, ret._private.text)
+            search(ret)
         end
     }
 
