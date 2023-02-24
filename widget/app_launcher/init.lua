@@ -599,7 +599,9 @@ end
 -- Sets favorites
 function app_launcher:set_favorites(favorites)
     self.favorites = favorites
-    generate_apps(self)
+    sort_apps(self)
+    -- Refresh the app list
+    search(self, self._private.text)
 end
 
 --- Scrolls up
