@@ -387,26 +387,6 @@ local function scroll(self, dir)
     end
 end
 
-local function reset(self)
-    self._private.grid:reset()
-    self._private.matched_apps = self._private.all_apps
-    self._private.apps_per_page = self._private.max_apps_per_page
-    self._private.pages_count = math.ceil(#self._private.all_apps / self._private.apps_per_page)
-    self._private.current_page = 1
-
-    for index, app in ipairs(self._private.all_apps) do
-        -- Only add the apps that are part of the first page
-        if index <= self._private.apps_per_page then
-            self._private.grid:add(app_widget(self, app))
-        else
-            break
-        end
-    end
-
-    local app = self._private.grid:get_widgets_at(1, 1)[1]
-    app:select()
-end
-
 local function sort_apps(self)
     table.sort(self._private.all_apps, function(a, b)
         local is_a_favorite = has_value(self.favorites, a.id)
@@ -642,6 +622,10 @@ function app_launcher:hide()
         return
     end
 
+    if self.reset_on_hide == true then
+        self:reset()
+    end
+
     self._private.widget.visible = false
     self._private.prompt:stop()
     self:emit_signal("visibility", false)
@@ -654,6 +638,29 @@ function app_launcher:toggle()
     else
         self:show()
     end
+end
+
+-- Reset the app page into the initial state
+function app_launcher:reset()
+    self._private.grid:reset()
+    self._private.matched_apps = self._private.all_apps
+    self._private.apps_per_page = self._private.max_apps_per_page
+    self._private.pages_count = math.ceil(#self._private.all_apps / self._private.apps_per_page)
+    self._private.current_page = 1
+
+    for index, app in ipairs(self._private.all_apps) do
+        -- Only add the apps that are part of the first page
+        if index <= self._private.apps_per_page then
+            self._private.grid:add(app_widget(self, app))
+        else
+            break
+        end
+    end
+
+    local app = self._private.grid:get_widgets_at(1, 1)[1]
+    app:select()
+
+    self._private.prompt:set_text("")
 end
 
 -- Returns a new app launcher
@@ -763,7 +770,7 @@ local function new(args)
 
     build_widget(ret)
     generate_apps(ret)
-    reset(ret)
+    ret:reset()
 
     return ret
 end
