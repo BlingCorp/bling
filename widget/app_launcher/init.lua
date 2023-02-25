@@ -19,7 +19,7 @@ local app_launcher  = { mt = {} }
 
 local KILL_OLD_INOTIFY_SCRIPT = [[ ps x | grep "inotifywait -e modify /usr/share/applications" | grep -v grep | awk '{print $1}' | xargs kill ]]
 local INOTIFY_SCRIPT = [[ bash -c "while (inotifywait -e modify /usr/share/applications -qq) do echo; done" ]]
-local AWESOME_SENSIBLE_TERMINAL_PATH = debug.getinfo(1).source:match("@?(.*/)") ..
+local AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH = debug.getinfo(1).source:match("@?(.*/)") ..
                                            "awesome-sensible-terminal"
 
 local function default_value(value, default)
@@ -152,7 +152,7 @@ local function app_widget(self, app)
     local _self = self
     function widget:run()
         if app.terminal == true then
-            local pid = awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. app.exec)
+            local pid = awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " .. app.exec)
             local class = app.startup_wm_class or app.name
             awful.spawn.with_shell(string.format(
                 [[xdotool search --sync --all --pid %s --name '.*' set_window --classname "%s" set_window --class "%s"]],
