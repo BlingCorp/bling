@@ -463,8 +463,20 @@ end
 function app_launcher:set_favorites(favorites)
     self.favorites = favorites
     self:sort_apps()
-    self:search() -- Refresh the app list
-    -- self:search() -- Refresh the app list
+    self:refresh()
+end
+
+function app_launcher:refresh()
+    local max_app_index_to_include = self._private.apps_per_page * self._private.current_page
+    local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
+
+    self:get_grid():reset()
+    for index, app in ipairs(self._private.matched_apps) do
+        -- Only add widgets that are between this range (part of the current page)
+        if index > min_app_index_to_include and index <= max_app_index_to_include then
+            self:get_grid():add(app_widget(self, app))
+        end
+    end
 end
 
 function app_launcher:search()
