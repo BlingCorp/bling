@@ -259,10 +259,10 @@ local function app_widget(self, app)
         end
     end
 
-    app.run = widget.run
-    app.run_as_root = widget.run_as_root
-    app.select = widget.select
-    app.unselect = widget.unselect
+    function app:run() widget:run() end
+    function app:run_as_root() widget:run_as_root() end
+    function app:select() widget:select() end
+    function app:unselect() widget:unselect() end
 
     return widget
 end
