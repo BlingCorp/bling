@@ -152,7 +152,14 @@ local function app_widget(self, app)
     local _self = self
     function widget:spawn()
         if app.terminal == true then
-            awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. app.exec)
+            local pid = awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. app.exec)
+            local class = app.startup_wm_class or app.name
+            awful.spawn.with_shell(string.format(
+                [[xdotool search --sync --all --pid %s --name '.*' set_window --classname "%s" set_window --class "%s"]],
+                pid,
+                class,
+                class
+            ))
         else
             app:launch()
         end
