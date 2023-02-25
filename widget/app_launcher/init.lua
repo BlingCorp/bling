@@ -136,7 +136,7 @@ local function app_widget(self, app)
             end
         end)
     else
-        widget = self.app_template(app)
+        widget = self.app_template(app, self)
     end
 
     widget:connect_signal("button::press", function(app, _, __, button)
