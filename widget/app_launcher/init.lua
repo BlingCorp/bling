@@ -167,7 +167,7 @@ local function app_widget(self, app)
             _self._private.active_widget:unselect()
         end
         _self._private.active_widget = self
-        self:emit_signal("selected")
+        self:emit_signal("select")
         self.selected = true
 
         if _self.app_template == nil then
@@ -178,7 +178,7 @@ local function app_widget(self, app)
     end
 
     function widget:unselect()
-        self:emit_signal("unselected")
+        self:emit_signal("unselect")
         self.selected = false
         _self._private.active_widget = nil
 
@@ -427,6 +427,7 @@ function app_launcher:set_favorites(favorites)
     self.favorites = favorites
     self:sort_apps()
     self:search() -- Refresh the app list
+    -- self:search() -- Refresh the app list
 end
 
 function app_launcher:search()
@@ -554,6 +555,8 @@ function app_launcher:page_forward(dir)
         end
         app:select()
     end
+
+    self:emit_signal("page::forward", dir)
 end
 
 function app_launcher:page_backward(dir)
@@ -597,6 +600,8 @@ function app_launcher:page_backward(dir)
         app = self:get_grid().children[#self:get_grid().children]
     end
     app:select()
+
+    self:emit_signal("page::backward", dir)
 end
 
 function app_launcher:show()
