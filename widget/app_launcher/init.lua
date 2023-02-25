@@ -21,6 +21,8 @@ local KILL_OLD_INOTIFY_SCRIPT = [[ ps x | grep "inotifywait -e modify /usr/share
 local INOTIFY_SCRIPT = [[ bash -c "while (inotifywait -e modify /usr/share/applications -qq) do echo; done" ]]
 local AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH = debug.getinfo(1).source:match("@?(.*/)") ..
                                            "awesome-sensible-terminal"
+local RUN_AS_ROOT_SCRIPT_PATH = debug.getinfo(1).source:match("@?(.*/)") ..
+                                           "run-as-root.sh"
 
 local function default_value(value, default)
     if value == nil then
@@ -169,6 +171,29 @@ local function app_widget(self, app)
         end
     end
 
+    function widget:run_as_root()
+        if app.terminal == true then
+            local pid = awful.spawn.with_shell(
+                AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " ..
+                RUN_AS_ROOT_SCRIPT_PATH .. " " ..
+                app.exec
+            )
+            local class = app.startup_wm_class or app.name
+            awful.spawn.with_shell(string.format(
+                [[xdotool search --sync --all --pid %s --name '.*' set_window --classname "%s" set_window --class "%s"]],
+                pid,
+                class,
+                class
+            ))
+        else
+            awful.spawn(RUN_AS_ROOT_SCRIPT_PATH .. " " .. app.exec)
+        end
+
+        if _self.hide_on_launch then
+            _self:hide()
+        end
+    end
+
     function widget:select()
         if _self._private.active_widget then
             _self._private.active_widget:unselect()
@@ -197,6 +222,7 @@ local function app_widget(self, app)
     end
 
     app.run = widget.run
+    app.run_as_root = widget.run_as_root
     app.select = widget.select
     app.unselect = widget.unselect
 

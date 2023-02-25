@@ -1,0 +1,5 @@
+#!/bin/bash
+
+PROGRAM=$1
+
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY $PROGRAM
