@@ -154,7 +154,7 @@ local function app_widget(self, app)
         if app.terminal == true then
             awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. app.exec)
         else
-            awful.spawn(app.exec)
+            app:launch()
         end
 
         if _self.hide_on_launch then
@@ -276,6 +276,9 @@ local function generate_apps(self)
                         icon_name = desktop_app_info:get_string("Icon"),
                         terminal = desktop_app_info:get_string("Terminal") == "true" and true or false,
                         exec = exec,
+                        launch = function()
+                            app:launch()
+                        end
                     })
                 end
             end
