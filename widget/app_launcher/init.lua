@@ -228,6 +228,7 @@ local function scroll(self, dir)
     if can_scroll then
         local app = gtable.cycle_value(self:get_grid().children, self._private.active_widget, step_size)
         app:select()
+        self:emit_signal("scroll", dir)
     else
         if_cant_scroll_func()
     end
