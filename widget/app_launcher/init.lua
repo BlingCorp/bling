@@ -142,7 +142,7 @@ local function app_widget(self, app)
     widget:connect_signal("button::press", function(app, _, __, button)
         if button == 1 then
             if self._private.active_widget == app or not self.select_before_spawn then
-                app:spawn()
+                app:run()
             else
                 app:select()
             end
@@ -150,7 +150,7 @@ local function app_widget(self, app)
     end)
 
     local _self = self
-    function widget:spawn()
+    function widget:run()
         if app.terminal == true then
             local pid = awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_PATH .. " -e " .. app.exec)
             local class = app.startup_wm_class or app.name
@@ -196,7 +196,7 @@ local function app_widget(self, app)
         end
     end
 
-    app.spawn = widget.spawn
+    app.run = widget.run
     app.select = widget.select
     app.unselect = widget.unselect
 
@@ -390,7 +390,7 @@ local function build_widget(self)
         end
         if key == "Return" then
             if self._private.active_widget ~= nil then
-                self._private.active_widget:spawn()
+                self._private.active_widget:run()
             end
         end
         if key == "Up" then
