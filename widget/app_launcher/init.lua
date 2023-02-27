@@ -461,7 +461,7 @@ function app_launcher:set_favorites(favorites)
 end
 
 function app_launcher:refresh()
-    local max_app_index_to_include = self._private.apps_per_page * self._private.current_page
+    local max_app_index_to_include = self._private.apps_per_page * self:get_current_page()
     local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
 
     self:get_grid():reset()
@@ -555,10 +555,10 @@ function app_launcher:page_forward(dir)
     local min_app_index_to_include = 0
     local max_app_index_to_include = self._private.apps_per_page
 
-    if self._private.current_page < self._private.pages_count then
-        min_app_index_to_include = self._private.apps_per_page * self._private.current_page
-        self._private.current_page = self._private.current_page + 1
-        max_app_index_to_include = self._private.apps_per_page * self._private.current_page
+    if self:get_current_page() < self._private.pages_count then
+        min_app_index_to_include = self._private.apps_per_page * self:get_current_page()
+        self._private.current_page = self:get_current_page() + 1
+        max_app_index_to_include = self._private.apps_per_page * self:get_current_page()
     elseif self.wrap_page_scrolling and #self._private.matched_apps >= self._private.max_apps_per_page then
         self._private.current_page = 1
         min_app_index_to_include = 0
@@ -583,7 +583,7 @@ function app_launcher:page_forward(dir)
         end
     end
 
-    if self._private.current_page > 1 or self.wrap_page_scrolling then
+    if self:get_current_page() > 1 or self.wrap_page_scrolling then
         local app = nil
         if dir == "down" then
             app = self:get_grid():get_widgets_at(1, 1)[1]
@@ -599,12 +599,12 @@ function app_launcher:page_forward(dir)
         app:select()
     end
 
-    self:emit_signal("page::forward", dir)
+    self:emit_signal("page::forward", dir, self:get_current_page())
 end
 
 function app_launcher:page_backward(dir)
-    if self._private.current_page > 1 then
-        self._private.current_page = self._private.current_page - 1
+    if self:get_current_page() > 1 then
+        self._private.current_page = self:get_current_page() - 1
     elseif self.wrap_page_scrolling and #self._private.matched_apps >= self._private.max_apps_per_page then
         self._private.current_page = self._private.pages_count
     elseif self.wrap_app_scrolling then
@@ -620,7 +620,7 @@ function app_launcher:page_backward(dir)
     -- Remove the current page apps from the grid
     self:get_grid():reset()
 
-    local max_app_index_to_include = self._private.apps_per_page * self._private.current_page
+    local max_app_index_to_include = self._private.apps_per_page * self:get_current_page()
     local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
 
     for index, app in ipairs(self._private.matched_apps) do
@@ -631,7 +631,7 @@ function app_launcher:page_backward(dir)
     end
 
     local app = nil
-    if self._private.current_page < self._private.pages_count then
+    if self:get_current_page() < self._private.pages_count then
         if dir == "up" then
             app = self:get_grid().children[#self:get_grid().children]
         else
@@ -644,7 +644,7 @@ function app_launcher:page_backward(dir)
     end
     app:select()
 
-    self:emit_signal("page::backward", dir)
+    self:emit_signal("page::backward", dir, self:get_current_page())
 end
 
 function app_launcher:show()
@@ -711,6 +711,10 @@ end
 
 function app_launcher:get_grid()
     return self._private.grid
+end
+
+function app_launcher:get_current_page()
+    return self._private.current_page
 end
 
 local function new(args)
