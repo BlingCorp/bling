@@ -396,7 +396,7 @@ local function build_widget(self)
     end)
 
     self:get_prompt():connect_signal("text::changed", function(_, text)
-        if text == self._private.text then
+        if text == self:get_text() then
             return
         end
 
@@ -474,7 +474,7 @@ function app_launcher:refresh()
 end
 
 function app_launcher:search()
-    local text = self._private.text
+    local text = self:get_text()
     local old_pos = self:get_grid():get_widget_position(self._private.active_widget)
 
     -- Reset all the matched apps
@@ -533,6 +533,8 @@ function app_launcher:search()
         local app = self:get_grid():get_widgets_at(1, 1)[1]
         app:select()
     end
+
+    self:emit_signal("search", self:get_text(), self:get_current_page(), self:get_pages_count())
 end
 
 function app_launcher:scroll_up()
@@ -719,6 +721,10 @@ end
 
 function app_launcher:get_current_page()
     return self._private.current_page
+end
+
+function app_launcher:get_text()
+    return self._private.text
 end
 
 local function new(args)
