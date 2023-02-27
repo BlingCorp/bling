@@ -555,7 +555,7 @@ function app_launcher:page_forward(dir)
     local min_app_index_to_include = 0
     local max_app_index_to_include = self._private.apps_per_page
 
-    if self:get_current_page() < self._private.pages_count then
+    if self:get_current_page() < self:get_pages_count() then
         min_app_index_to_include = self._private.apps_per_page * self:get_current_page()
         self._private.current_page = self:get_current_page() + 1
         max_app_index_to_include = self._private.apps_per_page * self:get_current_page()
@@ -599,14 +599,14 @@ function app_launcher:page_forward(dir)
         app:select()
     end
 
-    self:emit_signal("page::forward", dir, self:get_current_page())
+    self:emit_signal("page::forward", dir, self:get_current_page(), self:get_pages_count())
 end
 
 function app_launcher:page_backward(dir)
     if self:get_current_page() > 1 then
         self._private.current_page = self:get_current_page() - 1
     elseif self.wrap_page_scrolling and #self._private.matched_apps >= self._private.max_apps_per_page then
-        self._private.current_page = self._private.pages_count
+        self._private.current_page = self:get_pages_count()
     elseif self.wrap_app_scrolling then
         local app = self:get_grid().children[#self:get_grid().children]
         app:select()
@@ -631,7 +631,7 @@ function app_launcher:page_backward(dir)
     end
 
     local app = nil
-    if self:get_current_page() < self._private.pages_count then
+    if self:get_current_page() < self:get_pages_count() then
         if dir == "up" then
             app = self:get_grid().children[#self:get_grid().children]
         else
@@ -644,7 +644,7 @@ function app_launcher:page_backward(dir)
     end
     app:select()
 
-    self:emit_signal("page::backward", dir, self:get_current_page())
+    self:emit_signal("page::backward", dir, self:get_current_page(), self:get_pages_count())
 end
 
 function app_launcher:show()
@@ -711,6 +711,10 @@ end
 
 function app_launcher:get_grid()
     return self._private.grid
+end
+
+function app_launcher:get_pages_count()
+    return self._private.pages_count
 end
 
 function app_launcher:get_current_page()
