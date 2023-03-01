@@ -6,6 +6,7 @@ local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local prompt_widget = require(... .. ".prompt")
+local fzy = require(... .. ".fzy")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
 local table = table
@@ -505,17 +506,20 @@ function app_launcher:search()
         for _, app in ipairs(self._private.all_apps) do
             text = text:gsub( "%W", "" )
 
-            -- Check if there's a match by the app name or app command
-            if string.find(app.name:lower(), text:lower(), 1, true) ~= nil or
-                self.search_commands and string.find(app.exec, text:lower(), 1, true) ~= nil
-            then
+            -- Filter with fzy
+            if fzy.has_match(text:lower(), app.name) or (self.search_commands and fzy.has_match(text:lower(), app.exec)) then
                 table.insert(self._private.matched_apps, app)
             end
         end
 
         -- Sort by string similarity
         table.sort(self._private.matched_apps, function(a, b)
-            return string_levenshtein(text, a.name) < string_levenshtein(text, b.name)
+            if self.search_commands then
+                return  string_levenshtein(text, a.name) + string_levenshtein(text, a.exec) <
+                        string_levenshtein(text, b.name) + string_levenshtein(text, b.exec)
+            else
+                return string_levenshtein(text, a.name) < string_levenshtein(text, b.name)
+            end
         end)
     end
     for _, app in ipairs(self._private.matched_apps) do
