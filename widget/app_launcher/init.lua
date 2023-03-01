@@ -183,7 +183,7 @@ local function app_widget(self, app)
         widget = self.app_template(app, self)
     end
 
-    local _self = self
+    local app_launcher = self
     function widget:run()
         if app.terminal == true then
             local pid = awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " .. app.exec)
@@ -198,8 +198,8 @@ local function app_widget(self, app)
             app:launch()
         end
 
-        if _self.hide_on_launch then
-            _self:hide()
+        if app_launcher.hide_on_launch then
+            app_launcher:hide()
         end
     end
 
@@ -229,35 +229,35 @@ local function app_widget(self, app)
             awful.spawn(RUN_AS_ROOT_SCRIPT_PATH .. " " .. app.exec)
         end
 
-        if _self.hide_on_launch then
-            _self:hide()
+        if app_launcher.hide_on_launch then
+            app_launcher:hide()
         end
     end
 
     function widget:select()
-        if _self._private.active_widget then
-            _self._private.active_widget:unselect()
+        if app_launcher._private.active_widget then
+            app_launcher._private.active_widget:unselect()
         end
-        _self._private.active_widget = self
+        app_launcher._private.active_widget = self
         self:emit_signal("select")
         self.selected = true
 
-        if _self.app_template == nil then
-            widget.bg = _self.app_selected_color
+        if app_launcher.app_template == nil then
+            widget.bg = app_launcher.app_selected_color
             local name_widget = self:get_children_by_id("name_role")[1]
-            name_widget.markup = string.format("<span foreground='%s'>%s</span>", _self.app_name_selected_color, name_widget.text)
+            name_widget.markup = string.format("<span foreground='%s'>%s</span>", app_launcher.app_name_selected_color, name_widget.text)
         end
     end
 
     function widget:unselect()
         self:emit_signal("unselect")
         self.selected = false
-        _self._private.active_widget = nil
+        app_launcher._private.active_widget = nil
 
-        if _self.app_template == nil then
-            widget.bg = _self.app_normal_color
+        if app_launcher.app_template == nil then
+            widget.bg = app_launcher.app_normal_color
             local name_widget = self:get_children_by_id("name_role")[1]
-            name_widget.markup = string.format("<span foreground='%s'>%s</span>", _self.app_name_normal_color, name_widget.text)
+            name_widget.markup = string.format("<span foreground='%s'>%s</span>", app_launcher.app_name_normal_color, name_widget.text)
         end
     end
 
