@@ -479,6 +479,8 @@ function app_launcher:refresh()
     local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
 
     self:get_grid():reset()
+    collectgarbage("collect")
+
     for index, app in ipairs(self._private.matched_apps) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
@@ -495,6 +497,7 @@ function app_launcher:search()
     self._private.matched_apps = {}
     -- Remove all the grid widgets
     self:get_grid():reset()
+    collectgarbage("collect")
 
     if text == "" then
         self._private.matched_apps = self._private.all_apps
@@ -591,6 +594,7 @@ function app_launcher:page_forward(dir)
 
     -- Remove the current page apps from the grid
     self:get_grid():reset()
+    collectgarbage("collect")
 
     for index, app in ipairs(self._private.matched_apps) do
         -- Only add widgets that are between this range (part of the current page)
@@ -635,6 +639,7 @@ function app_launcher:page_backward(dir)
 
     -- Remove the current page apps from the grid
     self:get_grid():reset()
+    collectgarbage("collect")
 
     local max_app_index_to_include = self._private.apps_per_page * self:get_current_page()
     local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
