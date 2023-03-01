@@ -169,19 +169,19 @@ local function app_widget(self, app)
                 widget.cursor = "left_ptr"
             end
         end)
+
+        widget:connect_signal("button::press", function(app, _, __, button)
+            if button == 1 then
+                if app:get_is_selected() or not self.select_before_spawn then
+                    app:run()
+                else
+                    app:select()
+                end
+            end
+        end)
     else
         widget = self.app_template(app, self)
     end
-
-    widget:connect_signal("button::press", function(app, _, __, button)
-        if button == 1 then
-            if self._private.active_widget == app or not self.select_before_spawn then
-                app:run()
-            else
-                app:select()
-            end
-        end
-    end)
 
     local _self = self
     function widget:run()
@@ -200,6 +200,14 @@ local function app_widget(self, app)
 
         if _self.hide_on_launch then
             _self:hide()
+        end
+    end
+
+    function widget:run_or_select()
+        if app:get_is_selected() then
+            app:run()
+        else
+            app:select()
         end
     end
 
@@ -253,10 +261,16 @@ local function app_widget(self, app)
         end
     end
 
+    function widget:get_is_selected()
+        return self._private.active_widget == app
+    end
+
     function app:run() widget:run() end
+    function app:run_or_select() widget:run_or_select() end
     function app:run_as_root() widget:run_as_root() end
     function app:select() widget:select() end
     function app:unselect() widget:unselect() end
+    function app:get_is_selected() widget:get_is_selected() end
 
     return widget
 end
