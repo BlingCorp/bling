@@ -85,7 +85,7 @@ end
 
 local function scroll(self, dir)
     if #self:get_grid().children < 1 then
-        self._private.active_widget = nil
+        self._private.selected_app_widget = nil
         return
     end
 
@@ -93,16 +93,16 @@ local function scroll(self, dir)
     local if_cant_scroll_func = nil
 
     if dir == "up" then
-        next_app_index = self:get_grid():index(self._private.active_widget) - 1
+        next_app_index = self:get_grid():index(self:get_selected_app_widget()) - 1
         if_cant_scroll_func = function() self:page_backward("up") end
     elseif dir == "down" then
-        next_app_index = self:get_grid():index(self._private.active_widget) + 1
+        next_app_index = self:get_grid():index(self:get_selected_app_widget()) + 1
         if_cant_scroll_func = function() self:page_forward("down") end
     elseif dir == "left" then
-        next_app_index = self:get_grid():index(self._private.active_widget) - self:get_grid().forced_num_rows
+        next_app_index = self:get_grid():index(self:get_selected_app_widget()) - self:get_grid().forced_num_rows
         if_cant_scroll_func = function() self:page_backward("left") end
     elseif dir == "right" then
-        next_app_index = self:get_grid():index(self._private.active_widget) + self:get_grid().forced_num_rows
+        next_app_index = self:get_grid():index(self:get_selected_app_widget()) + self:get_grid().forced_num_rows
         if_cant_scroll_func = function() self:page_forward("right") end
     end
 
@@ -236,10 +236,10 @@ local function app_widget(self, app)
     end
 
     function widget:select()
-        if app_launcher._private.active_widget then
-            app_launcher._private.active_widget:unselect()
+        if app_launcher:get_selected_app_widget() then
+            app_launcher:get_selected_app_widget():unselect()
         end
-        app_launcher._private.active_widget = self
+        app_launcher._private.selected_app_widget = self
         self:emit_signal("select")
         self.selected = true
 
@@ -253,7 +253,7 @@ local function app_widget(self, app)
     function widget:unselect()
         self:emit_signal("unselect")
         self.selected = false
-        app_launcher._private.active_widget = nil
+        app_launcher._private.selected_app_widget = nil
 
         if app_launcher.app_template == nil then
             widget.bg = app_launcher.app_normal_color
@@ -263,7 +263,7 @@ local function app_widget(self, app)
     end
 
     function widget:is_selected()
-        return app_launcher._private.active_widget == self
+        return app_launcher._private.selected_app_widget == self
     end
 
     function app:run() widget:run() end
@@ -424,8 +424,8 @@ local function build_widget(self)
             self:hide()
         end
         if key == "Return" then
-            if self._private.active_widget ~= nil then
-                self._private.active_widget:run()
+            if self:get_selected_app_widget() ~= nil then
+                self:get_selected_app_widget():run()
             end
         end
         if key == "Up" then
@@ -492,7 +492,7 @@ end
 
 function app_launcher:search()
     local text = self:get_text()
-    local old_pos = self:get_grid():get_widget_position(self._private.active_widget)
+    local old_pos = self:get_grid():get_widget_position(self:get_selected_app_widget())
 
     -- Reset all the matched apps
     self._private.matched_apps = {}
@@ -594,7 +594,7 @@ function app_launcher:page_forward(dir)
         return
     end
 
-    local pos = self:get_grid():get_widget_position(self._private.active_widget)
+    local pos = self:get_grid():get_widget_position(self:get_selected_app_widget())
 
     -- Remove the current page apps from the grid
     self:get_grid():reset()
@@ -639,7 +639,7 @@ function app_launcher:page_backward(dir)
         return
     end
 
-    local pos = self:get_grid():get_widget_position(self._private.active_widget)
+    local pos = self:get_grid():get_widget_position(self:get_selected_app_widget())
 
     -- Remove the current page apps from the grid
     self:get_grid():reset()
@@ -748,6 +748,10 @@ end
 
 function app_launcher:get_text()
     return self._private.text
+end
+
+function app_launcher:get_selected_app_widget()
+    return self._private.selected_app_widget
 end
 
 local function new(args)
