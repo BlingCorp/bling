@@ -43,29 +43,47 @@ local function has_value(tab, val)
 end
 
 local function scroll(self, dir)
-    if #self:get_grid().children < 1 then
+    local grid = self:get_grid()
+    if #grid.children < 1 then
         self._private.selected_app_widget = nil
         return
     end
 
     local next_app_index = nil
     local if_cant_scroll_func = nil
+    local grid_orientation = grid:get_orientation()
 
     if dir == "up" then
-        next_app_index = self:get_grid():index(self:get_selected_app_widget()) - 1
+        if grid_orientation == "horizontal" then
+            next_app_index = grid:index(self:get_selected_app_widget()) - 1
+        elseif grid_orientation == "vertical" then
+            next_app_index = grid:index(self:get_selected_app_widget()) - grid.forced_num_cols
+        end
         if_cant_scroll_func = function() self:page_backward("up") end
     elseif dir == "down" then
-        next_app_index = self:get_grid():index(self:get_selected_app_widget()) + 1
+        if grid_orientation == "horizontal" then
+            next_app_index = grid:index(self:get_selected_app_widget()) + 1
+        elseif grid_orientation == "vertical" then
+            next_app_index = grid:index(self:get_selected_app_widget()) + grid.forced_num_cols
+        end
         if_cant_scroll_func = function() self:page_forward("down") end
     elseif dir == "left" then
-        next_app_index = self:get_grid():index(self:get_selected_app_widget()) - self:get_grid().forced_num_rows
+        if grid_orientation == "horizontal" then
+            next_app_index = grid:index(self:get_selected_app_widget()) - grid.forced_num_rows
+        elseif grid_orientation == "vertical" then
+            next_app_index = grid:index(self:get_selected_app_widget()) - 1
+        end
         if_cant_scroll_func = function() self:page_backward("left") end
     elseif dir == "right" then
-        next_app_index = self:get_grid():index(self:get_selected_app_widget()) + self:get_grid().forced_num_rows
+        if grid_orientation == "horizontal" then
+            next_app_index = grid:index(self:get_selected_app_widget()) + grid.forced_num_rows
+        elseif grid_orientation == "vertical" then
+            next_app_index = grid:index(self:get_selected_app_widget()) + 1
+        end
         if_cant_scroll_func = function() self:page_forward("right") end
     end
 
-    local next_app = self:get_grid().children[next_app_index]
+    local next_app = grid.children[next_app_index]
     if next_app then
         next_app:select()
         self:emit_signal("scroll", dir)
