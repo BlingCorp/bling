@@ -819,7 +819,8 @@ local function new(args)
     ret._private.current_page = 1
     ret._private.search_timer = gtimer {
         timeout = 0.05,
-        autostart = true,
+        call_now = false,
+        autostart = false,
         single_shot = true,
         callback = function()
             ret:search()
