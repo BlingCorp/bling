@@ -3,6 +3,7 @@ local awful = require("awful")
 local gobject = require("gears.object")
 local gtable = require("gears.table")
 local gtimer = require("gears.timer")
+local gcache = require("gears.cache")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local prompt_widget = require(... .. ".prompt")
@@ -73,7 +74,7 @@ local function scroll(self, dir)
     end
 end
 
-local function app_widget(self, app)
+local app_widget = gcache.new(function(self, app)
     local widget = nil
 
     if self.app_template == nil then
@@ -232,7 +233,7 @@ local function app_widget(self, app)
     function app:is_selected() widget:is_selected() end
 
     return widget
-end
+end)
 
 local function generate_apps(self)
     self._private.all_apps = {}
@@ -443,7 +444,7 @@ function app_launcher:refresh()
     for index, app in ipairs(self._private.matched_apps) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self:get_grid():add(app_widget(self, app))
+            self:get_grid():add(app_widget:get(self, app))
         end
     end
 end
@@ -475,7 +476,7 @@ function app_launcher:search()
     for _, app in ipairs(self._private.matched_apps) do
         -- Only add the widgets for apps that are part of the first page
         if #self:get_grid().children + 1 <= self._private.max_apps_per_page then
-            self:get_grid():add(app_widget(self, app))
+            self:get_grid():add(app_widget:get(self, app))
         end
     end
 
@@ -553,7 +554,7 @@ function app_launcher:page_forward(dir)
     for index, app in ipairs(self._private.matched_apps) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self:get_grid():add(app_widget(self, app))
+            self:get_grid():add(app_widget:get(self, app))
         end
     end
 
@@ -601,7 +602,7 @@ function app_launcher:page_backward(dir)
     for index, app in ipairs(self._private.matched_apps) do
         -- Only add widgets that are between this range (part of the current page)
         if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self:get_grid():add(app_widget(self, app))
+            self:get_grid():add(app_widget:get(self, app))
         end
     end
 
@@ -664,7 +665,7 @@ function app_launcher:reset()
     for index, app in ipairs(self._private.all_apps) do
         -- Only add the apps that are part of the first page
         if index <= self._private.apps_per_page then
-            self:get_grid():add(app_widget(self, app))
+            self:get_grid():add(app_widget:get(self, app))
         else
             break
         end
