@@ -6,7 +6,6 @@ local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local prompt_widget = require(... .. ".prompt")
-local fzy = require(... .. ".fzy")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
 local table = table
@@ -31,47 +30,6 @@ local function default_value(value, default)
     else
         return value
     end
-end
-
-local function string_levenshtein(str1, str2)
-	local len1 = string.len(str1)
-	local len2 = string.len(str2)
-	local matrix = {}
-	local cost = 0
-
-    -- quick cut-offs to save time
-	if (len1 == 0) then
-		return len2
-	elseif (len2 == 0) then
-		return len1
-	elseif (str1 == str2) then
-		return 0
-	end
-
-    -- initialise the base matrix values
-	for i = 0, len1, 1 do
-		matrix[i] = {}
-		matrix[i][0] = i
-	end
-	for j = 0, len2, 1 do
-		matrix[0][j] = j
-	end
-
-    -- actual Levenshtein algorithm
-	for i = 1, len1, 1 do
-		for j = 1, len2, 1 do
-			if (str1:byte(i) == str2:byte(j)) then
-				cost = 0
-			else
-				cost = 1
-			end
-
-			matrix[i][j] = math.min(matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + cost)
-		end
-	end
-
-    -- return the last value - this is the Levenshtein distance
-	return matrix[len1][len2]
 end
 
 local function has_value(tab, val)
@@ -503,24 +461,16 @@ function app_launcher:search()
     if text == "" then
         self._private.matched_apps = self._private.all_apps
     else
-        for _, app in ipairs(self._private.all_apps) do
-            text = text:gsub( "%W", "" )
-
-            -- Filter with fzy
-            if fzy.has_match(text:lower(), app.name) or (self.search_commands and fzy.has_match(text:lower(), app.exec)) then
-                table.insert(self._private.matched_apps, app)
+        local matched_apps = Gio.DesktopAppInfo.search(text:lower())
+        for _, matched_app in ipairs(matched_apps) do
+            for _, app_id in ipairs(matched_app) do
+                for _, app in ipairs(self._private.all_apps) do
+                    if app.id == app_id then
+                        table.insert(self._private.matched_apps, app)
+                    end
+                end
             end
         end
-
-        -- Sort by string similarity
-        table.sort(self._private.matched_apps, function(a, b)
-            if self.search_commands then
-                return  string_levenshtein(text, a.name) + string_levenshtein(text, a.exec) <
-                        string_levenshtein(text, b.name) + string_levenshtein(text, b.exec)
-            else
-                return string_levenshtein(text, a.name) < string_levenshtein(text, b.name)
-            end
-        end)
     end
     for _, app in ipairs(self._private.matched_apps) do
         -- Only add the widgets for apps that are part of the first page
@@ -759,7 +709,6 @@ local function new(args)
 
     args.sort_fn = default_value(args.sort_fn, nil)
     args.favorites = default_value(args.favorites, {})
-    args.search_commands = default_value(args.search_commands, true)
     args.skip_names = default_value(args.skip_names, {})
     args.skip_commands = default_value(args.skip_commands, {})
     args.skip_empty_icons = default_value(args.skip_empty_icons, false)
