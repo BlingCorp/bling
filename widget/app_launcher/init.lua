@@ -464,6 +464,8 @@ function app_launcher:search()
         for _, matched_app in ipairs(self._private.matched_apps) do
             if #self:get_grid().children + 1 <= self._private.max_apps_per_page then
                 self:get_grid():add(app_widget:get(self, matched_app))
+            else
+                break
             end
         end
     else
