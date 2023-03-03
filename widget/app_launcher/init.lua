@@ -461,6 +461,11 @@ function app_launcher:search()
 
     if text == "" then
         self._private.matched_apps = self._private.all_apps
+        for _, matched_app in ipairs(self._private.matched_apps) do
+            if #self:get_grid().children + 1 <= self._private.max_apps_per_page then
+                self:get_grid():add(app_widget:get(self, matched_app))
+            end
+        end
     else
         local matched_apps = Gio.DesktopAppInfo.search(text:lower())
         for _, matched_app in ipairs(matched_apps) do
@@ -468,15 +473,13 @@ function app_launcher:search()
                 for _, app in ipairs(self._private.all_apps) do
                     if app.id == app_id then
                         table.insert(self._private.matched_apps, app)
+                         -- Only add the widgets for apps that are part of the first page
+                        if #self:get_grid().children + 1 <= self._private.max_apps_per_page then
+                            self:get_grid():add(app_widget:get(self, app))
+                        end
                     end
                 end
             end
-        end
-    end
-    for _, app in ipairs(self._private.matched_apps) do
-        -- Only add the widgets for apps that are part of the first page
-        if #self:get_grid().children + 1 <= self._private.max_apps_per_page then
-            self:get_grid():add(app_widget:get(self, app))
         end
     end
 
