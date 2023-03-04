@@ -42,7 +42,7 @@ local function has_value(tab, val)
     return false
 end
 
-local function scroll(self, dir)
+local function scroll(self, dir, page_dir)
     local grid = self:get_grid()
     if #grid.children < 1 then
         self._private.selected_app_widget = nil
@@ -50,7 +50,6 @@ local function scroll(self, dir)
     end
 
     local next_app_index = nil
-    local if_cant_scroll_func = nil
     local grid_orientation = grid:get_orientation()
 
     if dir == "up" then
@@ -59,28 +58,24 @@ local function scroll(self, dir)
         elseif grid_orientation == "vertical" then
             next_app_index = grid:index(self:get_selected_app_widget()) - grid.forced_num_cols
         end
-        if_cant_scroll_func = function() self:page_backward("up") end
     elseif dir == "down" then
         if grid_orientation == "horizontal" then
             next_app_index = grid:index(self:get_selected_app_widget()) + 1
         elseif grid_orientation == "vertical" then
             next_app_index = grid:index(self:get_selected_app_widget()) + grid.forced_num_cols
         end
-        if_cant_scroll_func = function() self:page_forward("down") end
     elseif dir == "left" then
         if grid_orientation == "horizontal" then
             next_app_index = grid:index(self:get_selected_app_widget()) - grid.forced_num_rows
         elseif grid_orientation == "vertical" then
             next_app_index = grid:index(self:get_selected_app_widget()) - 1
         end
-        if_cant_scroll_func = function() self:page_backward("left") end
     elseif dir == "right" then
         if grid_orientation == "horizontal" then
             next_app_index = grid:index(self:get_selected_app_widget()) + grid.forced_num_rows
         elseif grid_orientation == "vertical" then
             next_app_index = grid:index(self:get_selected_app_widget()) + 1
         end
-        if_cant_scroll_func = function() self:page_forward("right") end
     end
 
     local next_app = grid.children[next_app_index]
@@ -88,7 +83,11 @@ local function scroll(self, dir)
         next_app:select()
         self:emit_signal("scroll", dir)
     else
-        if_cant_scroll_func()
+        if dir == "up" or dir == "left" then
+            self:page_forward(page_dir or dir)
+        elseif dir == "down" or dir == "right" then
+            self:page_forward(page_dir or dir)
+        end
     end
 end
 
@@ -384,13 +383,13 @@ local function build_widget(self)
             if self:get_grid():get_orientation() == "horizontal" then
                 self:scroll_up()
             else
-                self:scroll_left()
+                self:scroll_left("up")
             end
         elseif button == 5 then
             if self:get_grid():get_orientation() == "horizontal" then
                 self:scroll_down()
             else
-                self:scroll_right()
+                self:scroll_right("down")
             end
         end
     end)
@@ -538,20 +537,20 @@ function app_launcher:search()
     self:emit_signal("search", self:get_text(), self:get_current_page(), self:get_pages_count())
 end
 
-function app_launcher:scroll_up()
-    scroll(self, "up")
+function app_launcher:scroll_up(page_dir)
+    scroll(self, "up", page_dir)
 end
 
-function app_launcher:scroll_down()
-    scroll(self, "down")
+function app_launcher:scroll_down(page_dir)
+    scroll(self, "down", page_dir)
 end
 
-function app_launcher:scroll_left()
-    scroll(self, "left")
+function app_launcher:scroll_left(page_dir)
+    scroll(self, "left", page_dir)
 end
 
-function app_launcher:scroll_right()
-    scroll(self, "right")
+function app_launcher:scroll_right(page_dir)
+    scroll(self, "right", page_dir)
 end
 
 function app_launcher:page_forward(dir)
