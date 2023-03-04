@@ -84,7 +84,7 @@ local function scroll(self, dir, page_dir)
         self:emit_signal("scroll", dir)
     else
         if dir == "up" or dir == "left" then
-            self:page_forward(page_dir or dir)
+            self:page_backward(page_dir or dir)
         elseif dir == "down" or dir == "right" then
             self:page_forward(page_dir or dir)
         end
