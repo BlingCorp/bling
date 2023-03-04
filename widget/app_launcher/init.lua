@@ -381,9 +381,17 @@ local function build_widget(self)
 
     self:get_grid():connect_signal("button::press", function(_, lx, ly, button, mods, find_widgets_result)
         if button == 4 then
-            self:scroll_up()
+            if self:get_grid():get_orientation() == "horizontal" then
+                self:scroll_up()
+            else
+                self:scroll_left()
+            end
         elseif button == 5 then
-            self:scroll_down()
+            if self:get_grid():get_orientation() == "horizontal" then
+                self:scroll_down()
+            else
+                self:scroll_right()
+            end
         end
     end)
 
