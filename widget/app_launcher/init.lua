@@ -287,7 +287,7 @@ local function generate_apps(self)
                         end
                     end
 
-                    table.insert(self._private.all_apps, {
+                    local app = {
                         desktop_app_info = desktop_app_info,
                         path = desktop_app_info:get_filename(),
                         id = id,
@@ -302,7 +302,11 @@ local function generate_apps(self)
                         launch = function()
                             app:launch()
                         end
-                    })
+                    }
+                    table.insert(self._private.all_apps, app)
+                    if self.lazy_load_widgets == false then
+                        self._private.apps_widgets_cache[app.name] = app_widget(self, app)
+                    end
                 end
             end
         end
@@ -754,6 +758,7 @@ local function new(args)
     args.reset_on_hide = default_value(args.reset_on_hide, true)
     args.wrap_page_scrolling = default_value(args.wrap_page_scrolling, true)
     args.wrap_app_scrolling = default_value(args.wrap_app_scrolling, true)
+    args.lazy_load_widgets = default_value(args.lazy_load_widgets, false)
 
     args.type = default_value(args.type, "dock")
     args.show_on_focused_screen = default_value(args.show_on_focused_screen, true)
