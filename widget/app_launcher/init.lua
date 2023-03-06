@@ -798,7 +798,7 @@ local function new(args)
     ret._private.text = ""
     ret._private.pages_count = 0
     ret._private.current_page = 1
-    ret._private.apps_widgets_cache = {}
+    ret._private.apps_widgets_cache = setmetatable({}, { __mode = "v" })
     ret._private.search_timer = gtimer {
         timeout = 0.05,
         call_now = false,
