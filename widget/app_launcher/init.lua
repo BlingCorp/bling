@@ -5,7 +5,7 @@ local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
-local prompt_widget = require(... .. ".prompt")
+local text_input_widget = require(... .. ".text_input")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
 local table = table
@@ -318,22 +318,24 @@ end
 local function build_widget(self)
     local widget = self.widget_template
     if widget == nil then
-        self._private.prompt = wibox.widget
+        self._private.text_input = wibox.widget
         {
-            widget = prompt_widget,
-            always_on = true,
+            widget = text_input_widget,
             reset_on_stop = self.reset_on_hide,
-            icon_font = self.prompt_icon_font,
-            icon_size = self.prompt_icon_size,
-            icon_color = self.prompt_icon_color,
-            icon = self.prompt_icon,
-            label_font = self.prompt_label_font,
-            label_size = self.prompt_label_size,
-            label_color = self.prompt_label_color,
-            label = self.prompt_label,
-            text_font = self.prompt_text_font,
-            text_size = self.prompt_text_size,
-            text_color = self.prompt_text_color,
+            placeholder = self.text_input_placeholder,
+            widget_template = wibox.widget {
+                widget = wibox.container.background,
+                forced_height = dpi(120),
+                bg = self.text_input_bg_color,
+                {
+                    widget = wibox.container.margin,
+                    margins = dpi(30),
+                    {
+                        widget = wibox.widget.textbox,
+                        id = "text_role"
+                    }
+                }
+            }
         }
         self._private.grid = wibox.widget
         {
@@ -347,21 +349,7 @@ local function build_widget(self)
         widget = wibox.widget
         {
             layout = wibox.layout.fixed.vertical,
-            {
-                widget = wibox.container.background,
-                forced_height = dpi(120),
-                bg = self.prompt_bg_color,
-                {
-                    widget = wibox.container.margin,
-                    margins = dpi(30),
-                    {
-                        widget = wibox.container.place,
-                        halign = "left",
-                        valign = "center",
-                        self._private.prompt
-                    }
-                }
-            },
+            self._private.text_input,
             {
                 widget = wibox.container.margin,
                 margins = dpi(30),
@@ -369,7 +357,7 @@ local function build_widget(self)
             }
         }
     else
-        self._private.prompt = widget:get_children_by_id("prompt_role")[1]
+        self._private.text_input = widget:get_children_by_id("text_input_role")[1]
         self._private.grid = widget:get_children_by_id("grid_role")[1]
     end
 
@@ -403,7 +391,7 @@ local function build_widget(self)
         end
     end)
 
-    self:get_prompt():connect_signal("text::changed", function(_, text)
+    self:get_text_input():connect_signal("property::text", function(_, text)
         if text == self:get_text() then
             return
         end
@@ -412,10 +400,14 @@ local function build_widget(self)
         self._private.search_timer:again()
     end)
 
-    self:get_prompt():connect_signal("key::release", function(_, mod, key, cmd)
+
+    self:get_text_input():connect_signal("key::press", function(_, mod, key, cmd)
         if key == "Escape" then
             self:hide()
         end
+    end)
+
+    self:get_text_input():connect_signal("key::release", function(_, mod, key, cmd)
         if key == "Return" then
             if self:get_selected_app_widget() ~= nil then
                 self:get_selected_app_widget():run()
@@ -664,7 +656,7 @@ function app_launcher:show()
     end
 
     self:get_widget().visible = true
-    self:get_prompt():start()
+    self:get_text_input():focus()
     self:emit_signal("visibility", true)
 end
 
@@ -678,7 +670,7 @@ function app_launcher:hide()
     end
 
     self:get_widget().visible = false
-    self:get_prompt():stop()
+    self:get_text_input():unfocus()
     self:emit_signal("visibility", false)
 end
 
@@ -709,15 +701,15 @@ function app_launcher:reset()
     local app = self:get_grid():get_widgets_at(1, 1)[1]
     app:select()
 
-    self:get_prompt():set_text("")
+    self:get_text_input():set_text("")
 end
 
 function app_launcher:get_widget()
     return self._private.widget
 end
 
-function app_launcher:get_prompt()
-    return self._private.prompt
+function app_launcher:get_text_input()
+    return self._private.text_input
 end
 
 function app_launcher:get_grid()
@@ -777,18 +769,8 @@ local function new(args)
     args.apps_per_row = default_value(args.apps_per_row, 5)
     args.apps_per_column = default_value(args.apps_per_column, 3)
 
-    args.prompt_bg_color = default_value(args.prompt_bg_color, "#000000")
-    args.prompt_icon_font = default_value(args.prompt_icon_font, beautiful.font)
-    args.prompt_icon_size = default_value(args.prompt_icon_size, 12)
-    args.prompt_icon_color = default_value(args.prompt_icon_color, "#FFFFFF")
-    args.prompt_icon = default_value(args.prompt_icon, "")
-    args.prompt_label_font = default_value(args.prompt_label_font, beautiful.font)
-    args.prompt_label_size = default_value(args.prompt_label_size, 12)
-    args.prompt_label_color = default_value(args.prompt_label_color, "#FFFFFF")
-    args.prompt_label = default_value(args.prompt_label, "<b>Search</b>: ")
-    args.prompt_text_font = default_value(args.prompt_text_font, beautiful.font)
-    args.prompt_text_size = default_value(args.prompt_text_size, 12)
-    args.prompt_text_color = default_value(args.prompt_text_color, "#FFFFFF")
+    args.text_input_bg_color = default_value(args.text_input_bg_color, "#000000")
+    args.text_input_placeholder = default_value(args.text_input_placeholder, "Search: ")
 
     args.app_normal_color = default_value(args.app_normal_color, "#000000")
     args.app_selected_color = default_value(args.app_selected_color, "#FFFFFF")
