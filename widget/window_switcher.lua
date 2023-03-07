@@ -10,25 +10,6 @@ local window_switcher_first_client -- The client that was focused when the windo
 local window_switcher_minimized_clients = {} -- The clients that were minimized when the window switcher was activated
 local window_switcher_grabber
 
-local get_num_clients = function()
-    local minimized_clients_in_tag = 0
-    local matcher = function(c)
-        return awful.rules.match(
-            c,
-            {
-                minimized = true,
-                skip_taskbar = false,
-                hidden = false,
-                first_tag = awful.screen.focused().selected_tag,
-            }
-        )
-    end
-    for c in awful.client.iterate(matcher) do
-        minimized_clients_in_tag = minimized_clients_in_tag + 1
-    end
-    return minimized_clients_in_tag + #awful.screen.focused().clients
-end
-
 local window_switcher_hide = function(window_switcher_box)
     -- Add currently focused client to history
     if client.focus then
@@ -367,20 +348,19 @@ local enable = function(opts)
     }
 
     window_switcher_box:connect_signal("property::width", function()
-        if window_switcher_box.visible and get_num_clients() == 0 then
+        if window_switcher_box.visible and #awful.screen.focused().selected_tag:clients() == 0 then
             window_switcher_hide(window_switcher_box)
         end
     end)
 
     window_switcher_box:connect_signal("property::height", function()
-        if window_switcher_box.visible and get_num_clients() == 0 then
+        if window_switcher_box.visible and #awful.screen.focused().selected_tag:clients() == 0 then
             window_switcher_hide(window_switcher_box)
         end
     end)
 
     awesome.connect_signal("bling::window_switcher::turn_on", function()
-        local number_of_clients = get_num_clients()
-        if number_of_clients == 0 then
+        if #awful.screen.focused().selected_tag:clients() == 0 then
             return
         end
 
