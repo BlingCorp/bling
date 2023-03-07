@@ -17,12 +17,8 @@ local helpers = require(tostring(path):match(".*bling") .. ".helpers")
 
 local app_launcher  = { mt = {} }
 
-local KILL_OLD_INOTIFY_SCRIPT = [[ ps x | grep "inotifywait -e modify /usr/share/applications" | grep -v grep | awk '{print $1}' | xargs kill ]]
-local INOTIFY_SCRIPT = [[ bash -c "while (inotifywait -e modify /usr/share/applications -qq) do echo; done" ]]
-local AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH = debug.getinfo(1).source:match("@?(.*/)") ..
-                                           "awesome-sensible-terminal"
-local RUN_AS_ROOT_SCRIPT_PATH = debug.getinfo(1).source:match("@?(.*/)") ..
-                                           "run-as-root.sh"
+local AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH = debug.getinfo(1).source:match("@?(.*/)") .. "awesome-sensible-terminal"
+local RUN_AS_ROOT_SCRIPT_PATH = debug.getinfo(1).source:match("@?(.*/)") .. "run-as-root.sh"
 
 local function default_value(value, default)
     if value == nil then
@@ -823,8 +819,8 @@ local function new(args)
         )
     end
 
-    awful.spawn.easy_async_with_shell(KILL_OLD_INOTIFY_SCRIPT, function()
-        awful.spawn.with_line_callback(INOTIFY_SCRIPT, {stdout = function()
+    awful.spawn.easy_async_with_shell("pkill -f 'inotifywait -m /usr/share/applications -e modify'", function()
+        awful.spawn.with_line_callback("inotifywait -m /usr/share/applications -e modify", {stdout = function()
             generate_apps(ret)
         end})
     end)
