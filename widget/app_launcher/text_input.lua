@@ -29,7 +29,7 @@ local text_input = {
 }
 
 local properties = {
-    "unfocus_keys", "unfocus_on_clicked_inside", "unfocus_on_clicked_outside", "unfocus_on_mouse_leave", "unfocus_on_tag_change",
+    "unfocus_keys", "unfocus_on_clicked_outside", "unfocus_on_mouse_leave", "unfocus_on_tag_change",
     "focus_on_subject_mouse_enter", "unfocus_on_subject_mouse_leave",
     "reset_on_unfocus",
     "placeholder", "text", "only_numbers", "round", "obscure",
@@ -106,9 +106,6 @@ local function run_mousegrabber(self)
     capi.mousegrabber.run(function(m)
         if m.buttons[1] then
             if capi.mouse.current_widget ~= self and self.unfocus_on_clicked_outside then
-                self:unfocus()
-                return false
-            elseif capi.mouse.current_widget == self and self.unfocus_on_clicked_inside then
                 self:unfocus()
                 return false
             end
@@ -195,6 +192,8 @@ function text_input:set_widget_template(widget_template)
     self._private.text_widget.forced_width = math.huge
     local text_draw = self._private.text_widget.draw
 
+    self._private.text_widget:set_text(self:get_text())
+
     local placeholder_widget = widget_template:get_children_by_id("placeholder_role")
     if placeholder_widget then
         placeholder_widget = placeholder_widget[1]
@@ -220,8 +219,7 @@ function text_input:set_widget_template(widget_template)
         cr:line_to(wp.cursor_x, logical_rect.y + logical_rect.height + 6)
         cr:stroke()
 
-        cr:set_source_rgb(1, 1, 1)
-
+        cr:set_source(gcolor(wp.text_color))
         text_draw(self, context, cr, width, height)
 
         if self:get_text() == "" and placeholder_widget then
@@ -245,7 +243,6 @@ function text_input:set_widget_template(widget_template)
 
     self._private.text_widget:connect_signal("button::press", function(_, lx, ly, button, mods, find_widgets_result)
         if button == 1 then
-            self:focus()
             wp.press_pos = { lx = lx, ly = ly }
             wp.offset = { x = find_widgets_result.x, y = find_widgets_result.y }
             find_widgets_result.drawable:connect_signal("mouse::move", on_drag)
@@ -259,6 +256,7 @@ function text_input:set_widget_template(widget_template)
         else
             wp.selecting_text = false
         end
+        self:focus()
     end)
 
     self._private.text_widget:connect_signal("mouse::enter", function()
@@ -276,6 +274,8 @@ function text_input:set_widget_template(widget_template)
             if wibox then
                 wibox.cursor = "left_ptr"
             end
+        elseif wp.unfocus_on_clicked_outside then
+            run_mousegrabber(self)
         end
 
         find_widgets_result.drawable:disconnect_signal("mouse::move", on_drag)
@@ -312,7 +312,6 @@ function text_input:update_text(text)
 end
 
 function text_input:set_text(text)
-    local wp = self._private
     local text_widget = self:get_text_widget()
 
     text_widget:set_text(text)
@@ -625,11 +624,11 @@ function text_input:focus()
         return
     end
 
-    self:show_cursor()
-    run_keygrabber(self)
-    if wp.unfocus_on_clicked_outside or wp.unfocus_on_clicked_inside then
-        run_mousegrabber(self)
+    if self:get_mode() == "insert" then
+        self:show_cursor()
     end
+
+    run_keygrabber(self)
 
     if wp.cursor_blink then
         gtimer.start_new(wp.cursor_blink_rate, function()
@@ -707,7 +706,6 @@ local function new()
     wp.selection_opacity = 0
 
     wp.unfocus_keys = { "Escape", "Return" }
-    wp.unfocus_on_clicked_inside = false
     wp.unfocus_on_clicked_outside = true
     wp.unfocus_on_mouse_leave = false
     wp.unfocus_on_tag_change = true
@@ -718,11 +716,13 @@ local function new()
 
     wp.reset_on_unfocus = false
 
-    wp.placeholder = ""
-    wp.text = ""
     wp.only_numbers = false
     wp.round = false
     wp.obscure = false
+
+    wp.placeholder = ""
+    wp.text_color = beautiful.colors.fg_normal
+    wp.text = ""
 
     wp.cursor_width = 2
     wp.cursor_bg = beautiful.fg_normal
