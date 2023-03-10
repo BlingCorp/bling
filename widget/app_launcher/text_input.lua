@@ -28,7 +28,7 @@ local text_input = {
 }
 
 local properties = {
-    "unfocus_keys", "unfocus_on_clicked_outside", "unfocus_on_mouse_leave", "unfocus_on_tag_change",
+    "unfocus_keys", "unfocus_on_clicked_outside", "unfocus_on_mouse_leave", "unfocus_on_tag_change", "unfocus_on_client_focus",
     "focus_on_subject_mouse_enter", "unfocus_on_subject_mouse_leave",
     "reset_on_unfocus",
     "placeholder", "initial", "pattern", "obscure",
@@ -749,6 +749,7 @@ local function new()
     wp.unfocus_on_mouse_leave = false
     wp.unfocus_on_tag_change = true
     wp.unfocus_on_other_text_input_focus = true
+    wp.unfocus_on_client_focus = true
 
     wp.focus_on_subject_mouse_enter = nil
     wp.unfocus_on_subject_mouse_leave = nil
@@ -791,6 +792,12 @@ local function new()
 
     capi.awesome.connect_signal("text_input::focus", function(text_input)
         if wp.unfocus_on_other_text_input_focus == false and text_input ~= self then
+            widget:unfocus()
+        end
+    end)
+
+    capi.client.connect_signal("focus", function()
+        if wp.unfocus_on_client_focus then
             widget:unfocus()
         end
     end)
