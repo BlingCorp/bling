@@ -709,7 +709,7 @@ function text_input:unfocus()
     end
 
     wp.focused = false
-    self:emit_signal("unfocus")
+    self:emit_signal("unfocus", self:get_text())
     capi.awesome.emit_signal("text_input::unfocus", self)
 end
 
