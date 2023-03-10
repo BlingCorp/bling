@@ -12,7 +12,6 @@ local gtimer = require("gears.timer")
 local gcolor = require("gears.color")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
-local tonumber = tonumber
 local ipairs = ipairs
 local string = string
 local capi = {
@@ -32,9 +31,23 @@ local properties = {
     "unfocus_keys", "unfocus_on_clicked_outside", "unfocus_on_mouse_leave", "unfocus_on_tag_change",
     "focus_on_subject_mouse_enter", "unfocus_on_subject_mouse_leave",
     "reset_on_unfocus",
-    "placeholder", "text", "only_numbers", "round", "obscure",
+    "placeholder", "text", "pattern", "obscure",
     "cursor_blink", "cursor_blink_rate","cursor_size", "cursor_bg",
     "selection_bg"
+}
+
+text_input.patterns = {
+    numbers = "[%d.]*",
+    numbers_one_decimal = "%d*%.?%d*",
+    round_numbers = "[0-9]*",
+    email = "%S+@%S+%.%S+",
+    time = "%d%d?:%d%d:%d%d?|%d%d?:%d%d",
+    date = "%d%d%d%d%-%d%d%-%d%d|%d%d?/%d%d?/%d%d%d%d|%d%d?%.%d%d?%.%d%d%d%d",
+    phone = "%+?%d[%d%-%s]+%d",
+    url = "https?://[%w-_%.]+%.[%w]+/?[%w-_%.?=%+]*",
+    email = "[%w._%-%+]+@[%w._%-]+%.%w+",
+    alphanumeric = "%w+",
+    letters = "[a-zA-Z]+"
 }
 
 local function build_properties(prototype, prop_names)
@@ -171,12 +184,6 @@ local function run_keygrabber(self)
             elseif key == "Right" then
                 self:increamant_cursor_index()
             else
-                if (wp.round and key == ".") or (wp.only_numbers and tonumber(self:get_text() .. key) == nil) then
-                    return
-                end
-
-                -- wlen() is UTF-8 aware but #key is not,
-                -- so check that we have one UTF-8 char but advance the cursor of # position
                 if key:wlen() == 1 then
                     self:update_text(key)
                 end
@@ -299,6 +306,10 @@ function text_input:set_focused(focused)
     end
 end
 
+function text_input:set_pattern(pattern)
+    self._private.pattern = text_input.patterns[pattern]
+end
+
 function text_input:toggle_obscure()
     self:set_obscure(not self._private.obscure)
 end
@@ -325,19 +336,32 @@ function text_input:set_text(text)
 end
 
 function text_input:insert_text(text)
+    local wp = self._private
+
     local old_text = self:get_text()
     local cursor_index = self:get_cursor_index()
     local left_text = old_text:sub(1, cursor_index) .. text
     local right_text = old_text:sub(cursor_index + 1)
-    self:get_text_widget():set_text(left_text .. right_text)
-    self:set_cursor_index(self:get_cursor_index() + #text)
-
-    self:emit_signal("property::text", self:get_text())
+    local new_text = left_text .. right_text
+    if wp.pattern then
+        new_text = new_text:match(wp.pattern)
+        if new_text then
+            self:get_text_widget():set_text(new_text)
+            self:set_cursor_index(self:get_cursor_index() + #text)
+            self:emit_signal("property::text", self:get_text())
+        end
+    else
+        self:get_text_widget():set_text(new_text)
+        self:set_cursor_index(self:get_cursor_index() + #text)
+        self:emit_signal("property::text", self:get_text())
+    end
 end
 
 function text_input:overwrite_text(text)
-    local start_pos = self._private.selection_start
-    local end_pos = self._private.selection_end
+    local wp = self._private
+
+    local start_pos = wp.selection_start
+    local end_pos = wp.selection_end
     if start_pos > end_pos then
         start_pos, end_pos = end_pos, start_pos
     end
@@ -345,10 +369,20 @@ function text_input:overwrite_text(text)
     local old_text = self:get_text()
     local left_text = old_text:sub(1, start_pos)
     local right_text = old_text:sub(end_pos + 1)
-    self:get_text_widget():set_text(left_text .. text .. right_text)
-    self:set_cursor_index(#left_text)
+    local new_text = left_text .. text .. right_text
 
-    self:emit_signal("property::text", self:get_text())
+    if wp.pattern then
+        new_text = new_text:match(wp.pattern)
+        if new_text then
+            self:get_text_widget():set_text(new_text)
+            self:set_cursor_index(#left_text)
+            self:emit_signal("property::text", self:get_text())
+        end
+    else
+        self:get_text_widget():set_text(new_text)
+        self:set_cursor_index(#left_text)
+        self:emit_signal("property::text", self:get_text())
+    end
 end
 
 function text_input:copy()
@@ -716,8 +750,7 @@ local function new()
 
     wp.reset_on_unfocus = false
 
-    wp.only_numbers = false
-    wp.round = false
+    wp.pattern = nil
     wp.obscure = false
 
     wp.placeholder = ""
