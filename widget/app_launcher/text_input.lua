@@ -31,7 +31,9 @@ local properties = {
     "unfocus_keys", "unfocus_on_clicked_outside", "unfocus_on_mouse_leave", "unfocus_on_tag_change", "unfocus_on_client_focus",
     "focus_on_subject_mouse_enter", "unfocus_on_subject_mouse_leave",
     "reset_on_unfocus",
-    "placeholder", "initial", "pattern", "obscure",
+    "text_color",
+    "placeholder", "initial",
+    "pattern", "obscure",
     "cursor_blink", "cursor_blink_rate","cursor_size", "cursor_bg",
     "selection_bg"
 }
