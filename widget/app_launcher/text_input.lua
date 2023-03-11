@@ -258,13 +258,15 @@ function text_input:set_widget_template(widget_template)
     end)
 
     wp.text_widget:connect_signal("button::release", function(_, lx, ly, button, mods, find_widgets_result)
-        find_widgets_result.drawable:disconnect_signal("mouse::move", on_drag)
-        if not wp.selecting_text then
-            self:set_cursor_index_from_x_y(lx, ly)
-        else
-            wp.selecting_text = false
+        if button == 1 then
+            find_widgets_result.drawable:disconnect_signal("mouse::move", on_drag)
+            if not wp.selecting_text then
+                self:set_cursor_index_from_x_y(lx, ly)
+            else
+                wp.selecting_text = false
+            end
+            self:focus()
         end
-        self:focus()
     end)
 
     wp.text_widget:connect_signal("mouse::enter", function()
