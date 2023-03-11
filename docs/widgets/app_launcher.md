@@ -1,10 +1,10 @@
 ## 🎨 App Launcher <!-- {docsify-ignore} -->
 
-A popup application launcher similar to Rofi
+A popup application launcher similar to Rofi.
 
 ![](https://user-images.githubusercontent.com/33443763/140196352-07e444fe-cccd-45ad-93fa-5705f09e516b.png)
 
-*image by [JavaCafe01](https://github.com/JavaCafe01)*
+_image by [JavaCafe01](https://github.com/JavaCafe01)_
 
 ### Usage
 
@@ -14,7 +14,7 @@ To enable:
 local app_launcher = bling.widget.app_launcher()
 ```
 
-To run the app launcher, call `:toggle()` on the launcher.
+To run the app launcher, call `:toggle()` on the launcher:
 
 ```lua
 app_launcher:toggle()
@@ -32,6 +32,7 @@ local app_launcher = bling.widget.app_launcher(args)
 ```
 
 ### Available Options:
+
 ```lua
 local args = {
     terminal = "alacritty"                                            -- Set default terminal
@@ -50,7 +51,7 @@ local args = {
     reset_on_hide = true                                              -- When you hide the launcher, reset search query
     save_history = true                                               -- Save search history
     wrap_page_scrolling = true                                        -- Allow scrolling to wrap back to beginning/end of launcher list
-    wrap_app_scrolling = true                                         -- Set app scrolling 
+    wrap_app_scrolling = true                                         -- Set app scrolling
 
     default_app_icon_name = "standard.svg"                            -- Sets default app icon name for apps without icon names
     default_app_icon_path = "~/icons/"                                -- Sets default app icon path for apps without icon paths
@@ -65,6 +66,8 @@ local args = {
     shrink_width = true                                               -- Automatically shrink width of launcher to fit varying numbers of apps in list (works on apps_per_column)
     shrink_height = true                                              -- Automatically shrink height of launcher to fit varying numbers of apps in list (works on apps_per_row)
     background = "#FFFFFF"                                            -- Set bg color
+    border_width = dpi(0)                                             -- Set border width of popup
+    border_color = "#FFFFFF"                                          -- Set border color of popup
     shape = function(cr, width, height)
       gears.shape.rectangle(cr, width, height)
     end                                                               -- Set shape for launcher
@@ -98,7 +101,7 @@ local args = {
     apps_per_column = 3                                               -- Set how many apps should appear in each column
     apps_margin = {left = dpi(40), right = dpi(40), bottom = dpi(30)} -- Margin between apps
     apps_spacing = dpi(10)                                            -- Spacing between apps
-    
+
     expand_apps = true                                                -- Should apps expand to fill width of launcher
     app_width = dpi(400)                                              -- Width of each app
     app_height = dpi(40)                                              -- Height of each app
@@ -106,7 +109,7 @@ local args = {
       gears.shape.rectangle(cr, width, height)
     end                                                               -- Shape of each app
     app_normal_color = "#000000"                                      -- App normal color
-    app_normal_hover_color = "#111111"                                -- App normal hover color 
+    app_normal_hover_color = "#111111"                                -- App normal hover color
     app_selected_color = "#FFFFFF"                                    -- App selected color
     app_selected_hover_color = "#EEEEEE"                              -- App selected hover color
     app_content_padding = dpi(10)                                     -- App content padding

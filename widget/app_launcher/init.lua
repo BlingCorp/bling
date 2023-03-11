@@ -143,7 +143,7 @@ local function create_app_widget(self, entry)
         widget = wibox.widget.textbox,
         id = "name",
         font = self.app_name_font,
-        markup = entry.name
+        markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, entry.name)
     } or nil
 
     local generic_name = entry.generic_name ~= nil and self.app_show_generic_name == true and
@@ -780,6 +780,8 @@ local function new(args)
     args.shrink_width = args.shrink_width ~= nil and args.shrink_width or false
     args.shrink_height = args.shrink_height ~= nil and args.shrink_height or false
     args.background = args.background or "#000000"
+    args.border_width = args.border_width or beautiful.border_width or dpi(0)
+    args.border_color = args.border_color or beautiful.border_color or "#FFFFFF"
     args.shape = args.shape or nil
 
     args.prompt_height = args.prompt_height or dpi(100)
@@ -923,6 +925,8 @@ local function new(args)
         visible = false,
         ontop = true,
         placement = ret.placement,
+        border_width = ret.border_width,
+        border_color = ret.border_color,
         shape = ret.shape,
         bg =  ret.background,
         widget =

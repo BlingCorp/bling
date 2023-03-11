@@ -1,6 +1,6 @@
 ## 🔦 Flash Focus <!-- {docsify-ignore} -->
 
-Flash focus does an opacity animation effect on a client when it is focused.
+Flash focus creates an opacity flash animation when a client is focused.
 
 
 ### Usage
@@ -9,7 +9,7 @@ There are two ways in which you can use this module. You can enable it by callin
 ```lua
 bling.module.flash_focus.enable()
 ```
-This connects to the focus signal of a client, which means that the flash focus will activate however you focus the client.
+This connects to the focus signal of a client, which means that the flash focus will activate with whatever method you use to focus the client.
 
 The other way is to call the function itself like this: `bling.module.flash_focus.flashfocus(someclient)`. This allows you to activate on certain keybinds like so:
 ```lua

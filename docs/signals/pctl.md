@@ -9,7 +9,7 @@ This is a signal module in which you can connect to certain bling signals to gra
 - Song length
 - If there are no players on
 
-This module relies on `playerctl` and `curl`. If you have this module disabled, you won't need those programs. With this module, you can create a widget like below without worrying about the backend.
+This module relies on `playerctl` and `curl`. If you have this module disabled, you won't need those programs. With this module, you can create a widget like the one below without worrying about the backend.
 
 ![](https://user-images.githubusercontent.com/33443763/107377569-fa807900-6a9f-11eb-93c1-174c58eb7bf1.png)
 
@@ -157,7 +157,7 @@ end)
 
 Thats all! You don't even have to worry about updating the widgets, the signals will handle that for you.
 
-Here's another example in which you get a notification with the album art, title, and artist whenever the song changes.
+Here's another example in which you get a notification with the album art, title, and artist whenever the song changes:
 
 ```lua
 local naughty = require("naughty")
@@ -184,7 +184,7 @@ button:buttons(gears.table.join(
 
 ### Theme Variables and Configuration
 
-By default, this module will output signals from the most recently active player. If you wish to customize the behavior furthur, the following configuration options are available depending on the selected backend. Here is a summary of the two backends and which configuration options they support.
+By default, this module will output signals from the most recently active player. If you wish to customize the behavior furthur, the following configuration options are available depending on the selected backend. Here is a summary of the two backends and which configuration options they support:
 
 | Option              | playerctl_cli      | playerctl_lib      |
 | ------------------- | ------------------ | ------------------ |
