@@ -56,6 +56,7 @@ local function build_widget(self)
                         forced_width = dpi(650),
                         forced_height = dpi(60),
                         text_color = self.text_input_color,
+                        selection_bg = self.text_input_selection_bg,
                         reset_on_stop = self.reset_on_hide,
                         placeholder = self.text_input_placeholder,
                         widget_template = wibox.widget {
@@ -449,6 +450,7 @@ local function new(args)
 
     args.text_input_bg_color = default_value(args.text_input_bg_color, "#000000")
     args.text_input_color = default_value(args.text_input_color, "#FFFFFF")
+    args.text_input_selection_bg = default_value(args.text_input_selection_bg, "#FF0000")
     args.text_input_placeholder = default_value(args.text_input_placeholder, "Search: ")
 
     args.app_normal_color = default_value(args.app_normal_color, "#000000")
