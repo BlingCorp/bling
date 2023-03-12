@@ -793,7 +793,7 @@ local function new()
     end)
 
     capi.awesome.connect_signal("text_input::focus", function(text_input)
-        if wp.unfocus_on_other_text_input_focus == false and text_input ~= self then
+        if wp.unfocus_on_other_text_input_focus and text_input ~= self then
             widget:unfocus()
         end
     end)
