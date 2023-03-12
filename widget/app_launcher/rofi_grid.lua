@@ -576,7 +576,7 @@ local function new()
     wp.wrap_page_scrolling = true
     wp.wrap_entry_scrolling = true
     wp.search_fn = nil
-    wp.lazy_load_widgets = true
+    wp.lazy_load_widgets = false
 
     wp.text = ""
     wp.pages_count = 0

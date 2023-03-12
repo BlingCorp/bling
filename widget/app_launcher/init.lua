@@ -44,7 +44,6 @@ local function build_widget(self)
         widget_template = wibox.widget
         {
             layout = rofi_grid_widget,
-            lazy_load_widgets = false,
             widget_template = wibox.widget {
                 widget = wibox.container.margin,
                 margins = dpi(15),
@@ -59,14 +58,6 @@ local function build_widget(self)
                         text_color = self.text_input_color,
                         reset_on_stop = self.reset_on_hide,
                         placeholder = self.text_input_placeholder,
-                        unfocus_keys = { },
-                        unfocus_on_clicked_inside = false,
-                        unfocus_on_clicked_outside = false,
-                        unfocus_on_mouse_leave = false,
-                        unfocus_on_tag_change = false,
-                        unfocus_on_other_text_input_focus = false,
-                        focus_on_subject_mouse_enter = nil,
-                        unfocus_on_subject_mouse_leave = nil,
                         widget_template = wibox.widget {
                             widget = wibox.container.background,
                             bg = self.text_input_bg_color,

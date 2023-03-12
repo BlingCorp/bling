@@ -746,17 +746,17 @@ local function new()
     wp.selection_opacity = 0
     wp.selecting_text = false
 
-    wp.unfocus_keys = { "Escape", "Return" }
-    wp.unfocus_on_clicked_outside = true
+    wp.unfocus_keys = { }
+    wp.unfocus_on_clicked_outside = false
     wp.unfocus_on_mouse_leave = false
-    wp.unfocus_on_tag_change = true
-    wp.unfocus_on_other_text_input_focus = true
-    wp.unfocus_on_client_focus = true
+    wp.unfocus_on_tag_change = false
+    wp.unfocus_on_other_text_input_focus = false
+    wp.unfocus_on_client_focus = false
 
     wp.focus_on_subject_mouse_enter = nil
     wp.unfocus_on_subject_mouse_leave = nil
 
-    wp.reset_on_unfocus = false
+    wp.reset_on_unfocus = true
 
     wp.pattern = nil
     wp.obscure = false
