@@ -55,7 +55,7 @@ local function build_widget(self)
                         id = "text_input_role",
                         forced_width = dpi(650),
                         forced_height = dpi(60),
-                        text_color = self.text_input_color,
+                        text_color = self.text_input_text_color,
                         selection_bg = self.text_input_selection_bg,
                         reset_on_stop = self.reset_on_hide,
                         placeholder = self.text_input_placeholder,
@@ -449,7 +449,7 @@ local function new(args)
     args.apps_per_column = default_value(args.apps_per_column, 3)
 
     args.text_input_bg_color = default_value(args.text_input_bg_color, "#000000")
-    args.text_input_color = default_value(args.text_input_color, "#FFFFFF")
+    args.text_input_text_color = default_value(args.text_input_text_color, "#FFFFFF")
     args.text_input_selection_bg = default_value(args.text_input_selection_bg, "#FF0000")
     args.text_input_placeholder = default_value(args.text_input_placeholder, "Search: ")
 
