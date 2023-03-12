@@ -56,6 +56,7 @@ local function build_widget(self)
                         id = "text_input_role",
                         forced_width = dpi(650),
                         forced_height = dpi(60),
+                        text_color = self.text_input_color,
                         reset_on_stop = self.reset_on_hide,
                         placeholder = self.text_input_placeholder,
                         unfocus_keys = { },
