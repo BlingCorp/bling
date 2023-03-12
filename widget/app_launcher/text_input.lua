@@ -339,8 +339,6 @@ function text_input:set_text(text)
     else
         self:set_cursor_index(#text)
     end
-
-    self:emit_signal("property::text", text_widget:get_text())
 end
 
 function text_input:insert_text(text)
