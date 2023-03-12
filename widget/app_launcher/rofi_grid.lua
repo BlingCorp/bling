@@ -118,7 +118,7 @@ local function entry_widget(self, entry)
 
     function entry:select() widget:select() end
     function entry:unselect() widget:unselect() end
-    function entry:is_selected() widget:is_selected() end
+    function entry:is_selected() return widget:is_selected() end
     entry.widget = widget
     widget.entry = entry
 
