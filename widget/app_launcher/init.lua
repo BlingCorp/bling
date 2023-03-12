@@ -241,7 +241,7 @@ local function build_widget(self)
     end)
 end
 
-local function default_sort_fn(a, b)
+local function default_sort_fn(self, a, b)
     local is_a_favorite = has_value(self.favorites, a.id)
     local is_b_favorite = has_value(self.favorites, b.id)
 
@@ -422,13 +422,17 @@ end
 local function new(args)
     args = args or {}
 
-    args.sort_fn = default_value(args.sort_fn, nil)
+    local ret = gobject {}
+
+    args.sort_fn = default_value(args.sort_fn, function(a, b)
+        return default_sort_fn(ret, a, b)
+    end)
+    args.sort_alphabetically = default_value(args.sort_alphabetically, true)
+    args.reverse_sort_alphabetically = default_value(args.reverse_sort_alphabetically, false)
     args.favorites = default_value(args.favorites, {})
     args.skip_names = default_value(args.skip_names, {})
     args.skip_commands = default_value(args.skip_commands, {})
     args.skip_empty_icons = default_value(args.skip_empty_icons, false)
-    args.sort_alphabetically = default_value(args.sort_alphabetically, true)
-    args.reverse_sort_alphabetically = default_value(args.reverse_sort_alphabetically, false)
     args.select_before_spawn = default_value(args.select_before_spawn, true)
     args.hide_on_left_clicked_outside = default_value(args.hide_on_left_clicked_outside, true)
     args.hide_on_right_clicked_outside = default_value(args.hide_on_right_clicked_outside, true)
@@ -461,7 +465,6 @@ local function new(args)
     args.app_name_normal_color = default_value(args.app_name_normal_color, "#FFFFFF")
     args.app_name_selected_color = default_value(args.app_name_selected_color, "#000000")
 
-    local ret = gobject {}
     gtable.crush(ret, app_launcher, true)
     gtable.crush(ret, args, true)
 
