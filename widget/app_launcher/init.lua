@@ -95,7 +95,7 @@ local function build_widget(self)
                             id = "grid_role",
                             orientation = "horizontal",
                             homogeneous = true,
-                            spacing = dpi(30),
+                            spacing = dpi(15),
                             forced_num_cols = self.apps_per_column,
                             forced_num_rows = self.apps_per_row,
                         },
