@@ -6,6 +6,7 @@ local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local text_input_widget = require(... .. ".text_input")
+local rofi_grid_widget = require(... .. ".rofi_grid")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
 local table = table
@@ -37,225 +38,221 @@ local function has_value(tab, val)
     return false
 end
 
-local function scroll(self, dir, page_dir)
-    local grid = self:get_grid()
-    if #grid.children < 1 then
-        self._private.selected_app_widget = nil
-        return
-    end
-
-    local next_app_index = nil
-    local grid_orientation = grid:get_orientation()
-
-    if dir == "up" then
-        if grid_orientation == "horizontal" then
-            next_app_index = grid:index(self:get_selected_app_widget()) - 1
-        elseif grid_orientation == "vertical" then
-            next_app_index = grid:index(self:get_selected_app_widget()) - grid.forced_num_cols
-        end
-    elseif dir == "down" then
-        if grid_orientation == "horizontal" then
-            next_app_index = grid:index(self:get_selected_app_widget()) + 1
-        elseif grid_orientation == "vertical" then
-            next_app_index = grid:index(self:get_selected_app_widget()) + grid.forced_num_cols
-        end
-    elseif dir == "left" then
-        if grid_orientation == "horizontal" then
-            next_app_index = grid:index(self:get_selected_app_widget()) - grid.forced_num_rows
-        elseif grid_orientation == "vertical" then
-            next_app_index = grid:index(self:get_selected_app_widget()) - 1
-        end
-    elseif dir == "right" then
-        if grid_orientation == "horizontal" then
-            next_app_index = grid:index(self:get_selected_app_widget()) + grid.forced_num_rows
-        elseif grid_orientation == "vertical" then
-            next_app_index = grid:index(self:get_selected_app_widget()) + 1
-        end
-    end
-
-    local next_app = grid.children[next_app_index]
-    if next_app then
-        next_app:select()
-        self:emit_signal("scroll", dir)
-    else
-        if dir == "up" or dir == "left" then
-            self:page_backward(page_dir or dir)
-        elseif dir == "down" or dir == "right" then
-            self:page_forward(page_dir or dir)
-        end
-    end
-end
-
-local function app_widget(self, app)
-    if self._private.apps_widgets_cache[app.name] then
-        return self._private.apps_widgets_cache[app.name]
-    end
-
-    local widget = nil
-
-    if self.app_template == nil then
-        widget = wibox.widget
+local function build_widget(self)
+    local widget_template = self.widget_template
+    if widget_template == nil then
+        widget_template = wibox.widget
         {
-            widget = wibox.container.background,
-            forced_width = dpi(300),
-            forced_height = dpi(120),
-            bg = self.app_normal_color,
-            {
-                widget = wibox.container.margin,
-                margins = dpi(10),
+            layout = rofi_grid_widget,
+            lazy_load_widgets = false,
+            widget_template = wibox.widget {
+                layout = wibox.layout.fixed.vertical,
+                forced_width = dpi(1000),
+                forced_height = dpi(1000),
+                spacing = dpi(15),
                 {
-                    layout = wibox.layout.fixed.vertical,
+                    widget = text_input_widget,
+                    id = "text_input_role",
+                    reset_on_stop = self.reset_on_hide,
+                    placeholder = self.text_input_placeholder,
+                    unfocus_keys = { },
+                    unfocus_on_clicked_inside = false,
+                    unfocus_on_clicked_outside = false,
+                    unfocus_on_mouse_leave = false,
+                    unfocus_on_tag_change = false,
+                    unfocus_on_other_text_input_focus = false,
+                    focus_on_subject_mouse_enter = nil,
+                    unfocus_on_subject_mouse_leave = nil,
+                    widget_template = wibox.widget {
+                        widget = wibox.container.background,
+                        forced_height = dpi(120),
+                        bg = self.text_input_bg_color,
+                        {
+                            widget = wibox.container.margin,
+                            margins = dpi(30),
+                            {
+                                widget = wibox.widget.textbox,
+                                text_color = self.text_input_color,
+                                id = "text_role"
+                            }
+                        }
+                    }
+                },
+                {
+                    layout = wibox.layout.fixed.horizontal,
                     spacing = dpi(10),
                     {
-                        widget = wibox.container.place,
-                        halign = "center",
-                        valign = "center",
-                        {
-                            widget = wibox.widget.imagebox,
-                            id = "icon_role",
-                            forced_width = dpi(70),
-                            forced_height = dpi(70),
-                            image = app.icon
-                        },
+                        layout = wibox.layout.grid,
+                        id = "grid_role",
+                        orientation = "horizontal",
+                        homogeneous = true,
+                        spacing = dpi(30),
+                        forced_num_cols = self.apps_per_column,
+                        forced_num_rows = self.apps_per_row,
                     },
                     {
-                        widget = wibox.container.place,
-                        halign = "center",
-                        valign = "center",
+                        layout = wibox.container.rotate,
+                        direction = 'west',
                         {
-                            widget = wibox.widget.textbox,
-                            id = "name_role",
-                            markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, app.name)
+                            widget = wibox.widget.slider,
+                            id = "scrollbar_role",
+                            forced_width = dpi(5),
+                            minimum = 1,
+                            value = 1,
+                            -- bar_shape = helpers.ui.rrect(),
+                            bar_height= 3,
+                            bar_color = beautiful.colors.transparent,
+                            bar_active_color = beautiful.colors.transparent,
+                            handle_width = dpi(50),
+                            handle_color = beautiful.bg_normal,
+                            -- handle_shape = helpers.ui.rrect(),
+                            handle_color = beautiful.colors.on_background
                         }
                     }
                 }
-            }
+            },
+            entry_template = function(app)
+                local widget = wibox.widget
+                {
+                    widget = wibox.container.background,
+                    forced_width = dpi(300),
+                    forced_height = dpi(120),
+                    bg = self.app_normal_color,
+                    {
+                        widget = wibox.container.margin,
+                        margins = dpi(10),
+                        {
+                            layout = wibox.layout.fixed.vertical,
+                            spacing = dpi(10),
+                            {
+                                widget = wibox.container.place,
+                                halign = "center",
+                                valign = "center",
+                                {
+                                    widget = wibox.widget.imagebox,
+                                    id = "icon_role",
+                                    forced_width = dpi(70),
+                                    forced_height = dpi(70),
+                                    image = app.icon
+                                },
+                            },
+                            {
+                                widget = wibox.container.place,
+                                halign = "center",
+                                valign = "center",
+                                {
+                                    widget = wibox.widget.textbox,
+                                    id = "name_role",
+                                    markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, app.name)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                widget:connect_signal("mouse::enter", function()
+                    local widget = capi.mouse.current_wibox
+                    if widget then
+                        widget.cursor = "hand2"
+                    end
+                end)
+
+                widget:connect_signal("mouse::leave", function()
+                    local widget = capi.mouse.current_wibox
+                    if widget then
+                        widget.cursor = "left_ptr"
+                    end
+                end)
+
+                widget:connect_signal("button::press", function(_, __, __, button)
+                    if button == 1 then
+                        if widget:is_selected() or not self.select_before_spawn then
+                            widget:run()
+                        else
+                            widget:select()
+                        end
+                    end
+                end)
+
+                widget:connect_signal("select", function()
+                    widget.bg = self.app_selected_color
+                    local name_widget = widget:get_children_by_id("name_role")[1]
+                    name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_selected_color, name_widget.text)
+                end)
+
+                widget:connect_signal("unselect", function()
+                    widget.bg = self.app_normal_color
+                    local name_widget = widget:get_children_by_id("name_role")[1]
+                    name_widget.markup = string.format("<span foreground='%s'>%s</span>", self.app_name_normal_color, name_widget.text)
+                end)
+
+                return widget
+            end
         }
-
-        widget:connect_signal("mouse::enter", function()
-            local widget = capi.mouse.current_wibox
-            if widget then
-                widget.cursor = "hand2"
-            end
-        end)
-
-        widget:connect_signal("mouse::leave", function()
-            local widget = capi.mouse.current_wibox
-            if widget then
-                widget.cursor = "left_ptr"
-            end
-        end)
-
-        widget:connect_signal("button::press", function(app, _, __, button)
-            if button == 1 then
-                if app:is_selected() or not self.select_before_spawn then
-                    app:run()
-                else
-                    app:select()
+    end
+    widget_template:set_search_fn(function(text, app)
+        local matched_apps = Gio.DesktopAppInfo.search(text:lower())
+        for _, matched_app in ipairs(matched_apps) do
+            for _, app_id in ipairs(matched_app) do
+                if app.id == app_id then
+                    return true
                 end
             end
-        end)
+        end
+    end)
+
+    self._private.widget = awful.popup
+    {
+        screen = self.screen,
+        type = self.type,
+        visible = false,
+        ontop = true,
+        placement = self.placement,
+        border_width = self.border_width,
+        border_color = self.border_color,
+        shape = self.shape,
+        bg =  self.bg,
+        widget = widget_template
+    }
+
+    self:get_text_input():connect_signal("key::press", function(_, mod, key, cmd)
+        if key == "Escape" then
+            self:hide()
+        end
+    end)
+
+    self:get_text_input():connect_signal("key::release", function(_, mod, key, cmd)
+        if key == "Return" then
+            if self:get_rofi_grid():get_selected_widget() ~= nil then
+                self:get_rofi_grid():get_selected_widget():run()
+            end
+        end
+    end)
+end
+
+local function default_sort_fn(a, b)
+    local is_a_favorite = has_value(self.favorites, a.id)
+    local is_b_favorite = has_value(self.favorites, b.id)
+
+    -- Sort the favorite apps first
+    if is_a_favorite and not is_b_favorite then
+        return true
+    elseif not is_a_favorite and is_b_favorite then
+        return false
+    end
+
+    -- Sort alphabetically if specified
+    if self.sort_alphabetically then
+        return a.name:lower() < b.name:lower()
+    elseif self.reverse_sort_alphabetically then
+        return b.name:lower() > a.name:lower()
     else
-        widget = self.app_template(app, self)
+        return true
     end
-
-    local app_launcher = self
-    function widget:run()
-        if app.terminal == true then
-            local pid = awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " .. app.exec)
-            local class = app.startup_wm_class or app.name
-            awful.spawn.with_shell(string.format(
-                [[xdotool search --sync --all --pid %s --name '.*' set_window --classname "%s" set_window --class "%s"]],
-                pid,
-                class,
-                class
-            ))
-        else
-            app:launch()
-        end
-
-        if app_launcher.hide_on_launch then
-            app_launcher:hide()
-        end
-    end
-
-    function widget:run_or_select()
-        if self:is_selected() then
-            self:run()
-        else
-            self:select()
-        end
-    end
-
-    function widget:run_as_root()
-        if app.terminal == true then
-            local pid = awful.spawn.with_shell(
-                AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " ..
-                RUN_AS_ROOT_SCRIPT_PATH .. " " ..
-                app.exec
-            )
-            local class = app.startup_wm_class or app.name
-            awful.spawn.with_shell(string.format(
-                [[xdotool search --sync --all --pid %s --name '.*' set_window --classname "%s" set_window --class "%s"]],
-                pid,
-                class,
-                class
-            ))
-        else
-            awful.spawn(RUN_AS_ROOT_SCRIPT_PATH .. " " .. app.exec)
-        end
-
-        if app_launcher.hide_on_launch then
-            app_launcher:hide()
-        end
-    end
-
-    function widget:select()
-        if app_launcher:get_selected_app_widget() then
-            app_launcher:get_selected_app_widget():unselect()
-        end
-        app_launcher._private.selected_app_widget = self
-        self:emit_signal("select")
-        self.selected = true
-
-        if app_launcher.app_template == nil then
-            widget.bg = app_launcher.app_selected_color
-            local name_widget = self:get_children_by_id("name_role")[1]
-            name_widget.markup = string.format("<span foreground='%s'>%s</span>", app_launcher.app_name_selected_color, name_widget.text)
-        end
-    end
-
-    function widget:unselect()
-        self:emit_signal("unselect")
-        self.selected = false
-        app_launcher._private.selected_app_widget = nil
-
-        if app_launcher.app_template == nil then
-            widget.bg = app_launcher.app_normal_color
-            local name_widget = self:get_children_by_id("name_role")[1]
-            name_widget.markup = string.format("<span foreground='%s'>%s</span>", app_launcher.app_name_normal_color, name_widget.text)
-        end
-    end
-
-    function widget:is_selected()
-        return app_launcher._private.selected_app_widget == self
-    end
-
-    function app:run() widget:run() end
-    function app:run_or_select() widget:run_or_select() end
-    function app:run_as_root() widget:run_as_root() end
-    function app:select() widget:select() end
-    function app:unselect() widget:unselect() end
-    function app:is_selected() widget:is_selected() end
-
-    self._private.apps_widgets_cache[app.name] = widget
-
-    return widget
 end
 
 local function generate_apps(self)
-    self._private.all_apps = {}
-    self._private.matched_apps = {}
+    local entries = {}
 
     local app_info = Gio.AppInfo
     local apps = app_info.get_all()
@@ -299,351 +296,69 @@ local function generate_apps(self)
                             app:launch()
                         end
                     }
-                    table.insert(self._private.all_apps, app)
-                    if self.lazy_load_widgets == false then
-                        self._private.apps_widgets_cache[app.name] = app_widget(self, app)
-                    end
+                    table.insert(entries, app)
                 end
             end
         end
     end
 
-    self:sort_apps()
+    self:get_rofi_grid():set_entries(entries, self.sort_fn)
 end
 
-local function build_widget(self)
-    local widget = self.widget_template
-    if widget == nil then
-        self._private.text_input = wibox.widget
-        {
-            widget = text_input_widget,
-            reset_on_stop = self.reset_on_hide,
-            placeholder = self.text_input_placeholder,
-            widget_template = wibox.widget {
-                widget = wibox.container.background,
-                forced_height = dpi(120),
-                bg = self.text_input_bg_color,
-                {
-                    widget = wibox.container.margin,
-                    margins = dpi(30),
-                    {
-                        widget = wibox.widget.textbox,
-                        id = "text_role"
-                    }
-                }
-            }
-        }
-        self._private.grid = wibox.widget
-        {
-            layout = wibox.layout.grid,
-            orientation = "horizontal",
-            homogeneous = true,
-            spacing = dpi(30),
-            forced_num_cols = self.apps_per_column,
-            forced_num_rows = self.apps_per_row,
-        }
-        widget = wibox.widget
-        {
-            layout = wibox.layout.fixed.vertical,
-            self._private.text_input,
-            {
-                widget = wibox.container.margin,
-                margins = dpi(30),
-                self._private.grid
-            }
-        }
+function app_launcher:run(widget)
+    if widget.entry.terminal == true then
+        local pid = awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " .. widget.entry.exec)
+        local class = widget.entry.startup_wm_class or widget.entry.name
+        awful.spawn.with_shell(string.format(
+            [[xdotool search --sync --all --pid %s --name '.*' set_window --classname "%s" set_window --class "%s"]],
+            pid,
+            class,
+            class
+        ))
     else
-        self._private.text_input = widget:get_children_by_id("text_input_role")[1]
-        self._private.grid = widget:get_children_by_id("grid_role")[1]
+        widget.entry:launch()
     end
 
-    self._private.widget = awful.popup
-    {
-        screen = self.screen,
-        type = self.type,
-        visible = false,
-        ontop = true,
-        placement = self.placement,
-        border_width = self.border_width,
-        border_color = self.border_color,
-        shape = self.shape,
-        bg =  self.bg,
-        widget = widget
-    }
-
-    self:get_grid():connect_signal("button::press", function(_, lx, ly, button, mods, find_widgets_result)
-        if button == 4 then
-            if self:get_grid():get_orientation() == "horizontal" then
-                self:scroll_up()
-            else
-                self:scroll_left("up")
-            end
-        elseif button == 5 then
-            if self:get_grid():get_orientation() == "horizontal" then
-                self:scroll_down()
-            else
-                self:scroll_right("down")
-            end
-        end
-    end)
-
-    self:get_text_input():connect_signal("property::text", function(_, text)
-        if text == self:get_text() then
-            return
-        end
-
-        self._private.text = text
-        self._private.search_timer:again()
-    end)
-
-
-    self:get_text_input():connect_signal("key::press", function(_, mod, key, cmd)
-        if key == "Escape" then
-            self:hide()
-        end
-    end)
-
-    self:get_text_input():connect_signal("key::release", function(_, mod, key, cmd)
-        if key == "Return" then
-            if self:get_selected_app_widget() ~= nil then
-                self:get_selected_app_widget():run()
-            end
-        end
-        if key == "Up" then
-            self:scroll_up()
-        end
-        if key == "Down" then
-            self:scroll_down()
-        end
-        if key == "Left" then
-            self:scroll_left()
-        end
-        if key == "Right" then
-            self:scroll_right()
-        end
-    end)
-
-    self._private.max_apps_per_page = self:get_grid().forced_num_cols * self:get_grid().forced_num_rows
-    self._private.apps_per_page = self._private.max_apps_per_page
+    if self.hide_on_launch then
+        app_launcher:hide()
+    end
 end
 
-function app_launcher:sort_apps(sort_fn)
-    table.sort(self._private.all_apps, sort_fn or self.sort_fn or function(a, b)
-        local is_a_favorite = has_value(self.favorites, a.id)
-        local is_b_favorite = has_value(self.favorites, b.id)
+function app_launcher:run_or_select(widget)
+    if self:get_selected_widget() == widget then
+        self:run(widget)
+    else
+        self:select(widget)
+    end
+end
 
-        -- Sort the favorite apps first
-        if is_a_favorite and not is_b_favorite then
-            return true
-        elseif not is_a_favorite and is_b_favorite then
-            return false
-        end
+function app_launcher:run_as_root(widget)
+    if widget.entry.terminal == true then
+        local pid = awful.spawn.with_shell(
+            AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " ..
+            RUN_AS_ROOT_SCRIPT_PATH .. " " ..
+            widget.entry.exec
+        )
+        local class = widget.entry.startup_wm_class or widget.entry.name
+        awful.spawn.with_shell(string.format(
+            [[xdotool search --sync --all --pid %s --name '.*' set_window --classname "%s" set_window --class "%s"]],
+            pid,
+            class,
+            class
+        ))
+    else
+        awful.spawn(RUN_AS_ROOT_SCRIPT_PATH .. " " .. widget.entry.exec)
+    end
 
-        -- Sort alphabetically if specified
-        if self.sort_alphabetically then
-            return a.name:lower() < b.name:lower()
-        elseif self.reverse_sort_alphabetically then
-            return b.name:lower() > a.name:lower()
-        else
-            return true
-        end
-    end)
+    if self.hide_on_launch then
+        app_launcher:hide()
+    end
 end
 
 function app_launcher:set_favorites(favorites)
     self.favorites = favorites
-    self:sort_apps()
+    self:get_rofi_grid():set_sort_fn(self.sort_fn)
     self:refresh()
-end
-
-function app_launcher:refresh()
-    local max_app_index_to_include = self._private.apps_per_page * self:get_current_page()
-    local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
-
-    self:get_grid():reset()
-
-    for index, app in ipairs(self._private.matched_apps) do
-        -- Only add widgets that are between this range (part of the current page)
-        if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self:get_grid():add(app_widget(self, app))
-        end
-    end
-end
-
-function app_launcher:search()
-    local text = self:get_text()
-    local old_pos = self:get_grid():get_widget_position(self:get_selected_app_widget())
-
-    -- Reset all the matched apps
-    self._private.matched_apps = {}
-    -- Remove all the grid widgets
-    self:get_grid():reset()
-
-    if text == "" then
-        self._private.matched_apps = self._private.all_apps
-        for _, matched_app in ipairs(self._private.matched_apps) do
-            if #self:get_grid().children + 1 <= self._private.max_apps_per_page then
-                self:get_grid():add(app_widget(self, matched_app))
-            else
-                break
-            end
-        end
-    else
-        local matched_apps = Gio.DesktopAppInfo.search(text:lower())
-        for _, matched_app in ipairs(matched_apps) do
-            for _, app_id in ipairs(matched_app) do
-                for _, app in ipairs(self._private.all_apps) do
-                    if app.id == app_id then
-                        table.insert(self._private.matched_apps, app)
-                         -- Only add the widgets for apps that are part of the first page
-                        if #self:get_grid().children + 1 <= self._private.max_apps_per_page then
-                            self:get_grid():add(app_widget(self, app))
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    -- Recalculate the apps per page based on the current matched apps
-    self._private.apps_per_page = math.min(#self._private.matched_apps, self._private.max_apps_per_page)
-
-    -- Recalculate the pages count based on the current apps per page
-    self._private.pages_count = math.ceil(math.max(1, #self._private.matched_apps) / math.max(1, self._private.apps_per_page))
-
-    -- Page should be 1 after a search
-    self._private.current_page = 1
-
-    -- This is an option to mimic rofi behaviour where after a search
-    -- it will reselect the app whose index is the same as the app index that was previously selected
-    -- and if matched_apps.length < current_index it will instead select the app with the greatest index
-    if self.try_to_keep_index_after_searching then
-        if self:get_grid():get_widgets_at(old_pos.row, old_pos.col) == nil then
-            local app = self:get_grid().children[#self:get_grid().children]
-            app:select()
-        else
-            local app = self:get_grid():get_widgets_at(old_pos.row, old_pos.col)[1]
-            app:select()
-        end
-    -- Otherwise select the first app on the list
-    elseif #self:get_grid().children > 0 then
-        local app = self:get_grid():get_widgets_at(1, 1)[1]
-        app:select()
-    end
-
-    self:emit_signal("search", self:get_text(), self:get_current_page(), self:get_pages_count())
-end
-
-function app_launcher:scroll_up(page_dir)
-    scroll(self, "up", page_dir)
-end
-
-function app_launcher:scroll_down(page_dir)
-    scroll(self, "down", page_dir)
-end
-
-function app_launcher:scroll_left(page_dir)
-    scroll(self, "left", page_dir)
-end
-
-function app_launcher:scroll_right(page_dir)
-    scroll(self, "right", page_dir)
-end
-
-function app_launcher:page_forward(dir)
-    local min_app_index_to_include = 0
-    local max_app_index_to_include = self._private.apps_per_page
-
-    if self:get_current_page() < self:get_pages_count() then
-        min_app_index_to_include = self._private.apps_per_page * self:get_current_page()
-        self._private.current_page = self:get_current_page() + 1
-        max_app_index_to_include = self._private.apps_per_page * self:get_current_page()
-    elseif self.wrap_page_scrolling and #self._private.matched_apps >= self._private.max_apps_per_page then
-        self._private.current_page = 1
-        min_app_index_to_include = 0
-        max_app_index_to_include = self._private.apps_per_page
-    elseif self.wrap_app_scrolling then
-        local app = self:get_grid():get_widgets_at(1, 1)[1]
-        app:select()
-        return
-    else
-        return
-    end
-
-    local pos = self:get_grid():get_widget_position(self:get_selected_app_widget())
-
-    -- Remove the current page apps from the grid
-    self:get_grid():reset()
-
-    for index, app in ipairs(self._private.matched_apps) do
-        -- Only add widgets that are between this range (part of the current page)
-        if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self:get_grid():add(app_widget(self, app))
-        end
-    end
-
-    if self:get_current_page() > 1 or self.wrap_page_scrolling then
-        local app = nil
-        if dir == "down" then
-            app = self:get_grid():get_widgets_at(1, 1)[1]
-        elseif dir == "right" then
-            app = self:get_grid():get_widgets_at(pos.row, 1)
-            if app then
-                app = app[1]
-            end
-            if app == nil then
-                app = self:get_grid().children[#self:get_grid().children]
-            end
-        end
-        app:select()
-    end
-
-    self:emit_signal("page::forward", dir, self:get_current_page(), self:get_pages_count())
-end
-
-function app_launcher:page_backward(dir)
-    if self:get_current_page() > 1 then
-        self._private.current_page = self:get_current_page() - 1
-    elseif self.wrap_page_scrolling and #self._private.matched_apps >= self._private.max_apps_per_page then
-        self._private.current_page = self:get_pages_count()
-    elseif self.wrap_app_scrolling then
-        local app = self:get_grid().children[#self:get_grid().children]
-        app:select()
-        return
-    else
-        return
-    end
-
-    local pos = self:get_grid():get_widget_position(self:get_selected_app_widget())
-
-    -- Remove the current page apps from the grid
-    self:get_grid():reset()
-
-    local max_app_index_to_include = self._private.apps_per_page * self:get_current_page()
-    local min_app_index_to_include = max_app_index_to_include - self._private.apps_per_page
-
-    for index, app in ipairs(self._private.matched_apps) do
-        -- Only add widgets that are between this range (part of the current page)
-        if index > min_app_index_to_include and index <= max_app_index_to_include then
-            self:get_grid():add(app_widget(self, app))
-        end
-    end
-
-    local app = nil
-    if self:get_current_page() < self:get_pages_count() then
-        if dir == "up" then
-            app = self:get_grid().children[#self:get_grid().children]
-        else
-            -- Keep the same row from last page
-            local _, columns = self:get_grid():get_dimension()
-            app = self:get_grid():get_widgets_at(pos.row, columns)[1]
-        end
-    elseif self.wrap_page_scrolling then
-        app = self:get_grid().children[#self:get_grid().children]
-    end
-    app:select()
-
-    self:emit_signal("page::backward", dir, self:get_current_page(), self:get_pages_count())
 end
 
 function app_launcher:show()
@@ -662,7 +377,7 @@ function app_launcher:hide()
     end
 
     if self.reset_on_hide == true then
-        self:reset()
+        self:get_rofi_grid():reset()
     end
 
     self:get_widget().visible = false
@@ -678,54 +393,16 @@ function app_launcher:toggle()
     end
 end
 
-function app_launcher:reset()
-    self:get_grid():reset()
-    self._private.matched_apps = self._private.all_apps
-    self._private.apps_per_page = self._private.max_apps_per_page
-    self._private.pages_count = math.ceil(#self._private.all_apps / self._private.apps_per_page)
-    self._private.current_page = 1
-
-    for index, app in ipairs(self._private.all_apps) do
-        -- Only add the apps that are part of the first page
-        if index <= self._private.apps_per_page then
-            self:get_grid():add(app_widget(self, app))
-        else
-            break
-        end
-    end
-
-    local app = self:get_grid():get_widgets_at(1, 1)[1]
-    app:select()
-
-    self:get_text_input():set_text("")
-end
-
 function app_launcher:get_widget()
     return self._private.widget
 end
 
+function app_launcher:get_rofi_grid()
+    return self:get_widget().widget
+end
+
 function app_launcher:get_text_input()
-    return self._private.text_input
-end
-
-function app_launcher:get_grid()
-    return self._private.grid
-end
-
-function app_launcher:get_pages_count()
-    return self._private.pages_count
-end
-
-function app_launcher:get_current_page()
-    return self._private.current_page
-end
-
-function app_launcher:get_text()
-    return self._private.text
-end
-
-function app_launcher:get_selected_app_widget()
-    return self._private.selected_app_widget
+    return self:get_rofi_grid():get_text_input()
 end
 
 local function new(args)
@@ -766,6 +443,7 @@ local function new(args)
     args.apps_per_column = default_value(args.apps_per_column, 3)
 
     args.text_input_bg_color = default_value(args.text_input_bg_color, "#000000")
+    args.text_input_color = default_value(args.text_input_bg_color, "#FFFFFF")
     args.text_input_placeholder = default_value(args.text_input_placeholder, "Search: ")
 
     args.app_normal_color = default_value(args.app_normal_color, "#000000")
@@ -781,7 +459,6 @@ local function new(args)
     ret._private.text = ""
     ret._private.pages_count = 0
     ret._private.current_page = 1
-    ret._private.apps_widgets_cache = setmetatable({}, { __mode = "v" })
     ret._private.search_timer = gtimer {
         timeout = 0.05,
         call_now = false,
@@ -827,7 +504,6 @@ local function new(args)
 
     build_widget(ret)
     generate_apps(ret)
-    ret:reset()
 
     return ret
 end
