@@ -453,7 +453,7 @@ local function new(args)
     args.apps_per_column = default_value(args.apps_per_column, 3)
 
     args.text_input_bg_color = default_value(args.text_input_bg_color, "#000000")
-    args.text_input_color = default_value(args.text_input_bg_color, "#FFFFFF")
+    args.text_input_color = default_value(args.text_input_color, "#FFFFFF")
     args.text_input_placeholder = default_value(args.text_input_placeholder, "Search: ")
 
     args.app_normal_color = default_value(args.app_normal_color, "#000000")
