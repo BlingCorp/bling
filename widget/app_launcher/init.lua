@@ -457,7 +457,7 @@ local function new(args)
 
     args.app_normal_color = default_value(args.app_normal_color, "#000000")
     args.app_selected_color = default_value(args.app_selected_color, "#FFFFFF")
-    args.app_name_normal_color = default_value( args.app_name_normal_color, "#FFFFFF")
+    args.app_name_normal_color = default_value(args.app_name_normal_color, "#FFFFFF")
     args.app_name_selected_color = default_value(args.app_name_selected_color, "#000000")
 
     local ret = gobject {}
