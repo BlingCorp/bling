@@ -46,67 +46,76 @@ local function build_widget(self)
             layout = rofi_grid_widget,
             lazy_load_widgets = false,
             widget_template = wibox.widget {
-                layout = wibox.layout.fixed.vertical,
-                forced_width = dpi(1000),
-                forced_height = dpi(1000),
-                spacing = dpi(15),
+                widget = wibox.container.margin,
+                margins = dpi(15),
                 {
-                    widget = text_input_widget,
-                    id = "text_input_role",
-                    reset_on_stop = self.reset_on_hide,
-                    placeholder = self.text_input_placeholder,
-                    unfocus_keys = { },
-                    unfocus_on_clicked_inside = false,
-                    unfocus_on_clicked_outside = false,
-                    unfocus_on_mouse_leave = false,
-                    unfocus_on_tag_change = false,
-                    unfocus_on_other_text_input_focus = false,
-                    focus_on_subject_mouse_enter = nil,
-                    unfocus_on_subject_mouse_leave = nil,
-                    widget_template = wibox.widget {
-                        widget = wibox.container.background,
-                        forced_height = dpi(120),
-                        bg = self.text_input_bg_color,
-                        {
-                            widget = wibox.container.margin,
-                            margins = dpi(30),
+                    layout = wibox.layout.fixed.vertical,
+                    spacing = dpi(15),
+                    {
+                        widget = text_input_widget,
+                        id = "text_input_role",
+                        forced_width = dpi(650),
+                        forced_height = dpi(60),
+                        reset_on_stop = self.reset_on_hide,
+                        placeholder = self.text_input_placeholder,
+                        unfocus_keys = { },
+                        unfocus_on_clicked_inside = false,
+                        unfocus_on_clicked_outside = false,
+                        unfocus_on_mouse_leave = false,
+                        unfocus_on_tag_change = false,
+                        unfocus_on_other_text_input_focus = false,
+                        focus_on_subject_mouse_enter = nil,
+                        unfocus_on_subject_mouse_leave = nil,
+                        widget_template = wibox.widget {
+                            widget = wibox.container.background,
+                            bg = self.text_input_bg_color,
                             {
-                                widget = wibox.widget.textbox,
-                                text_color = self.text_input_color,
-                                id = "text_role"
+                                widget = wibox.container.margin,
+                                margins = dpi(15),
+                                {
+                                    layout = wibox.layout.stack,
+                                    {
+                                        widget = wibox.widget.textbox,
+                                        id = "placeholder_role",
+                                        text = "Search: "
+                                    },
+                                    {
+                                        widget = wibox.widget.textbox,
+                                        id = "text_role"
+                                    },
+                                }
                             }
                         }
-                    }
-                },
-                {
-                    layout = wibox.layout.fixed.horizontal,
-                    spacing = dpi(10),
-                    {
-                        layout = wibox.layout.grid,
-                        id = "grid_role",
-                        orientation = "horizontal",
-                        homogeneous = true,
-                        spacing = dpi(30),
-                        forced_num_cols = self.apps_per_column,
-                        forced_num_rows = self.apps_per_row,
                     },
                     {
-                        layout = wibox.container.rotate,
-                        direction = 'west',
+                        layout = wibox.layout.fixed.horizontal,
+                        spacing = dpi(10),
                         {
-                            widget = wibox.widget.slider,
-                            id = "scrollbar_role",
-                            forced_width = dpi(5),
-                            minimum = 1,
-                            value = 1,
-                            -- bar_shape = helpers.ui.rrect(),
-                            bar_height= 3,
-                            bar_color = beautiful.colors.transparent,
-                            bar_active_color = beautiful.colors.transparent,
-                            handle_width = dpi(50),
-                            handle_color = beautiful.bg_normal,
-                            -- handle_shape = helpers.ui.rrect(),
-                            handle_color = beautiful.colors.on_background
+                            layout = wibox.layout.grid,
+                            id = "grid_role",
+                            orientation = "horizontal",
+                            homogeneous = true,
+                            spacing = dpi(30),
+                            forced_num_cols = self.apps_per_column,
+                            forced_num_rows = self.apps_per_row,
+                        },
+                        {
+                            layout = wibox.container.rotate,
+                            direction = 'west',
+                            {
+                                widget = wibox.widget.slider,
+                                id = "scrollbar_role",
+                                forced_width = dpi(5),
+                                forced_height = dpi(10),
+                                minimum = 1,
+                                value = 1,
+                                bar_height= 3,
+                                bar_color = "#00000000",
+                                bar_active_color = "#00000000",
+                                handle_width = dpi(50),
+                                handle_color = beautiful.bg_normal,
+                                handle_color = beautiful.fg_normal
+                            }
                         }
                     }
                 }
