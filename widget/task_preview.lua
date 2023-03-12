@@ -5,26 +5,26 @@ local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local gmatrix = require("gears.matrix")
 local gsurface = require("gears.surface")
+local naughty = require("naughty")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
-local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 local dpi = beautiful.xresources.apply_dpi
 local collectgarbage = collectgarbage
 local ipairs = ipairs
 local pcall = pcall
 local type = type
-local capi = { tag = tag }
+local capi = {tag = tag}
 
-local task_preview  = { mt = {} }
+local task_preview = {mt = {}}
 
 local function _get_widget_geometry(_hierarchy, widget)
     local width, height = _hierarchy:get_size()
     if _hierarchy:get_widget() == widget then
         -- Get the extents of this widget in the device space
         local x, y, w, h = gmatrix.transform_rectangle(
-            _hierarchy:get_matrix_to_device(),
-            0, 0, width, height)
-        return { x = x, y = y, width = w, height = h, hierarchy = _hierarchy }
+                               _hierarchy:get_matrix_to_device(), 0, 0, width,
+                               height)
+        return {x = x, y = y, width = w, height = h, hierarchy = _hierarchy}
     end
 
     for _, child in ipairs(_hierarchy:get_children()) do
@@ -58,11 +58,7 @@ function task_preview:show(c, args)
         self._private.widget.y = args.coords.y
     end
 
-    if not pcall(function()
-        return type(c.content)
-    end) then
-        return
-    end
+    if not pcall(function() return type(c.content) end) then return end
 
     local content = nil
     if c.active then
@@ -82,7 +78,7 @@ function task_preview:show(c, args)
         cr:paint()
     end
 
-    local widget = wibox.widget{
+    local widget = wibox.widget {
         (self.widget_template or {
             {
                 {
@@ -92,19 +88,19 @@ function task_preview:show(c, args)
                             resize = true,
                             forced_height = dpi(20),
                             forced_width = dpi(20),
-                            widget = wibox.widget.imagebox,
+                            widget = wibox.widget.imagebox
                         },
                         {
                             {
                                 id = "name_role",
                                 align = "center",
-                                widget = wibox.widget.textbox,
+                                widget = wibox.widget.textbox
                             },
                             left = dpi(4),
                             right = dpi(4),
-                            widget = wibox.container.margin,
+                            widget = wibox.container.margin
                         },
-                        layout = wibox.layout.align.horizontal,
+                        layout = wibox.layout.align.horizontal
                     },
                     {
                         {
@@ -112,30 +108,30 @@ function task_preview:show(c, args)
                                 id = "image_role",
                                 resize = true,
                                 clip_shape = self.image_shape,
-                                widget = wibox.widget.imagebox,
+                                widget = wibox.widget.imagebox
                             },
                             valign = "center",
                             halign = "center",
-                            widget = wibox.container.place,
+                            widget = wibox.container.place
                         },
                         top = self.margin * 0.25,
-                        widget = wibox.container.margin,
+                        widget = wibox.container.margin
                     },
                     fill_space = true,
-                    layout = wibox.layout.fixed.vertical,
+                    layout = wibox.layout.fixed.vertical
                 },
                 margins = self.margin,
-                widget = wibox.container.margin,
+                widget = wibox.container.margin
             },
             bg = self.bg,
             shape_border_width = self.border_width,
             shape_border_color = self.border_color,
             shape = self.shape,
-            widget = wibox.container.background,
+            widget = wibox.container.background
         }),
         width = self.forced_width,
         height = self.forced_height,
-        widget = wibox.container.constraint,
+        widget = wibox.container.constraint
     }
 
     -- TODO: have something like a create callback here?
@@ -183,25 +179,28 @@ local function new(args)
     args.margin = args.margin or beautiful.task_preview_widget_margin or dpi(0)
     args.shape = args.shape or beautiful.task_preview_widget_shape or nil
     args.bg = args.bg or beautiful.task_preview_widget_bg or "#000000"
-    args.border_width = args.border_width or beautiful.task_preview_widget_border_width or nil
-    args.border_color = args.border_color or beautiful.task_preview_widget_border_color or "#ffffff"
-    args.image_shape = args.image_shape or beautiful.task_preview_image_shape or nil
+    args.border_width = args.border_width or
+                            beautiful.task_preview_widget_border_width or nil
+    args.border_color = args.border_color or
+                            beautiful.task_preview_widget_border_color or
+                            "#ffffff"
+    args.image_shape = args.image_shape or beautiful.task_preview_image_shape or
+                           nil
 
-    local ret = gobject{}
+    local ret = gobject {}
     ret._private = {}
 
     gtable.crush(ret, task_preview)
     gtable.crush(ret, args)
 
-    ret._private.widget = awful.popup
-    {
+    ret._private.widget = awful.popup {
         type = ret.type,
         visible = false,
         ontop = true,
         placement = ret.placement,
         input_passthrough = ret.input_passthrough,
         bg = "#00000000",
-        widget = wibox.container.background, -- A dummy widget to make awful.popup not scream
+        widget = wibox.container.background -- A dummy widget to make awful.popup not scream
     }
 
     capi.tag.connect_signal("property::selected", function(t)
@@ -209,7 +208,7 @@ local function new(args)
         -- which can cause the c.content to not show the correct image
         gtimer {
             timeout = 0.1,
-            call_now  = false,
+            call_now = false,
             autostart = true,
             single_shot = true,
             callback = function()
@@ -223,37 +222,16 @@ local function new(args)
     end)
 
     return ret
-
-    -- awesome.connect_signal("bling::task_preview::visibility", function(s, v, c)
-    --     if v then
-    --         -- Update task preview contents
-    --         task_preview_box.widget = draw_widget(
-    --             c,
-    --             opts.structure,
-    --             screen_radius,
-    --             widget_bg,
-    --             widget_border_color,
-    --             widget_border_width,
-    --             margin,
-    --             widget_width,
-    --             widget_height
-    --         )
-    --     else
-    --         task_preview_box.widget = nil
-    --         collectgarbage("collect")
-    --     end
-
-    --     if not placement_fn then
-    --         task_preview_box.x = s.geometry.x + widget_x
-    --         task_preview_box.y = s.geometry.y + widget_y
-    --     end
-
-    --     task_preview_box.visible = v
-    -- end)
 end
 
-function task_preview.mt:__call(...)
-    return new(...)
-end
+function task_preview.mt:__call(...) return new(...) end
+
+awesome.connect_signal("bling::task_preview::visibility", function(_, _, _)
+    naughty.notify {
+        title = "Bling Task Preview",
+        urgency = "normal",
+        message = "This method of activating the task preview has been deprecated. https://blingcorp.github.io/bling/#/widgets/task_preview"
+    }
+end)
 
 return setmetatable(task_preview, task_preview.mt)
