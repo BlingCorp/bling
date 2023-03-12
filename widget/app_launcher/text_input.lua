@@ -762,7 +762,7 @@ local function new()
     wp.obscure = false
 
     wp.placeholder = ""
-    wp.text_color = beautiful.colors.fg_normal
+    wp.text_color = beautiful.fg_normal
     wp.text = ""
 
     wp.cursor_width = 2
