@@ -30,6 +30,7 @@ local text_input = {
 local properties = {
     "unfocus_keys", "unfocus_on_clicked_outside", "unfocus_on_mouse_leave", "unfocus_on_tag_change", "unfocus_on_client_focus",
     "focus_on_subject_mouse_enter", "unfocus_on_subject_mouse_leave",
+    "click_timeout",
     "reset_on_unfocus",
     "text_color",
     "placeholder", "initial",
@@ -115,6 +116,25 @@ local function cword_end(s, pos)
         i = i + 1
     end
     return i
+end
+
+local function single_double_triple_tap(self, args)
+    local wp = self._private
+
+    local current_time = os.time()
+    if current_time - wp.last_click_time <= wp.click_timeout then
+        wp.click_count = wp.click_count + 1
+        if wp.click_count == 2 then
+            args.on_double_click()
+        elseif wp.click_count == 3 then
+            args.on_triple_click()
+            wp.click_count = 0
+        end
+    else
+        args.on_single_click()
+        wp.click_count = 1
+    end
+    wp.last_click_time = current_time
 end
 
 local function run_mousegrabber(self)
@@ -265,7 +285,17 @@ function text_input:set_widget_template(widget_template)
             else
                 wp.selecting_text = false
             end
-            self:focus()
+            single_double_triple_tap(self, {
+                on_single_click = function()
+                    self:focus()
+                end,
+                on_double_click = function()
+                    self:set_selection_to_word()
+                end,
+                on_triple_click = function()
+                    self:select_all()
+                end
+            })
         end
     end)
 
@@ -488,6 +518,14 @@ end
 function text_input:select_all()
     self:set_selection_start_index(0)
     self:set_selection_end_index(#self:get_text())
+end
+
+function text_input:set_selection_to_word()
+    local word_start_index = cword_start(self:get_text(), self:get_cursor_index() + 1) - 1
+    local word_end_index = cword_end(self:get_text(), self:get_cursor_index() + 1) - 1
+
+    self:set_selection_start_index(word_start_index)
+    self:set_selection_end_index(word_end_index)
 end
 
 function text_input:set_selection_start_index(index)
@@ -735,6 +773,8 @@ local function new()
     wp.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
     wp.cursor_index = 0
     wp.mode = "insert"
+    wp.last_click_time = 0
+    wp.click_count = 0
 
     wp.cursor_x = 0
     wp.cursor_y = 0
@@ -748,6 +788,8 @@ local function new()
 
     wp.unfocus_keys = { }
     wp.unfocus_on_clicked_outside = false
+    wp.click_timeout = 0.3
+
     wp.unfocus_on_mouse_leave = false
     wp.unfocus_on_tag_change = false
     wp.unfocus_on_other_text_input_focus = false
