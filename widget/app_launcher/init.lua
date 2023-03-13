@@ -7,14 +7,13 @@ local wibox = require("wibox")
 local beautiful = require("beautiful")
 local text_input_widget = require(... .. ".text_input")
 local rofi_grid_widget = require(... .. ".rofi_grid")
+local helpers = require(tostring(...):match(".*bling") .. ".helpers")
 local dpi = beautiful.xresources.apply_dpi
 local string = string
 local table = table
 local math = math
 local ipairs = ipairs
 local capi = { screen = screen, mouse = mouse }
-local path = ...
-local helpers = require(tostring(path):match(".*bling") .. ".helpers")
 
 local app_launcher  = { mt = {} }
 
