@@ -194,9 +194,9 @@ local function build_widget(self)
         }
     end
     widget_template:set_search_fn(function(text, app)
-        local matched_apps = Gio.DesktopAppInfo.search(text:lower())
-        for _, matched_app in ipairs(matched_apps) do
-            for _, app_id in ipairs(matched_app) do
+        local matched_groups = Gio.DesktopAppInfo.search(text:lower())
+        for _, matched_group in ipairs(matched_groups) do
+            for _, app_id in ipairs(matched_group) do
                 if app.id == app_id then
                     return true
                 end
