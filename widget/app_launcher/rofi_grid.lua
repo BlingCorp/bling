@@ -582,7 +582,7 @@ local function new()
     wp.pages_count = 0
     wp.current_page = 1
     wp.search_timer = gtimer {
-        timeout = 0.35,
+        timeout = 0.05,
         call_now = false,
         autostart = false,
         single_shot = true,
