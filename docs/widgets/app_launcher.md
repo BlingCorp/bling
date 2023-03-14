@@ -74,7 +74,7 @@ local args = {
     prompt_height = dpi(50)                                           -- Prompt height
     prompt_margins = dpi(30)                                          -- Prompt margins
     prompt_paddings = dpi(15)                                         -- Prompt padding
-    shape = function(cr, width, height)
+    prompt_shape = function(cr, width, height)
       gears.shape.rectangle(cr, width, height)
     end                                                               -- Set shape for prompt
     prompt_color = "#000000"                                          -- Prompt background color
