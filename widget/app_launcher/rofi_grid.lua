@@ -2,6 +2,7 @@ local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local wibox = require("wibox")
 local ipairs = ipairs
+local pairs = pairs
 local table = table
 local math = math
 
