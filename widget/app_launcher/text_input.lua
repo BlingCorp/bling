@@ -180,7 +180,7 @@ local function run_keygrabber(self)
             elseif key == "BackSpace" then
                 self:delete_previous_word()
             end
-        elseif mod.Shift then
+        elseif mod.Shift and key:wlen() ~= 1 then
             if key =="Left" then
                 self:decremeant_selection_end_index()
             elseif key == "Right" then
