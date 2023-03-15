@@ -167,7 +167,6 @@ local function build_widget(self)
 
                 widget:connect_signal("button::press", function(_, __, __, button)
                     if button == 1 then
-                        print(app:is_selected())
                         if app:is_selected() or not self.select_before_spawn then
                             app:run()
                         else
