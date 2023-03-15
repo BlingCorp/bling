@@ -222,11 +222,7 @@ function rofi_grid:set_widget_template(widget_template)
 
         scrollbar:connect_signal("property::value", function(_, value, instant)
             if instant ~= true then
-                if value < self:get_index_of_entry(self:get_selected_entry()) then
-                    self:scroll_up()
-                else
-                    self:scroll_down()
-                end
+                self:scroll_to_index(value)
             end
         end)
     end
@@ -391,6 +387,20 @@ function rofi_grid:search()
     end
 
     self:emit_signal("search", self:get_text(), self:get_index_of_entry(self:get_selected_entry()))
+end
+
+function rofi_grid:scroll_to_index(index)
+    local selected_widget_index = self:get_grid():index(self:get_selected_widget())
+    if index == selected_widget_index then
+        return
+    end
+
+    local page = self:get_page_of_index(index)
+    if self:get_current_page() ~= page then
+        self:set_page(page)
+    end
+
+    self:get_entry_of_index(index):select()
 end
 
 function rofi_grid:scroll_up(page_dir)
