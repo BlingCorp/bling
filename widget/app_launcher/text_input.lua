@@ -205,10 +205,8 @@ local function run_keygrabber(self)
                 self:decremeant_cursor_index()
             elseif key == "Right" then
                 self:increamant_cursor_index()
-            else
-                if key:wlen() == 1 then
-                    self:update_text(key)
-                end
+            elseif key:wlen() == 1 then
+                self:update_text(key)
             end
         end
     end)
