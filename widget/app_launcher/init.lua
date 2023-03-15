@@ -167,10 +167,10 @@ local function build_widget(self)
 
                 widget:connect_signal("button::press", function(_, __, __, button)
                     if button == 1 then
-                        if app:is_selected() or not self.select_before_spawn then
-                            app:run()
+                        if widget:is_selected() or not self.select_before_spawn then
+                            widget:run()
                         else
-                            app:select()
+                            widget:select()
                         end
                     end
                 end)
@@ -191,20 +191,6 @@ local function build_widget(self)
             end
         }
     end
-    widget_template:set_search_fn(function(text, app)
-        local matched_groups = Gio.DesktopAppInfo.search(text:lower())
-        for _, matched_group in ipairs(matched_groups) do
-            for _, app_id in ipairs(matched_group) do
-                if app.id == app_id then
-                    return true
-                end
-            end
-        end
-    end)
-    widget_template:set_search_sort_fn(function(text, a, b)
-        return helpers.fzy.score(text, a.name) > helpers.fzy.score(text, b.name)
-    end)
-
     self._private.widget = awful.popup
     {
         screen = self.screen,
@@ -219,16 +205,84 @@ local function build_widget(self)
         widget = widget_template
     }
 
+    widget_template:set_search_fn(function(text, app)
+        local matched_groups = Gio.DesktopAppInfo.search(text:lower())
+        for _, matched_group in ipairs(matched_groups) do
+            for _, app_id in ipairs(matched_group) do
+                if app.id == app_id then
+                    return true
+                end
+            end
+        end
+    end)
+
+    widget_template:set_search_sort_fn(function(text, a, b)
+        return helpers.fzy.score(text, a.name) > helpers.fzy.score(text, b.name)
+    end)
+
+    local app_launcher = self
+    widget_template:connect_signal("entry_widget::add", function(_, widget, app)
+        function widget:run()
+            if app.terminal == true then
+                local pid = awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " .. app.exec)
+                local class = app.startup_wm_class or app.name
+                awful.spawn.with_shell(string.format(
+                    [[xdotool search --sync --all --pid %s --name '.*' set_window --classname "%s" set_window --class "%s"]],
+                    pid,
+                    class,
+                    class
+                ))
+            else
+                app:launch()
+            end
+
+            if app_launcher.hide_on_launch then
+                app_launcher:hide()
+            end
+        end
+
+        function widget:run_or_select()
+            if self:is_selected() then
+                self:run()
+            else
+                self:select()
+            end
+        end
+
+        function widget:run_as_root()
+            if app.terminal == true then
+                local pid = awful.spawn.with_shell(
+                    AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " ..
+                    RUN_AS_ROOT_SCRIPT_PATH .. " " ..
+                    app.exec
+                )
+                local class = app.startup_wm_class or app.name
+                awful.spawn.with_shell(string.format(
+                    [[xdotool search --sync --all --pid %s --name '.*' set_window --classname "%s" set_window --class "%s"]],
+                    pid,
+                    class,
+                    class
+                ))
+            else
+                awful.spawn(RUN_AS_ROOT_SCRIPT_PATH .. " " .. app.exec)
+            end
+
+            if app_launcher.hide_on_launch then
+                app_launcher:hide()
+            end
+        end
+    end)
+
     self:get_text_input():connect_signal("key::press", function(_, mod, key, cmd)
         if key == "Escape" then
-            self:hide()
+            app_launcher:hide()
         end
     end)
 
     self:get_text_input():connect_signal("key::release", function(_, mod, key, cmd)
         if key == "Return" then
-            if self:get_rofi_grid():get_selected_entry() ~= nil then
-                self:get_rofi_grid():get_selected_entry():run()
+            if app_launcher:get_rofi_grid():get_selected_widget() ~= nil then
+                app_launcher:get_rofi_grid():get_selected_widget():run()
             end
         end
     end)
@@ -302,56 +356,6 @@ local function generate_apps(self)
                             app:launch()
                         end
                     }
-
-                    function app:run()
-                        if self.terminal == true then
-                            local pid = awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " .. self.exec)
-                            local class = self.startup_wm_class or self.name
-                            awful.spawn.with_shell(string.format(
-                                [[xdotool search --sync --all --pid %s --name '.*' set_window --classname "%s" set_window --class "%s"]],
-                                pid,
-                                class,
-                                class
-                            ))
-                        else
-                            self:launch()
-                        end
-
-                        if app_launcher.hide_on_launch then
-                            app_launcher:hide()
-                        end
-                    end
-
-                    function app:run_or_select()
-                        if self:is_selected() then
-                            self:run()
-                        else
-                            self:select()
-                        end
-                    end
-
-                    function app:run_as_root()
-                        if self.terminal == true then
-                            local pid = awful.spawn.with_shell(
-                                AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " ..
-                                RUN_AS_ROOT_SCRIPT_PATH .. " " ..
-                                self.exec
-                            )
-                            local class = self.startup_wm_class or self.name
-                            awful.spawn.with_shell(string.format(
-                                [[xdotool search --sync --all --pid %s --name '.*' set_window --classname "%s" set_window --class "%s"]],
-                                pid,
-                                class,
-                                class
-                            ))
-                        else
-                            awful.spawn(RUN_AS_ROOT_SCRIPT_PATH .. " " .. self.exec)
-                        end
-
-                        if app_launcher.hide_on_launch then
-                            app_launcher:hide()
-                        end
-                    end
 
                     table.insert(entries, app)
                 end

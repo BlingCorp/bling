@@ -102,20 +102,20 @@ local function entry_widget(rofi_grid, entry)
     end
     local widget = rofi_grid._private.entry_template(entry, rofi_grid)
 
-    function entry:select()
-        if rofi_grid:get_selected_entry() then
-            rofi_grid:get_selected_entry():unselect()
+    function widget:select()
+        if rofi_grid:get_selected_widget() then
+            rofi_grid:get_selected_widget():unselect()
         end
 
-        rofi_grid._private.selected_widget = widget
-        rofi_grid._private.selected_entry = self
+        rofi_grid._private.selected_widget = self
+        rofi_grid._private.selected_entry = entry
 
         local index = rofi_grid:get_index_of_entry(entry)
-        widget:emit_signal("select", index)
+        self:emit_signal("select", index)
         rofi_grid:emit_signal("select", index)
     end
 
-    function entry:unselect()
+    function widget:unselect()
         rofi_grid._private.selected_widget = nil
         rofi_grid._private.selected_entry = nil
 
@@ -123,13 +123,11 @@ local function entry_widget(rofi_grid, entry)
         rofi_grid:emit_signal("unselect")
     end
 
-    function entry:is_selected()
-        return rofi_grid._private.selected_entry == self
+    function widget:is_selected()
+        return rofi_grid._private.selected_widget == self
     end
 
-    function widget:select()
-        entry:select()
-    end
+    rofi_grid:emit_signal("entry_widget::add", widget, entry)
 
     rofi_grid._private.entries_widgets_cache[entry.name] = widget
     return rofi_grid._private.entries_widgets_cache[entry.name]
@@ -401,7 +399,8 @@ function rofi_grid:scroll_to_index(index)
         self:set_page(page)
     end
 
-    self:get_entry_of_index(index):select()
+    local index_within_page = index - (page - 1) * self._private.entries_per_page
+    self:get_grid().children[index_within_page]:select()
 end
 
 function rofi_grid:scroll_up(page_dir)
