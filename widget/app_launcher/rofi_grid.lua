@@ -35,10 +35,21 @@ local function build_properties(prototype, prop_names)
     end
 end
 
+local function has_entry(entries, name)
+    for _, entry in ipairs(entries) do
+        if entry.name == name then
+            return true
+        end
+    end
+
+    return false
+end
+
 local function scroll(self, dir, page_dir)
     local grid = self:get_grid()
     if #grid.children < 1 then
         self._private.selected_widget = nil
+        self._private.selected_entry = nil
         return
     end
 
@@ -74,7 +85,7 @@ local function scroll(self, dir, page_dir)
     local next_widget = grid.children[next_widget_index]
     if next_widget then
         next_widget:select()
-        self:emit_signal("scroll", self:get_index_of_entry(next_widget.entry))
+        self:emit_signal("scroll", self:get_index_of_entry(self:get_selected_entry()))
     else
         if dir == "up" or dir == "left" then
             self:page_backward(page_dir or dir)
@@ -84,47 +95,43 @@ local function scroll(self, dir, page_dir)
     end
 end
 
-local function entry_widget(self, entry)
-    if self._private.entries_widgets_cache[entry] then
-        return self._private.entries_widgets_cache[entry]
+local function entry_widget(rofi_grid, entry)
+    if rofi_grid._private.entries_widgets_cache[entry.name] then
+        return rofi_grid._private.entries_widgets_cache[entry.name]
     end
+    local widget = rofi_grid._private.entry_template(entry, rofi_grid)
 
-    local widget = self._private.entry_template(entry, self)
-
-    local rofi_grid = self
-    function widget:select()
-        if rofi_grid:get_selected_widget() then
-            rofi_grid:get_selected_widget():unselect()
+    function entry:select()
+        if rofi_grid:get_selected_entry() then
+            rofi_grid:get_selected_entry():unselect()
         end
-        rofi_grid._private.selected_widget = self
-        self.selected = true
+
+        rofi_grid._private.selected_widget = widget
+        rofi_grid._private.selected_entry = self
 
         local index = rofi_grid:get_index_of_entry(entry)
-        self:emit_signal("select", index)
+        widget:emit_signal("select", index)
         rofi_grid:emit_signal("select", index)
     end
 
-    function widget:unselect()
-        self.selected = false
+    function entry:unselect()
         rofi_grid._private.selected_widget = nil
+        rofi_grid._private.selected_entry = nil
 
-        self:emit_signal("unselect")
+        widget:emit_signal("unselect")
         rofi_grid:emit_signal("unselect")
     end
 
-    function widget:is_selected()
-        return rofi_grid._private.selected_widget == self
+    function entry:is_selected()
+        return rofi_grid._private.selected_entry == self
     end
 
-    function entry:select() widget:select() end
-    function entry:unselect() widget:unselect() end
-    function entry:is_selected() return widget:is_selected() end
-    entry.widget = widget
-    widget.entry = entry
+    function widget:select()
+        entry:select()
+    end
 
-    self._private.entries_widgets_cache[entry] = widget
-
-    return widget
+    rofi_grid._private.entries_widgets_cache[entry.name] = widget
+    return rofi_grid._private.entries_widgets_cache[entry.name]
 end
 
 function rofi_grid:set_widget_template(widget_template)
@@ -177,32 +184,49 @@ function rofi_grid:set_widget_template(widget_template)
 
     local scrollbar = self:get_scrollbar()
     if scrollbar then
+        function scrollbar:set_value(value, instant)
+            value = math.min(value, self:get_maximum())
+            value = math.max(value, self:get_minimum())
+            local changed = self._private.value ~= value
+
+            self._private.value = value
+
+            if changed then
+                self:emit_signal( "property::value", value, instant)
+                self:emit_signal( "widget::redraw_needed" )
+            end
+        end
+
         self:connect_signal("scroll", function(self, new_index)
-            scrollbar:set_value(new_index)
+            scrollbar:set_value(new_index, true)
         end)
 
         self:connect_signal("page::forward", function(self, new_index)
-            scrollbar:set_value(new_index)
+            scrollbar:set_value(new_index, true)
         end)
 
         self:connect_signal("page::backward", function(self, new_index)
-            scrollbar:set_value(new_index)
+            scrollbar:set_value(new_index, true)
         end)
 
         self:connect_signal("search", function(self, text, new_index)
             scrollbar:set_maximum(math.max(2, #self:get_matched_entries()))
             if new_index then
-                scrollbar:set_value(new_index)
+                scrollbar:set_value(new_index, true)
             end
         end)
 
         self:connect_signal("select", function(self, new_index)
-            scrollbar:set_value(new_index)
+            scrollbar:set_value(new_index, true)
         end)
 
         scrollbar:connect_signal("property::value", function(_, value, instant)
             if instant ~= true then
-                self:set_selected_entry(value)
+                if value < self:get_index_of_entry(self:get_selected_entry()) then
+                    self:scroll_up()
+                else
+                    self:scroll_down()
+                end
             end
         end)
     end
@@ -213,36 +237,43 @@ function rofi_grid:set_widget_template(widget_template)
     self:set_widget(widget_template)
 end
 
-function rofi_grid:set_entries(entries, sort_fn)
-    self._private.entries = entries
-    self:set_sort_fn(sort_fn)
-    self:reset()
-    local scrollbar = self:get_scrollbar()
-    if scrollbar then
-        scrollbar:set_maximum(#self._private.entries)
-        scrollbar:set_value(1)
-    end
-
-    if self._private.lazy_load_widgets == false then
-        for _, entry in ipairs(self._private.entries) do
-            self._private.entries_widgets_cache[entry] = entry_widget(self, entry)
-        end
-    end
-end
-
 function rofi_grid:add_entry(entry)
     table.insert(self._private.entries, entry)
     self:set_sort_fn()
     self:reset()
 end
 
-function rofi_grid:set_sort_fn(sort_fn)
-    if sort_fn ~= nil then
-        self._private.sort_fn = sort_fn
+function rofi_grid:set_entries(entries, sort_fn)
+    local old_entries_count = #self._private.entries
+    self._private.entries = entries
+
+    if old_entries_count > 0 then
+        -- Remove old entries that are not in the new entries table
+        for key, entry in pairs(self._private.entries_widgets_cache) do
+            if has_entry(self:get_entries(), key) == false and self._private.entries_widgets_cache[key] then
+                self._private.entries_widgets_cache[key]:emit_signal("removed")
+                self._private.entries_widgets_cache[key] = nil
+            end
+        end
     end
-    if self._private.sort_fn ~= nil then
-        table.sort(self._private.entries, self._private.sort_fn)
+
+    if self:get_lazy_load_widgets() == false then
+        if old_entries_count > 0 then
+            -- Add new entries that are not in the old entries table
+            for _, entry in ipairs(self:get_entries()) do
+                if self._private.entries_widgets_cache[entry.name] == nil then
+                    self._private.entries_widgets_cache[entry.name] = entry_widget(self, entry)
+                end
+            end
+        else
+            for _, entry in ipairs(self:get_entries()) do
+                self._private.entries_widgets_cache[entry.name] = entry_widget(self, entry)
+            end
+        end
     end
+
+    self:set_sort_fn(sort_fn)
+    self:reset()
 end
 
 function rofi_grid:refresh()
@@ -259,6 +290,48 @@ function rofi_grid:refresh()
     end
 end
 
+function rofi_grid:reset()
+    self:get_grid():reset()
+    self._private.matched_entries = self:get_entries()
+    self._private.entries_per_page = self._private.max_entries_per_page
+    self._private.pages_count = math.ceil(#self:get_entries() / self._private.entries_per_page)
+    self._private.current_page = 1
+
+    for index, entry in ipairs(self:get_entries()) do
+        -- Only add the entrys that are part of the first page
+        if index <= self._private.entries_per_page then
+            self:get_grid():add(entry_widget(self, entry))
+        else
+            break
+        end
+    end
+
+    local widget = self:get_grid():get_widgets_at(1, 1)
+    if widget then
+        widget = widget[1]
+        if widget then
+            widget:select()
+        end
+    end
+
+    local scrollbar = self:get_scrollbar()
+    if scrollbar then
+        scrollbar:set_maximum(#self:get_entries())
+        scrollbar:set_value(1)
+    end
+
+    self:get_text_input():set_text("")
+end
+
+function rofi_grid:set_sort_fn(sort_fn)
+    if sort_fn ~= nil then
+        self._private.sort_fn = sort_fn
+    end
+    if self._private.sort_fn ~= nil then
+        table.sort(self._private.entries, self._private.sort_fn)
+    end
+end
+
 function rofi_grid:search()
     local text = self:get_text()
     local old_pos = self:get_grid():get_widget_position(self:get_selected_widget())
@@ -269,9 +342,9 @@ function rofi_grid:search()
     self:get_grid():reset()
 
     if text == "" then
-        self._private.matched_entries = self._private.entries
+        self._private.matched_entries = self:get_entries()
     else
-        for _, entry in ipairs(self._private.entries) do
+        for _, entry in ipairs(self:get_entries()) do
             text = text:gsub( "%W", "" )
             if self._private.search_fn(text:lower(), entry) then
                 table.insert(self:get_matched_entries(), entry)
@@ -304,9 +377,9 @@ function rofi_grid:search()
     -- it will reselect the entry whose index is the same as the entry index that was previously selected
     -- and if matched_entries.length < current_index it will instead select the entry with the greatest index
     if self._private.try_to_keep_index_after_searching then
-        local entry_at_old_pos = self:get_grid():get_widgets_at(old_pos.row, old_pos.col)
-        if entry_at_old_pos and entry_at_old_pos[1] then
-            entry_at_old_pos[1]:select()
+        local widget_at_old_pos = self:get_grid():get_widgets_at(old_pos.row, old_pos.col)
+        if widget_at_old_pos and widget_at_old_pos[1] then
+            widget_at_old_pos[1]:select()
         else
             local widget = self:get_grid().children[#self:get_grid().children]
             widget:select()
@@ -317,21 +390,7 @@ function rofi_grid:search()
         widget:select()
     end
 
-    self:emit_signal("search", self:get_text(), self:get_index_of_entry(self:get_selected_widget().entry))
-end
-
-function rofi_grid:set_selected_entry(index)
-    local selected_widget_index = self:get_grid():index(self:get_selected_widget())
-    if index == selected_widget_index then
-        return
-    end
-
-    local page = self:get_page_of_index(index)
-    if self:get_current_page() ~= page then
-        self:set_page(page)
-    end
-
-    self:get_entry_of_index(index).widget:select()
+    self:emit_signal("search", self:get_text(), self:get_index_of_entry(self:get_selected_entry()))
 end
 
 function rofi_grid:scroll_up(page_dir)
@@ -365,7 +424,7 @@ function rofi_grid:page_forward(dir)
     elseif self._private.wrap_entry_scrolling then
         local widget = self:get_grid():get_widgets_at(1, 1)[1]
         widget:select()
-        self:emit_signal("scroll", self:get_index_of_entry(widget.entry))
+        self:emit_signal("scroll", self:get_index_of_entry(self:get_selected_entry()))
         return
     else
         return
@@ -384,22 +443,22 @@ function rofi_grid:page_forward(dir)
     end
 
     if self:get_current_page() > 1 or self._private.wrap_page_scrolling then
-        local entry = nil
+        local widget = nil
         if dir == "down" then
-            entry = self:get_grid():get_widgets_at(1, 1)[1]
+            widget = self:get_grid():get_widgets_at(1, 1)[1]
         elseif dir == "right" then
-            entry = self:get_grid():get_widgets_at(pos.row, 1)
-            if entry then
-                entry = entry[1]
+            widget = self:get_grid():get_widgets_at(pos.row, 1)
+            if widget then
+                widget = widget[1]
             end
-            if entry == nil then
-                entry = self:get_grid().children[#self:get_grid().children]
+            if widget == nil then
+                widget = self:get_grid().children[#self:get_grid().children]
             end
         end
-        entry:select()
+        widget:select()
     end
 
-    self:emit_signal("page::forward", self:get_index_of_entry(self:get_selected_widget().entry))
+    self:emit_signal("page::forward", self:get_index_of_entry(self:get_selected_entry()))
 end
 
 function rofi_grid:page_backward(dir)
@@ -410,7 +469,7 @@ function rofi_grid:page_backward(dir)
     elseif self._private.wrap_entry_scrolling then
         local widget = self:get_grid().children[#self:get_grid().children]
         widget:select()
-        self:emit_signal("scroll", self:get_index_of_entry(widget.entry))
+        self:emit_signal("scroll", self:get_index_of_entry(self:get_selected_entry()))
         return
     else
         return
@@ -431,28 +490,28 @@ function rofi_grid:page_backward(dir)
         end
     end
 
-    local entry = nil
+    local widget = nil
     if self:get_current_page() < self:get_pages_count() then
         if dir == "up" then
-            entry = self:get_grid().children[#self:get_grid().children]
+            widget = self:get_grid().children[#self:get_grid().children]
         else
             -- Keep the same row from last page
             local _, columns = self:get_grid():get_dimension()
-            entry = self:get_grid():get_widgets_at(pos.row, columns)[1]
+            widget = self:get_grid():get_widgets_at(pos.row, columns)[1]
         end
     elseif self._private.wrap_page_scrolling then
-        entry = self:get_grid().children[#self:get_grid().children]
+        widget = self:get_grid().children[#self:get_grid().children]
     end
-    entry:select()
+    widget:select()
 
-    self:emit_signal("page::backward", self:get_index_of_entry(self:get_selected_widget().entry))
+    self:emit_signal("page::backward", self:get_index_of_entry(self:get_selected_entry()))
 end
 
 function rofi_grid:set_page(page)
     self:get_grid():reset()
-    self._private.matched_entries = self._private.entries
+    self._private.matched_entries = self:get_entries()
     self._private.entries_per_page = self._private.max_entries_per_page
-    self._private.pages_count = math.ceil(#self._private.entries / self._private.entries_per_page)
+    self._private.pages_count = math.ceil(#self:get_entries() / self._private.entries_per_page)
     self._private.current_page = page
 
     local max_entry_index_to_include = self._private.entries_per_page * self:get_current_page()
@@ -465,40 +524,13 @@ function rofi_grid:set_page(page)
         end
     end
 
-    local entry = self:get_grid():get_widgets_at(1, 1)
-    if entry then
-        entry = entry[1]
-        if entry then
-            entry:select()
+    local widget = self:get_grid():get_widgets_at(1, 1)
+    if widget then
+        widget = widget[1]
+        if widget then
+            widget:select()
         end
     end
-end
-
-function rofi_grid:reset()
-    self:get_grid():reset()
-    self._private.matched_entries = self._private.entries
-    self._private.entries_per_page = self._private.max_entries_per_page
-    self._private.pages_count = math.ceil(#self._private.entries / self._private.entries_per_page)
-    self._private.current_page = 1
-
-    for index, entry in ipairs(self._private.entries) do
-        -- Only add the entrys that are part of the first page
-        if index <= self._private.entries_per_page then
-            self:get_grid():add(entry_widget(self, entry))
-        else
-            break
-        end
-    end
-
-    local entry = self:get_grid():get_widgets_at(1, 1)
-    if entry then
-        entry = entry[1]
-        if entry then
-            entry:select()
-        end
-    end
-
-    self:get_text_input():set_text("")
 end
 
 function rofi_grid:get_scrollbar()
@@ -525,10 +557,6 @@ function rofi_grid:get_current_page()
     return self._private.current_page
 end
 
-function rofi_grid:get_entries()
-    return self._private.entries
-end
-
 function rofi_grid:get_matched_entries()
     return self._private.matched_entries
 end
@@ -539,6 +567,10 @@ end
 
 function rofi_grid:get_selected_widget()
     return self._private.selected_widget
+end
+
+function rofi_grid:get_selected_entry()
+    return self._private.selected_entry
 end
 
 function rofi_grid:get_page_of_entry(entry)

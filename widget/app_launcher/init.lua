@@ -228,8 +228,8 @@ local function build_widget(self)
 
     self:get_text_input():connect_signal("key::release", function(_, mod, key, cmd)
         if key == "Return" then
-            if self:get_rofi_grid():get_selected_widget() ~= nil then
-                self:get_rofi_grid():get_selected_widget().entry:run()
+            if self:get_rofi_grid():get_selected_entry() ~= nil then
+                self:get_rofi_grid():get_selected_entry():run()
             end
         end
     end)
