@@ -311,8 +311,13 @@ function rofi_grid:reset()
 
     local scrollbar = self:get_scrollbar()
     if scrollbar then
-        scrollbar:set_maximum(#self:get_entries())
-        scrollbar:set_value(1)
+        if #self:get_grid().children <= 0 then
+            self:get_scrollbar():set_visible(false)
+        else
+            self:get_scrollbar():set_visible(true)
+            scrollbar:set_maximum(#self:get_entries())
+            scrollbar:set_value(1)
+        end
     end
 
     self:get_text_input():set_text("")
@@ -383,6 +388,12 @@ function rofi_grid:search()
     elseif self:get_grid().children[1] then
         local widget = self:get_grid().children[1]
         widget:select()
+    end
+
+    if #self:get_grid().children <= 0 then
+        self:get_scrollbar():set_visible(false)
+    else
+        self:get_scrollbar():set_visible(true)
     end
 
     self:emit_signal("search", self:get_text(), self:get_index_of_entry(self:get_selected_entry()))
