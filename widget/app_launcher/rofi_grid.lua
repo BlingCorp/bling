@@ -238,30 +238,25 @@ function rofi_grid:add_entry(entry)
     self:reset()
 end
 
-function rofi_grid:set_entries(entries, sort_fn)
-    local old_entries_count = #self._private.entries
-    self._private.entries = entries
+function rofi_grid:set_entries(new_entries, sort_fn)
+    -- Remove old entries that are not in the new entries table
+    for index, entry in pairs(self:get_entries()) do
+        if has_entry(new_entries, entry.name) == false then
+            table.remove(self._private.entries, index)
 
-    if old_entries_count > 0 then
-        -- Remove old entries that are not in the new entries table
-        for key, entry in pairs(self._private.entries_widgets_cache) do
-            if has_entry(self:get_entries(), key) == false and self._private.entries_widgets_cache[key] then
+            if self._private.entries_widgets_cache[key] then
                 self._private.entries_widgets_cache[key]:emit_signal("removed")
                 self._private.entries_widgets_cache[key] = nil
             end
         end
     end
 
-    if self:get_lazy_load_widgets() == false then
-        if old_entries_count > 0 then
-            -- Add new entries that are not in the old entries table
-            for _, entry in ipairs(self:get_entries()) do
-                if self._private.entries_widgets_cache[entry.name] == nil then
-                    self._private.entries_widgets_cache[entry.name] = entry_widget(self, entry)
-                end
-            end
-        else
-            for _, entry in ipairs(self:get_entries()) do
+    -- Add new entries that are not in the old entries table
+    for _, entry in ipairs(new_entries) do
+        if has_entry(self:get_entries(), entry.name) == false then
+            table.insert(self._private.entries, entry)
+
+            if self:get_lazy_load_widgets() == false then
                 self._private.entries_widgets_cache[entry.name] = entry_widget(self, entry)
             end
         end
