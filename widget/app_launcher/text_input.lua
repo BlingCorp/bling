@@ -234,8 +234,9 @@ function text_input:set_widget_template(widget_template)
     end
 
     function wp.text_widget:draw(context, cr, width, height)
-        -- Selection bg
         local _, logical_rect = self._private.layout:get_pixel_extents()
+
+        -- Selection bg
         cr:set_source(gcolor.change_opacity(wp.selection_bg, wp.selection_opacity))
         cr:rectangle(
             wp.selection_start_x,
@@ -246,7 +247,6 @@ function text_input:set_widget_template(widget_template)
         cr:fill()
 
         -- Cursor
-        local _, logical_rect = self._private.layout:get_pixel_extents()
         cr:set_source(gcolor.change_opacity(wp.cursor_bg, wp.cursor_opacity))
         cr:set_line_width(wp.cursor_width)
         cr:move_to(wp.cursor_x, logical_rect.y - 3)
