@@ -724,18 +724,24 @@ function text_input:focus()
     run_keygrabber(self)
 
     if wp.cursor_blink then
-        gtimer.start_new(wp.cursor_blink_rate, function()
-            if self:get_focused() == true then
-                if self._private.cursor_opacity == 1 then
-                    self:hide_cursor()
-                elseif self:get_mode() == "insert" then
-                    self:show_cursor()
+        if wp.cursor_blink_timer == nil then
+            wp.cursor_blink_timer = gtimer {
+                timeout = wp.cursor_blink_rate,
+                autostart = false,
+                call_now = false,
+                single_shot = false,
+                callback = function()
+                    if self._private.cursor_opacity == 1 then
+                        self:hide_cursor()
+                    elseif self:get_mode() == "insert" then
+                        self:show_cursor()
+                    end
                 end
-                return true
-            end
-            return false
-        end)
+            }
+        end
+        wp.cursor_blink_timer:start()
     end
+
 
     wp.focused = true
     self:emit_signal("focus")
@@ -749,6 +755,7 @@ function text_input:unfocus(context)
 
     set_mouse_cursor("left_ptr")
     self:hide_cursor()
+    wp.cursor_blink_timer:stop()
     self:hide_selection()
     if self.reset_on_unfocus == true then
         self:set_text("")
