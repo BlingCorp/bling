@@ -28,7 +28,9 @@ local text_input = {
 }
 
 local properties = {
-    "unfocus_keys", "unfocus_on_clicked_outside", "unfocus_on_mouse_leave", "unfocus_on_tag_change", "unfocus_on_client_focus",
+    "unfocus_keys",
+    "unfocus_on_root_clicked", "unfocus_on_client_clicked", "unfocus_on_client_focus",
+    "unfocus_on_mouse_leave", "unfocus_on_tag_change",
     "focus_on_subject_mouse_enter", "unfocus_on_subject_mouse_leave",
     "click_timeout",
     "reset_on_unfocus",
@@ -118,35 +120,39 @@ local function cword_end(s, pos)
     return i
 end
 
+local function set_mouse_cursor(cursor)
+    capi.root.cursor(cursor)
+    local wibox = capi.mouse.current_wibox
+    if wibox then
+        wibox.cursor = cursor
+    end
+end
+
 local function single_double_triple_tap(self, args)
     local wp = self._private
 
-    local current_time = os.time()
-    if current_time - wp.last_click_time <= wp.click_timeout then
-        wp.click_count = wp.click_count + 1
-        if wp.click_count == 2 then
-            args.on_double_click()
-        elseif wp.click_count == 3 then
-            args.on_triple_click()
-            wp.click_count = 0
-        end
-    else
-        args.on_single_click()
-        wp.click_count = 1
-    end
-    wp.last_click_time = current_time
-end
-
-local function run_mousegrabber(self)
-    capi.mousegrabber.run(function(m)
-        if m.buttons[1] then
-            if capi.mouse.current_widget ~= self and self.unfocus_on_clicked_outside then
-                self:unfocus()
-                return false
+    if wp.click_timer == nil then
+        wp.click_timer = gtimer {
+            timeout = wp.click_timeout,
+            autostart = false,
+            call_now = false,
+            single_shot = true,
+            callback = function()
+                wp.click_count = 0
             end
-        end
-        return true
-    end, "xterm")
+        }
+    end
+
+    wp.click_timer:again()
+    wp.click_count = wp.click_count + 1
+    if wp.click_count == 1 then
+        args.on_single_click()
+    elseif wp.click_count == 2 then
+        args.on_double_click()
+    elseif wp.click_count == 3 then
+        args.on_triple_click()
+        wp.click_count = 0
+    end
 end
 
 local function run_keygrabber(self)
@@ -269,6 +275,19 @@ function text_input:set_widget_template(widget_template)
 
     wp.text_widget:connect_signal("button::press", function(_, lx, ly, button, mods, find_widgets_result)
         if button == 1 then
+            single_double_triple_tap(self, {
+                on_single_click = function()
+                    self:focus()
+                    self:set_cursor_index_from_x_y(lx, ly)
+                end,
+                on_double_click = function()
+                    self:set_selection_to_word()
+                end,
+                on_triple_click = function()
+                    self:select_all()
+                end
+            })
+
             wp.press_pos = { lx = lx, ly = ly }
             wp.offset = { x = find_widgets_result.x, y = find_widgets_result.y }
             find_widgets_result.drawable:connect_signal("mouse::move", on_drag)
@@ -278,42 +297,17 @@ function text_input:set_widget_template(widget_template)
     wp.text_widget:connect_signal("button::release", function(_, lx, ly, button, mods, find_widgets_result)
         if button == 1 then
             find_widgets_result.drawable:disconnect_signal("mouse::move", on_drag)
-            if not wp.selecting_text then
-                self:set_cursor_index_from_x_y(lx, ly)
-            else
-                wp.selecting_text = false
-            end
-            single_double_triple_tap(self, {
-                on_single_click = function()
-                    self:focus()
-                end,
-                on_double_click = function()
-                    self:set_selection_to_word()
-                end,
-                on_triple_click = function()
-                    self:select_all()
-                end
-            })
+            wp.selecting_text = false
         end
     end)
 
     wp.text_widget:connect_signal("mouse::enter", function()
-        capi.root.cursor("xterm")
-        local wibox = capi.mouse.current_wibox
-        if wibox then
-            wibox.cursor = "xterm"
-        end
+        set_mouse_cursor("xterm")
     end)
 
     wp.text_widget:connect_signal("mouse::leave", function(_, find_widgets_result)
         if self:get_focused() == false then
-            capi.root.cursor("left_ptr")
-            local wibox = capi.mouse.current_wibox
-            if wibox then
-                wibox.cursor = "left_ptr"
-            end
-        elseif wp.unfocus_on_clicked_outside then
-            run_mousegrabber(self)
+            set_mouse_cursor("left_ptr")
         end
 
         find_widgets_result.drawable:disconnect_signal("mouse::move", on_drag)
@@ -514,11 +508,19 @@ function text_input:hide_selection()
 end
 
 function text_input:select_all()
+    if self:get_text() == "" then
+        return
+    end
+
     self:set_selection_start_index(0)
     self:set_selection_end_index(#self:get_text())
 end
 
 function text_input:set_selection_to_word()
+    if self:get_text() == "" then
+        return
+    end
+
     local word_start_index = cword_start(self:get_text(), self:get_cursor_index() + 1) - 1
     local word_end_index = cword_end(self:get_text(), self:get_cursor_index() + 1) - 1
 
@@ -610,6 +612,10 @@ function text_input:set_cursor_index(index)
     local layout = self:get_text_widget()._private.layout
     local strong_pos, weak_pos = layout:get_cursor_pos(index)
     if strong_pos then
+        if strong_pos == self._private.cursor_index and self._private.mode == "insert" then
+            return
+        end
+
         self._private.cursor_index = index
         self._private.mode = "insert"
 
@@ -696,9 +702,15 @@ end
 
 function text_input:focus()
     local wp = self._private
+
     if self:get_focused() == true then
         return
     end
+
+    -- Do it first, so the cursor won't change back when unfocus was called on the focused text input
+    capi.awesome.emit_signal("text_input::focus", self)
+
+    set_mouse_cursor("xterm")
 
     if self:get_mode() == "insert" then
         self:show_cursor()
@@ -722,7 +734,6 @@ function text_input:focus()
 
     wp.focused = true
     self:emit_signal("focus")
-    capi.awesome.emit_signal("text_input::focus", self)
 end
 
 function text_input:unfocus()
@@ -731,24 +742,16 @@ function text_input:unfocus()
         return
     end
 
+    set_mouse_cursor("left_ptr")
     self:hide_cursor()
     self:hide_selection()
     if self.reset_on_unfocus == true then
         self:set_text("")
     end
-    awful.keygrabber.stop(wp.keygrabber)
-    if wp.unfocus_on_clicked_outside then
-        capi.mousegrabber.stop()
-    end
-    capi.root.cursor("left_ptr")
-    local wibox = capi.mouse.current_wibox
-    if wibox then
-        wibox.cursor = "left_ptr"
-    end
 
+    awful.keygrabber.stop(wp.keygrabber)
     wp.focused = false
     self:emit_signal("unfocus", self:get_text())
-    capi.awesome.emit_signal("text_input::unfocus", self)
 end
 
 function text_input:toggle()
@@ -771,7 +774,6 @@ local function new()
     wp.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
     wp.cursor_index = 0
     wp.mode = "insert"
-    wp.last_click_time = 0
     wp.click_count = 0
 
     wp.cursor_x = 0
@@ -784,10 +786,11 @@ local function new()
     wp.selection_opacity = 0
     wp.selecting_text = false
 
-    wp.unfocus_keys = { }
-    wp.unfocus_on_clicked_outside = false
     wp.click_timeout = 0.3
 
+    wp.unfocus_keys = { }
+    wp.unfocus_on_root_clicked = false
+    wp.unfocus_on_client_clicked = false
     wp.unfocus_on_mouse_leave = false
     wp.unfocus_on_tag_change = false
     wp.unfocus_on_other_text_input_focus = false
@@ -840,6 +843,25 @@ local function new()
 
     capi.client.connect_signal("focus", function()
         if wp.unfocus_on_client_focus then
+            widget:unfocus()
+        end
+    end)
+
+    awful.mouse.append_global_mousebindings({
+        awful.button({"Any"}, 1, function()
+            if wp.unfocus_on_root_clicked then
+                widget:unfocus()
+            end
+        end),
+        awful.button({"Any"}, 3, function()
+            if wp.unfocus_on_root_clicked then
+                widget:unfocus()
+            end
+        end)
+    })
+
+    capi.client.connect_signal("button::press", function()
+        if wp.unfocus_on_client_clicked then
             widget:unfocus()
         end
     end)
