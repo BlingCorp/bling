@@ -1,5 +1,8 @@
 local gtable = require("gears.table")
 local gtimer = require("gears.timer")
+local helpers = require(tostring(...):match(".*bling") .. ".helpers")
+local fzy_has_match = helpers.fzy.has_match
+local fzy_score = helpers.fzy.score
 local wibox = require("wibox")
 local ipairs = ipairs
 local pairs = pairs
@@ -140,6 +143,17 @@ local function entry_widget(rofi_grid, entry)
 
     rofi_grid._private.entries_widgets_cache[entry.name] = widget
     return rofi_grid._private.entries_widgets_cache[entry.name]
+end
+
+local function default_search_sort_fn(text, a, b)
+    return fzy_score(text, a.name) > fzy_score(text, b.name)
+end
+
+local function default_search_fn(text, entry)
+    if fzy_has_match(text, entry.name) then
+        return true
+    end
+    return false
 end
 
 local function default_sort_fn(self, a, b)
@@ -656,15 +670,20 @@ local function new()
 
     wp.entries = {}
     wp.favorites = {}
+    wp.sort_alphabetically = true
+    wp.reverse_sort_alphabetically = false
     wp.sort_fn = function(a, b)
         return default_sort_fn(widget, a, b)
     end
-    wp.sort_alphabetically = true
-    wp.reverse_sort_alphabetically = false
+    wp.search_fn = function(text, entry)
+        return default_search_fn(text, entry)
+    end
+    wp.search_sort_fn = function(text, a, b)
+        return default_search_sort_fn(text, a, b)
+    end
     wp.try_to_keep_index_after_searching = false
     wp.wrap_page_scrolling = true
     wp.wrap_entry_scrolling = true
-    wp.search_fn = nil
     wp.lazy_load_widgets = false
 
     wp.text = ""

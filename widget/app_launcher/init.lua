@@ -216,10 +216,6 @@ local function build_widget(self)
         end
     end)
 
-    widget_template:set_search_sort_fn(function(text, a, b)
-        return helpers.fzy.score(text, a.name) > helpers.fzy.score(text, b.name)
-    end)
-
     local app_launcher = self
     widget_template:connect_signal("entry_widget::add", function(_, widget, app)
         function widget:run()
