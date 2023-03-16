@@ -638,8 +638,8 @@ function text_input:set_cursor_index_from_x_y(x, y)
     if index then
         self:set_cursor_index(index)
     else
-        local _, logical_rect = self:get_text_widget()._private.layout:get_pixel_extents()
-        if x < logical_rect.width then
+        local pixel_rect, logical_rect = self:get_text_widget()._private.layout:get_pixel_extents()
+        if x < logical_rect.x + logical_rect.width then
             self:set_cursor_index(0)
         else
             self:set_cursor_index(#self:get_text())
