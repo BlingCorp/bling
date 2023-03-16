@@ -288,27 +288,6 @@ local function build_widget(self)
     end)
 end
 
-local function default_sort_fn(self, a, b)
-    local is_a_favorite = has_value(self.favorites, a.id)
-    local is_b_favorite = has_value(self.favorites, b.id)
-
-    -- Sort the favorite apps first
-    if is_a_favorite and not is_b_favorite then
-        return true
-    elseif not is_a_favorite and is_b_favorite then
-        return false
-    end
-
-    -- Sort alphabetically if specified
-    if self.sort_alphabetically then
-        return a.name:lower() < b.name:lower()
-    elseif self.reverse_sort_alphabetically then
-        return b.name:lower() > a.name:lower()
-    else
-        return true
-    end
-end
-
 local function generate_apps(self)
     local entries = {}
 
@@ -363,13 +342,7 @@ local function generate_apps(self)
         end
     end
 
-    self:get_rofi_grid():set_entries(entries, self.sort_fn)
-end
-
-function app_launcher:set_favorites(favorites)
-    self.favorites = favorites
-    self:get_rofi_grid():set_sort_fn(self.sort_fn)
-    self:refresh()
+    self:get_rofi_grid():set_entries(entries)
 end
 
 function app_launcher:show()
@@ -421,12 +394,6 @@ local function new(args)
 
     local ret = gobject {}
 
-    args.sort_fn = default_value(args.sort_fn, function(a, b)
-        return default_sort_fn(ret, a, b)
-    end)
-    args.sort_alphabetically = default_value(args.sort_alphabetically, true)
-    args.reverse_sort_alphabetically = default_value(args.reverse_sort_alphabetically, false)
-    args.favorites = default_value(args.favorites, {})
     args.skip_names = default_value(args.skip_names, {})
     args.skip_commands = default_value(args.skip_commands, {})
     args.skip_empty_icons = default_value(args.skip_empty_icons, false)

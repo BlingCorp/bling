@@ -9,7 +9,7 @@ local math = math
 local rofi_grid  = { mt = {} }
 
 local properties = {
-    "entries", "page", "lazy_load_widgets",
+    "entries", "favorites", "page", "lazy_load_widgets",
     "widget_template", "entry_template",
     "sort_fn", "search_fn", "search_sort_fn",
     "sort_alphabetically","reverse_sort_alphabetically,",
@@ -34,6 +34,15 @@ local function build_properties(prototype, prop_names)
             end
         end
     end
+end
+
+local function has_value(tab, val)
+    for _, value in ipairs(tab) do
+        if val:lower():find(value:lower(), 1, true) then
+            return true
+        end
+    end
+    return false
 end
 
 local function has_entry(entries, name)
@@ -131,6 +140,27 @@ local function entry_widget(rofi_grid, entry)
 
     rofi_grid._private.entries_widgets_cache[entry.name] = widget
     return rofi_grid._private.entries_widgets_cache[entry.name]
+end
+
+local function default_sort_fn(self, a, b)
+    local is_a_favorite = has_value(self.favorites, a.id)
+    local is_b_favorite = has_value(self.favorites, b.id)
+
+    -- Sort the favorite apps first
+    if is_a_favorite and not is_b_favorite then
+        return true
+    elseif not is_a_favorite and is_b_favorite then
+        return false
+    end
+
+    -- Sort alphabetically if specified
+    if self.sort_alphabetically then
+        return a.name:lower() < b.name:lower()
+    elseif self.reverse_sort_alphabetically then
+        return b.name:lower() > a.name:lower()
+    else
+        return true
+    end
 end
 
 function rofi_grid:set_widget_template(widget_template)
@@ -264,6 +294,14 @@ function rofi_grid:set_entries(new_entries, sort_fn)
 
     self:set_sort_fn(sort_fn)
     self:reset()
+end
+
+function rofi_grid:set_favorites(favorites)
+    self._private.favorites = favorites
+    if self:get_entries() and #self:get_entries() > 1 then
+        self:set_sort_fn()
+        self:refresh()
+    end
 end
 
 function rofi_grid:refresh()
@@ -617,7 +655,10 @@ local function new()
     wp.entries_widgets_cache = setmetatable({}, { __mode = "v" })
 
     wp.entries = {}
-    wp.sort_fn = nil
+    wp.favorites = {}
+    wp.sort_fn = function(a, b)
+        return default_sort_fn(widget, a, b)
+    end
     wp.sort_alphabetically = true
     wp.reverse_sort_alphabetically = false
     wp.try_to_keep_index_after_searching = false
