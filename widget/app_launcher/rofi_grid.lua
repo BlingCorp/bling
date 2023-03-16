@@ -97,7 +97,7 @@ local function scroll(self, dir, page_dir)
 
     local next_widget = grid.children[next_widget_index]
     if next_widget then
-        next_widget:select()
+        next_widget:select("scroll")
         self:emit_signal("scroll", self:get_index_of_entry(self:get_selected_entry()))
     else
         if dir == "up" or dir == "left" then
@@ -114,7 +114,7 @@ local function entry_widget(rofi_grid, entry)
     end
     local widget = rofi_grid._private.entry_template(entry, rofi_grid)
 
-    function widget:select()
+    function widget:select(context)
         if rofi_grid:get_selected_widget() then
             rofi_grid:get_selected_widget():unselect()
         end
@@ -123,8 +123,8 @@ local function entry_widget(rofi_grid, entry)
         rofi_grid._private.selected_entry = entry
 
         local index = rofi_grid:get_index_of_entry(entry)
-        self:emit_signal("select", index)
-        rofi_grid:emit_signal("select", index)
+        self:emit_signal("select", index, context)
+        rofi_grid:emit_signal("select", index, context)
     end
 
     function widget:unselect()
@@ -352,7 +352,7 @@ function rofi_grid:reset()
     if widget then
         widget = widget[1]
         if widget then
-            widget:select()
+            widget:select("new_page")
         end
     end
 
@@ -426,15 +426,15 @@ function rofi_grid:search()
     if self._private.try_to_keep_index_after_searching then
         local widget_at_old_pos = self:get_grid():get_widgets_at(old_pos.row, old_pos.col)
         if widget_at_old_pos and widget_at_old_pos[1] then
-            widget_at_old_pos[1]:select()
+            widget_at_old_pos[1]:select("search")
         else
             local widget = self:get_grid().children[#self:get_grid().children]
-            widget:select()
+            widget:select("search")
         end
     -- Otherwise select the first entry on the list
     elseif self:get_grid().children[1] then
         local widget = self:get_grid().children[1]
-        widget:select()
+        widget:select("search")
     end
 
     if #self:get_grid().children <= 0 then
@@ -458,7 +458,7 @@ function rofi_grid:scroll_to_index(index)
     end
 
     local index_within_page = index - (page - 1) * self._private.entries_per_page
-    self:get_grid().children[index_within_page]:select()
+    self:get_grid().children[index_within_page]:select("scroll")
 end
 
 function rofi_grid:scroll_up(page_dir)
@@ -491,7 +491,7 @@ function rofi_grid:page_forward(dir)
         max_entry_index_to_include = self._private.entries_per_page
     elseif self._private.wrap_entry_scrolling then
         local widget = self:get_grid():get_widgets_at(1, 1)[1]
-        widget:select()
+        widget:select("new_page")
         self:emit_signal("scroll", self:get_index_of_entry(self:get_selected_entry()))
         return
     else
@@ -523,7 +523,7 @@ function rofi_grid:page_forward(dir)
                 widget = self:get_grid().children[#self:get_grid().children]
             end
         end
-        widget:select()
+        widget:select("new_page")
     end
 
     self:emit_signal("page::forward", self:get_index_of_entry(self:get_selected_entry()))
@@ -536,7 +536,7 @@ function rofi_grid:page_backward(dir)
         self._private.current_page = self:get_pages_count()
     elseif self._private.wrap_entry_scrolling then
         local widget = self:get_grid().children[#self:get_grid().children]
-        widget:select()
+        widget:select("new_page")
         self:emit_signal("scroll", self:get_index_of_entry(self:get_selected_entry()))
         return
     else
@@ -570,7 +570,7 @@ function rofi_grid:page_backward(dir)
     elseif self._private.wrap_page_scrolling then
         widget = self:get_grid().children[#self:get_grid().children]
     end
-    widget:select()
+    widget:select("new_page")
 
     self:emit_signal("page::backward", self:get_index_of_entry(self:get_selected_entry()))
 end
@@ -596,7 +596,7 @@ function rofi_grid:set_page(page)
     if widget then
         widget = widget[1]
         if widget then
-            widget:select()
+            widget:select("new_page")
         end
     end
 end
