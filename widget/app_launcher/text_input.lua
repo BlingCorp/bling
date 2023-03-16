@@ -736,7 +736,7 @@ function text_input:focus()
     self:emit_signal("focus")
 end
 
-function text_input:unfocus()
+function text_input:unfocus(context)
     local wp = self._private
     if self:get_focused() == false then
         return
@@ -751,7 +751,7 @@ function text_input:unfocus()
 
     awful.keygrabber.stop(wp.keygrabber)
     wp.focused = false
-    self:emit_signal("unfocus", self:get_text())
+    self:emit_signal("unfocus", context or "normal", self:get_text())
 end
 
 function text_input:toggle()
