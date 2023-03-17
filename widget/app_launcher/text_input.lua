@@ -584,7 +584,12 @@ function text_input:set_selection_start_index_from_x_y(x, y)
     if index then
         self:set_selection_start_index(index)
     else
-        self:set_selection_start_index(#self:get_text())
+        local pixel_rect, logical_rect = self:get_text_widget()._private.layout:get_pixel_extents()
+        if x < logical_rect.x + logical_rect.width then
+            self:set_selection_start_index(0)
+        else
+            self:set_selection_start_index(#self:get_text())
+        end
     end
 end
 
@@ -593,6 +598,13 @@ function text_input:set_selection_end_index_from_x_y(x, y)
     local index, trailing = layout:xy_to_index(x * Pango.SCALE, y * Pango.SCALE)
     if index then
         self:set_selection_end_index(index + trailing)
+    else
+        local pixel_rect, logical_rect = self:get_text_widget()._private.layout:get_pixel_extents()
+        if x < logical_rect.x + logical_rect.width then
+            self:set_selection_end_index(0)
+        else
+            self:set_selection_end_index(#self:get_text())
+        end
     end
 end
 
