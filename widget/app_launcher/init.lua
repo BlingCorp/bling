@@ -170,7 +170,7 @@ local function build_widget(self)
                         if widget:is_selected() or not self.select_before_spawn then
                             widget:run()
                         else
-                            widget:select()
+                            widget:select("press")
                         end
                     end
                 end)
@@ -237,11 +237,11 @@ local function build_widget(self)
             end
         end
 
-        function widget:run_or_select()
+        function widget:run_or_select(context)
             if self:is_selected() then
                 self:run()
             else
-                self:select()
+                self:select(context)
             end
         end
 
