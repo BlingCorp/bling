@@ -529,6 +529,10 @@ function text_input:set_selection_to_word()
 end
 
 function text_input:set_selection_start_index(index)
+    if #self:get_text() == 0 then
+        return
+    end
+
     index = math.max(math.min(index, #self:get_text()), 0)
 
     local layout = self:get_text_widget()._private.layout
@@ -548,6 +552,10 @@ function text_input:set_selection_start_index(index)
 end
 
 function text_input:set_selection_end_index(index)
+    if #self:get_text() == 0 then
+        return
+    end
+
     index = math.max(math.min(index, #self:get_text()), 0)
 
     local layout = self:get_text_widget()._private.layout
