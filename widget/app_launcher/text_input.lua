@@ -264,11 +264,10 @@ function text_input:set_widget_template(widget_template)
     end
 
     local function on_drag(_, lx, ly)
-        if not wp.selecting_text and (lx ~= wp.press_pos.lx or ly ~= wp.press_pos.ly) then
-            self:set_selection_start_index_from_x_y(wp.press_pos.lx, wp.press_pos.ly)
-            self:set_selection_end_index(wp.selection_start)
-            wp.selecting_text = true
-        elseif wp.selecting_text then
+        if  (lx ~= wp.press_pos.lx or ly ~= wp.press_pos.ly) then
+            if self:get_mode() ~= "overwrite" then
+                self:set_selection_start_index_from_x_y(wp.press_pos.lx, wp.press_pos.ly)
+            end
             self:set_selection_end_index_from_x_y(lx - wp.offset.x, ly - wp.offset.y)
         end
     end
@@ -297,7 +296,6 @@ function text_input:set_widget_template(widget_template)
     wp.text_widget:connect_signal("button::release", function(_, lx, ly, button, mods, find_widgets_result)
         if button == 1 then
             find_widgets_result.drawable:disconnect_signal("mouse::move", on_drag)
-            wp.selecting_text = false
         end
     end)
 
@@ -816,7 +814,6 @@ local function new()
     wp.selection_start_y = 0
     wp.selection_end_y = 0
     wp.selection_opacity = 0
-    wp.selecting_text = false
 
     wp.click_timeout = 0.1
 
