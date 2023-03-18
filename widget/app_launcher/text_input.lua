@@ -818,7 +818,7 @@ local function new()
     wp.selection_opacity = 0
     wp.selecting_text = false
 
-    wp.click_timeout = 0.3
+    wp.click_timeout = 0.1
 
     wp.unfocus_keys = { }
     wp.unfocus_on_root_clicked = false
