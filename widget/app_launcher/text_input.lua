@@ -634,6 +634,10 @@ function text_input:set_cursor_index(index)
             return
         end
 
+        if self:get_focused() and self:get_mode() ~= "insert" then
+            self:show_cursor()
+        end
+
         self._private.cursor_index = index
         self._private.mode = "insert"
 
