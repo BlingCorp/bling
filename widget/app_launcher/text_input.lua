@@ -264,7 +264,7 @@ function text_input:set_widget_template(widget_template)
     end
 
     local function on_drag(_, lx, ly)
-        if  (lx ~= wp.press_pos.lx or ly ~= wp.press_pos.ly) then
+        if  lx ~= wp.press_pos.lx or ly ~= wp.press_pos.ly then
             if self:get_mode() ~= "overwrite" then
                 self:set_selection_start_index_from_x_y(wp.press_pos.lx, wp.press_pos.ly)
             end
@@ -537,14 +537,8 @@ function text_input:set_selection_start_index(index)
     local strong_pos, weak_pos = layout:get_caret_pos(index)
     if strong_pos then
         self._private.selection_start = index
-        self._private.mode = "overwrite"
-
         self._private.selection_start_x = strong_pos.x / Pango.SCALE
         self._private.selection_start_y = strong_pos.y / Pango.SCALE
-
-        self:show_selection()
-        self:hide_cursor()
-
         self:get_text_widget():emit_signal("widget::redraw_needed")
     end
 end
@@ -559,9 +553,15 @@ function text_input:set_selection_end_index(index)
     local layout = self:get_text_widget()._private.layout
     local strong_pos, weak_pos = layout:get_caret_pos(index)
     if strong_pos then
+        if self:get_mode() ~= "overwrite" and index ~= self._private.selection_start  then
+            self._private.mode = "overwrite"
+            self:show_selection()
+            self:hide_cursor()
+        end
+
+        self._private.selection_end = index
         self._private.selection_end_x = strong_pos.x / Pango.SCALE
         self._private.selection_end_y = strong_pos.y / Pango.SCALE
-        self._private.selection_end = index
         self:get_text_widget():emit_signal("widget::redraw_needed")
     end
 end
