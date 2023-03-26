@@ -167,11 +167,7 @@ local function build_widget(self)
 
                 widget:connect_signal("button::press", function(_, __, __, button)
                     if button == 1 then
-                        if widget:is_selected() or not self.select_before_spawn then
-                            widget:run()
-                        else
-                            widget:select("press")
-                        end
+                        widget:select_or_exec()
                     end
                 end)
 
@@ -218,7 +214,7 @@ local function build_widget(self)
 
     local app_launcher = self
     widget_template:connect_signal("entry_widget::add", function(_, widget, app)
-        function widget:run()
+        function widget:exec()
             if app.terminal == true then
                 local pid = awful.spawn.with_shell(AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " .. app.exec)
                 local class = app.startup_wm_class or app.name
@@ -237,15 +233,7 @@ local function build_widget(self)
             end
         end
 
-        function widget:run_or_select(context)
-            if self:is_selected() then
-                self:run()
-            else
-                self:select(context)
-            end
-        end
-
-        function widget:run_as_root()
+        function widget:exec_as_root()
             if app.terminal == true then
                 local pid = awful.spawn.with_shell(
                     AWESOME_SENSIBLE_TERMINAL_SCRIPT_PATH .. " -e " ..
@@ -278,7 +266,7 @@ local function build_widget(self)
     self:get_text_input():connect_signal("key::release", function(_, mod, key, cmd)
         if key == "Return" then
             if app_launcher:get_rofi_grid():get_selected_widget() ~= nil then
-                app_launcher:get_rofi_grid():get_selected_widget():run()
+                app_launcher:get_rofi_grid():get_selected_widget():exec()
             end
         end
     end)
@@ -393,7 +381,6 @@ local function new(args)
     args.skip_names = default_value(args.skip_names, {})
     args.skip_commands = default_value(args.skip_commands, {})
     args.skip_empty_icons = default_value(args.skip_empty_icons, false)
-    args.select_before_spawn = default_value(args.select_before_spawn, true)
     args.hide_on_left_clicked_outside = default_value(args.hide_on_left_clicked_outside, true)
     args.hide_on_right_clicked_outside = default_value(args.hide_on_right_clicked_outside, true)
     args.hide_on_launch = default_value(args.hide_on_launch, true)

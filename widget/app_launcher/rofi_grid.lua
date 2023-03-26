@@ -139,6 +139,17 @@ local function entry_widget(rofi_grid, entry)
         return rofi_grid._private.selected_widget == self
     end
 
+    -- Should be overriden
+    function widget:exec() end
+
+    function widget:select_or_exec(context)
+        if self:is_selected() then
+            self:exec()
+        else
+            self:select(context)
+        end
+    end
+
     rofi_grid:emit_signal("entry_widget::add", widget, entry)
 
     rofi_grid._private.entries_widgets_cache[entry.name] = widget
