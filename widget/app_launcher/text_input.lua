@@ -421,12 +421,12 @@ function text_input:overwrite_text(text)
         new_text = new_text:match(wp.pattern)
         if new_text then
             self:set_text(new_text)
-            self:set_cursor_index(#left_text)
+            self:set_cursor_index(#left_text + 1)
             self:emit_signal("property::text", self:get_text())
         end
     else
         self:set_text(new_text)
-        self:set_cursor_index(#left_text)
+        self:set_cursor_index(#left_text + 1)
         self:emit_signal("property::text", self:get_text())
     end
 end
