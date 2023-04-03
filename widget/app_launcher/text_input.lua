@@ -12,6 +12,7 @@ local gtimer = require("gears.timer")
 local gcolor = require("gears.color")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
+local abs = math.abs
 local ipairs = ipairs
 local string = string
 local capi = {
@@ -264,11 +265,12 @@ function text_input:set_widget_template(widget_template)
     end
 
     local function on_drag(_, lx, ly)
-        if  lx ~= wp.press_pos.lx or ly ~= wp.press_pos.ly then
+        lx, ly = wp.hierarchy:get_matrix_from_device():transform_point(lx, ly)
+        if abs(lx - wp.press_pos.lx) > 2 or abs(ly - wp.press_pos.ly) > 2 then
             if self:get_mode() ~= "overwrite" then
                 self:set_selection_start_index_from_x_y(wp.press_pos.lx, wp.press_pos.ly)
             end
-            self:set_selection_end_index_from_x_y(lx - wp.offset.x, ly - wp.offset.y)
+            self:set_selection_end_index_from_x_y(lx, ly)
         end
     end
 
@@ -288,7 +290,7 @@ function text_input:set_widget_template(widget_template)
             })
 
             wp.press_pos = { lx = lx, ly = ly }
-            wp.offset = { x = find_widgets_result.x, y = find_widgets_result.y }
+            wp.hierarchy = find_widgets_result.hierarchy
             find_widgets_result.drawable:connect_signal("mouse::move", on_drag)
         end
     end)
