@@ -58,25 +58,10 @@ function task_preview:show(c, args)
         self._private.widget.y = args.coords.y
     end
 
-    if not pcall(function() return type(c.content) end) then return end
-
-    local content = nil
-    if c.active then
-        content = gsurface(c.content)
-    elseif c.prev_content then
-        content = gsurface(c.prev_content)
-    end
-
-    local img = nil
-    if content ~= nil then
-        local cr = cairo.Context(content)
-        local x, y, w, h = cr:clip_extents()
-        img = cairo.ImageSurface.create(cairo.Format.ARGB32, w - x, h - y)
-        cr = cairo.Context(img)
-        cr:set_source_surface(content, 0, 0)
-        cr.operator = cairo.Operator.SOURCE
-        cr:paint()
-    end
+    local shoot = awful.screenshot {client = c}
+    shoot:refresh()
+    local ib = shoot.content_widget
+    ib.resize = true
 
     local widget = wibox.widget {
         (self.widget_template or {
@@ -104,12 +89,7 @@ function task_preview:show(c, args)
                     },
                     {
                         {
-                            {
-                                id = "image_role",
-                                resize = true,
-                                clip_shape = self.image_shape,
-                                widget = wibox.widget.imagebox
-                            },
+                            id = "image_container_role",
                             valign = "center",
                             halign = "center",
                             widget = wibox.container.place
@@ -136,8 +116,8 @@ function task_preview:show(c, args)
 
     -- TODO: have something like a create callback here?
 
-    for _, w in ipairs(widget:get_children_by_id("image_role")) do
-        w.image = img -- TODO: copy it with gsurface.xxx or something
+    for _, w in ipairs(widget:get_children_by_id("image_container_role")) do
+        w.widget = ib -- TODO: copy it with gsurface.xxx or something
     end
 
     for _, w in ipairs(widget:get_children_by_id("name_role")) do
