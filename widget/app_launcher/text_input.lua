@@ -644,9 +644,6 @@ function text_input:set_cursor_index(index)
         self._private.cursor_x = strong_pos.x / Pango.SCALE
         self._private.cursor_y = strong_pos.y / Pango.SCALE
 
-        if self:get_focused() then
-            self:show_cursor()
-        end
         self:hide_selection()
 
         self:get_text_widget():emit_signal("widget::redraw_needed")
