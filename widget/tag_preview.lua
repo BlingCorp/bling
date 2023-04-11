@@ -36,8 +36,12 @@ local function get_widget_geometry(wibox, widget)
     return _get_widget_geometry(wibox._drawable._widget_hierarchy, widget)
 end
 
-function tag_preview:update(t)
+function tag_preview:update(args2)
     local args = self
+    local t = args2.t
+    local scale2 = args2.scale
+
+    if not args.scale then args.scale = scale2 or 0.2 end
 
     if not args.coords and args.wibox and args.widget then
         args.coords = get_widget_geometry(args.wibox, args.widget)
@@ -118,9 +122,7 @@ function tag_preview:update(t)
 
             local c_bg = args.client_bg
 
-            if c == capi.client.focus then
-                c_bg = beautiful.xcolor4
-            end
+            if c == capi.client.focus then c_bg = beautiful.xcolor4 end
 
             local client_box = wibox.widget({
                 {
@@ -193,7 +195,7 @@ local function new(args)
     args.offset = args.offset or {}
     args.padding = args.padding
     args.work_area = args.work_area
-    args.scale = args.scale or 0.2
+    args.scale = args.scale
     args.margin = args.margin or dpi(0)
     args.client_icon = args.client_icon
     args.client_opacity = args.client_opacity or 0
