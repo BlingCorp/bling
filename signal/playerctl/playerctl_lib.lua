@@ -198,7 +198,7 @@ function playerctl:get_player_of_name(name)
 end
 
 local function join_table_of_strings(t)
-    if type(t) ~= "table" then return "" end
+    if type(t) == "nil" then return "" end
     local out = t[1]
     for i = 2, #t do
         out = out .. ", " .. t[i]
