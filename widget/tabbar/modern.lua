@@ -108,7 +108,7 @@ local function create(c, focused_bool, buttons, inactive_bool)
         },
         text_temp,
         nill,
-        expand = "none",
+        expand = "inside",
         layout = wibox.layout.align.horizontal,
     })
 
@@ -144,7 +144,7 @@ local function create(c, focused_bool, buttons, inactive_bool)
                 bottom = dpi(10),
                 widget = wibox.container.margin,
             },
-            expand = "none",
+            expand = "inside",
             layout = wibox.layout.align.horizontal,
         })
     end
