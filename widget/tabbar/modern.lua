@@ -108,7 +108,7 @@ local function create(c, focused_bool, buttons, inactive_bool)
         },
         text_temp,
         nill,
-        expand = "none",
+        expand = "inside",
         layout = wibox.layout.align.horizontal,
     })
 
@@ -131,9 +131,10 @@ local function create(c, focused_bool, buttons, inactive_bool)
         tab_content = wibox.widget({
             {
                 awful.widget.clienticon(c),
-                top = dpi(10),
+                top = dpi(6),
                 left = dpi(15),
-                bottom = dpi(10),
+                right = dpi(10),
+                bottom = dpi(6),
                 widget = wibox.container.margin,
             },
             text_temp,
@@ -144,7 +145,7 @@ local function create(c, focused_bool, buttons, inactive_bool)
                 bottom = dpi(10),
                 widget = wibox.container.margin,
             },
-            expand = "none",
+            expand = "inside",
             layout = wibox.layout.align.horizontal,
         })
     end
