@@ -272,10 +272,8 @@ local function build_widget(self)
     end)
 end
 
-local function generate_apps(self)
+function app_launcher:refresh_app_list()
     local entries = {}
-
-    local app_launcher = self
 
     local app_info = Gio.AppInfo
     local apps = app_info.get_all()
@@ -330,6 +328,8 @@ local function generate_apps(self)
 end
 
 function app_launcher:show()
+    self:refresh_app_list()
+
     if self.show_on_focused_screen then
         self:get_widget().screen = awful.screen.focused()
     end
@@ -457,14 +457,8 @@ local function new(args)
         )
     end
 
-    awful.spawn.easy_async_with_shell("pkill -f 'inotifywait -m /usr/share/applications -e modify'", function()
-        awful.spawn.with_line_callback("inotifywait -m /usr/share/applications -e modify", {stdout = function()
-            generate_apps(ret)
-        end})
-    end)
-
     build_widget(ret)
-    generate_apps(ret)
+    ret:refresh_app_list()
 
     return ret
 end
