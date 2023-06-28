@@ -302,6 +302,7 @@ function app_launcher:refresh_app_list()
                     end
 
                     local app = {
+                        uid = desktop_app_info:get_filename(),
                         desktop_app_info = desktop_app_info,
                         path = desktop_app_info:get_filename(),
                         id = id,

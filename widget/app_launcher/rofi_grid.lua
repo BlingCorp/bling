@@ -48,9 +48,9 @@ local function has_value(tab, val)
     return false
 end
 
-local function has_entry(entries, name)
-    for _, entry in ipairs(entries) do
-        if entry.name == name then
+local function has_entry(entries, entry)
+    for _, looped_entry in ipairs(entries) do
+        if looped_entry.uid == entry.uid then
             return true
         end
     end
@@ -109,8 +109,8 @@ local function scroll(self, dir, page_dir)
 end
 
 local function entry_widget(rofi_grid, entry)
-    if rofi_grid._private.entries_widgets_cache[entry.name] then
-        return rofi_grid._private.entries_widgets_cache[entry.name]
+    if rofi_grid._private.entries_widgets_cache[entry.uid] then
+        return rofi_grid._private.entries_widgets_cache[entry.uid]
     end
     local widget = rofi_grid._private.entry_template(entry, rofi_grid)
 
@@ -152,8 +152,8 @@ local function entry_widget(rofi_grid, entry)
 
     rofi_grid:emit_signal("entry_widget::add", widget, entry)
 
-    rofi_grid._private.entries_widgets_cache[entry.name] = widget
-    return rofi_grid._private.entries_widgets_cache[entry.name]
+    rofi_grid._private.entries_widgets_cache[entry.uid] = widget
+    return rofi_grid._private.entries_widgets_cache[entry.uid]
 end
 
 local function default_search_sort_fn(text, a, b)
@@ -296,23 +296,23 @@ end
 function rofi_grid:set_entries(new_entries, sort_fn)
     -- Remove old entries that are not in the new entries table
     for index, entry in pairs(self:get_entries()) do
-        if has_entry(new_entries, entry.name) == false then
+        if has_entry(new_entries, entry) == false then
             table.remove(self._private.entries, index)
 
-            if self._private.entries_widgets_cache[entry.name] then
-                self._private.entries_widgets_cache[entry.name]:emit_signal("removed")
-                self._private.entries_widgets_cache[entry.name] = nil
+            if self._private.entries_widgets_cache[entry.uid] then
+                self._private.entries_widgets_cache[entry.uid]:emit_signal("removed")
+                self._private.entries_widgets_cache[entry.uid] = nil
             end
         end
     end
 
     -- Add new entries that are not in the old entries table
     for _, entry in ipairs(new_entries) do
-        if has_entry(self:get_entries(), entry.name) == false then
+        if has_entry(self:get_entries(), entry) == false then
             table.insert(self._private.entries, entry)
 
             if self:get_lazy_load_widgets() == false then
-                self._private.entries_widgets_cache[entry.name] = entry_widget(self, entry)
+                self._private.entries_widgets_cache[entry.uid] = entry_widget(self, entry)
             end
         end
     end
