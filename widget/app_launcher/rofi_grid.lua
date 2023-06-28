@@ -299,9 +299,9 @@ function rofi_grid:set_entries(new_entries, sort_fn)
         if has_entry(new_entries, entry.name) == false then
             table.remove(self._private.entries, index)
 
-            if self._private.entries_widgets_cache[key] then
-                self._private.entries_widgets_cache[key]:emit_signal("removed")
-                self._private.entries_widgets_cache[key] = nil
+            if self._private.entries_widgets_cache[entry.name] then
+                self._private.entries_widgets_cache[entry.name]:emit_signal("removed")
+                self._private.entries_widgets_cache[entry.name] = nil
             end
         end
     end
