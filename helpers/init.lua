@@ -1,7 +1,6 @@
-return {
-    client = require(... .. ".client"),
-    color = require(... .. ".color"),
-    filesystem = require(... .. ".filesystem"),
-    shape = require(... .. ".shape"),
-    time = require(... .. ".time"),
-}
+local before = ...
+return setmetatable({}, {
+    __index = function(_, key)
+        return require(before .. "." .. key)
+    end,
+})
