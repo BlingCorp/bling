@@ -5,6 +5,7 @@ mylayout.name = "deck"
 function mylayout.arrange(p)
     local area = p.workarea
     local t = p.tag or screen[p.screen].selected_tag
+    local mwfact = t.master_width_factor
     local client_count = #p.clients
 
     if client_count == 1 then
@@ -19,8 +20,8 @@ function mylayout.arrange(p)
         return
     end
 
-    local xoffset = area.width * 0.1 / (client_count - 1)
-    local yoffset = area.height * 0.1 / (client_count - 1)
+    local xoffset = area.width * 0.5 * (1 - mwfact) / (client_count - 1)
+    local yoffset = area.height * 0.5 * (1 - mwfact) / (client_count - 1)
 
     for idx = 1, client_count do
         local c = p.clients[idx]
