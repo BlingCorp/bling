@@ -35,7 +35,6 @@ local app_launcher = bling.widget.app_launcher(args)
 
 ```lua
 local args = {
-    terminal = "alacritty"                                            -- Set default terminal
     favorites = { "firefox", "wezterm" }                              -- Favorites are given priority and are bubbled to top of the list
     search_commands = true                                            -- Search by app name AND commandline command
     skip_names = { "Discord" }                                        -- List of apps to omit from launcher
@@ -59,71 +58,35 @@ local args = {
     icon_size = 24                                                    -- Set icon size
 
     type = "dock"                                                     -- awful.popup type ("dock", "desktop", "normal"...).  See awesomewm docs for more detail
-    show_on_focused_screen = true                                     -- Should app launcher show on currently focused screen
-    screen = awful.screen                                             -- Screen you want the launcher to launch to
-    placement = awful.placement.top_left                              -- Where launcher should be placed ("awful.placement.centered").
-    rubato = { x = rubato_animation_x, y = rubato_animation_y }       -- Rubato animation to apply to launcher
-    shrink_width = true                                               -- Automatically shrink width of launcher to fit varying numbers of apps in list (works on apps_per_column)
-    shrink_height = true                                              -- Automatically shrink height of launcher to fit varying numbers of apps in list (works on apps_per_row)
-    background = "#FFFFFF"                                            -- Set bg color
-    border_width = dpi(0)                                             -- Set border width of popup
-    border_color = "#FFFFFF"                                          -- Set border color of popup
-    shape = function(cr, width, height)
+    show_on_focused_screen = true                                     -- Should the app launcher popup show on currently focused screen
+    screen = awful.screen                                             -- Screen you want the launcher popup to open on
+    placement = awful.placement.top_left                              -- Where launcher popup should be placed
+    bg = "#FFFFFF"                                                    -- Set launcher popup bg color
+    border_width = dpi(0)                                             -- Set launcher popup border width of popup
+    border_color = "#FFFFFF"                                          -- Set launcher popup border color of popup
+    shape = function(cr, width, height)                               -- Set launcher popup shape
       gears.shape.rectangle(cr, width, height)
-    end                                                               -- Set shape for launcher
-    prompt_height = dpi(50)                                           -- Prompt height
-    prompt_margins = dpi(30)                                          -- Prompt margins
-    prompt_paddings = dpi(15)                                         -- Prompt padding
-    shape = function(cr, width, height)
-      gears.shape.rectangle(cr, width, height)
-    end                                                               -- Set shape for prompt
-    prompt_color = "#000000"                                          -- Prompt background color
-    prompt_border_width = dpi(0)                                      -- Prompt border width
-    prompt_border_color = "#000000"                                   -- Prompt border color
-    prompt_text_halign = "center"                                     -- Prompt text horizontal alignment
-    prompt_text_valign = "center"                                     -- Prompt text vertical alignment
-    prompt_icon_text_spacing = dpi(10)                                -- Prompt icon text spacing
-    prompt_show_icon = true                                           -- Should prompt show icon (?)
+    end
+
+    prompt_bg_color = "#000000"                                       -- Prompt background color
     prompt_icon_font = "Comic Sans"                                   -- Prompt icon font
-    prompt_icon_color = "#000000"                                     -- Prompt icon color
+    prompt_icon_size = 15                                             -- Prompt icon size
+    prompt_icon_color = "#FFFFFF"                                     -- Prompt icon color
     prompt_icon = ""                                                 -- Prompt icon
-    prompt_icon_markup = string.format(
-        "<span size='xx-large' foreground='%s'>%s</span>",
-        args.prompt_icon_color, args.prompt_icon
-    )                                                                 -- Prompt icon markup
-    prompt_text = "<b>Search</b>:"                                    -- Prompt text
-    prompt_start_text = "manager"                                     -- Set string for prompt to start with
-    prompt_font = "Comic Sans"                                        -- Prompt font
-    prompt_text_color = "#FFFFFF"                                     -- Prompt text color
-    prompt_cursor_color = "#000000"                                   -- Prompt cursor color
+    prompt_label_font = "Comic Sans"                                  -- Prompt labe font
+    prompt_label_size = 15                                            -- Prompt labe font
+    prompt_label_color = "#FFFFFF"                                    -- Prompt labe font
+    prompt_label = "Search"                                           -- Prompt labe font
+    prompt_text_font =  "Comic Sans"                                  -- Prompt text font
+    prompt_text_size = 15                                             -- Prompt text font
+    prompt_text_color = "#FFFFFF"                                     -- Prompt text font
 
     apps_per_row = 3                                                  -- Set how many apps should appear in each row
     apps_per_column = 3                                               -- Set how many apps should appear in each column
-    apps_margin = {left = dpi(40), right = dpi(40), bottom = dpi(30)} -- Margin between apps
-    apps_spacing = dpi(10)                                            -- Spacing between apps
 
-    expand_apps = true                                                -- Should apps expand to fill width of launcher
-    app_width = dpi(400)                                              -- Width of each app
-    app_height = dpi(40)                                              -- Height of each app
-    app_shape = function(cr, width, height)
-      gears.shape.rectangle(cr, width, height)
-    end                                                               -- Shape of each app
     app_normal_color = "#000000"                                      -- App normal color
-    app_normal_hover_color = "#111111"                                -- App normal hover color
     app_selected_color = "#FFFFFF"                                    -- App selected color
-    app_selected_hover_color = "#EEEEEE"                              -- App selected hover color
-    app_content_padding = dpi(10)                                     -- App content padding
-    app_content_spacing = dpi(10)                                     -- App content spacing
-    app_show_icon = true                                              -- Should show icon?
-    app_icon_halign = "center"                                        -- App icon horizontal alignment
-    app_icon_width = dpi(70)                                          -- App icon wigth
-    app_icon_height = dpi(70)                                         -- App icon height
-    app_show_name = true                                              -- Should show app name?
-    app_name_generic_name_spacing = dpi(0)                            -- Generic name spacing (If show_generic_name)
-    app_name_halign = "center"                                        -- App name horizontal alignment
-    app_name_font = "Comic Sans"                                      -- App name font
     app_name_normal_color = "#FFFFFF"                                 -- App name normal color
     app_name_selected_color = "#000000"                               -- App name selected color
-    app_show_generic_name = true                                      -- Should show generic app name?
 }
 ```
