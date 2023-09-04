@@ -29,9 +29,9 @@ build = {
        ["bling.helpers.client"] = "helpers/client.lua",
        ["bling.helpers.color"] = "helpers/color.lua",
        ["bling.helpers.filesystem"] = "helpers/filesystem.lua",
+       ["bling.helpers.icon_theme"] = "helpers/icon_theme.lua",
        ["bling.helpers.shape"] = "helpers/shape.lua",
        ["bling.helpers.time"] = "helpers/time.lua",
-	   ["bling.helpers.icon_theme"] = "helpers/icon_theme.lua",
        ["bling.layout"] = "layout/init.lua",
        ["bling.layout.centered"] = "layout/centered.lua",
        ["bling.layout.deck"] = "layout/deck.lua",
@@ -60,5 +60,7 @@ build = {
        ["bling.widget.tag_preview"] = "widget/tag_preview.lua",
        ["bling.widget.task_preview"] = "widget/task_preview.lua",
        ["bling.widget.window_switcher"] = "widget/window_switcher.lua",
+       ["bling.widget.app_launcher"] = "widget/app_launcher/init.lua",
+       ["bling.widget.app_launcher.prompt"] = "widget/app_launcher/prompt.lua",
    },
 }
