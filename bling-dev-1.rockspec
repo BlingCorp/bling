@@ -31,6 +31,7 @@ build = {
        ["bling.helpers.filesystem"] = "helpers/filesystem.lua",
        ["bling.helpers.shape"] = "helpers/shape.lua",
        ["bling.helpers.time"] = "helpers/time.lua",
+	   ["bling.helpers.icon_theme"] = "helpers/icon_theme.lua",
        ["bling.layout"] = "layout/init.lua",
        ["bling.layout.centered"] = "layout/centered.lua",
        ["bling.layout.deck"] = "layout/deck.lua",
