@@ -73,6 +73,7 @@ end
 local function create(c, focused_bool, buttons, inactive_bool)
     -- local flexlist = wibox.layout.flex.horizontal()
     local title_temp = c.name or c.class or "-"
+    title_temp = gears.string.xml_escape(title_temp)
     local bg_temp = inactive_bool and bg_normal_inactive or bg_normal
     local fg_temp = inactive_bool and fg_normal_inactive or fg_normal
     if focused_bool then
@@ -107,7 +108,7 @@ local function create(c, focused_bool, buttons, inactive_bool)
         },
         text_temp,
         nill,
-        expand = "none",
+        expand = "inside",
         layout = wibox.layout.align.horizontal,
     })
 
@@ -130,9 +131,10 @@ local function create(c, focused_bool, buttons, inactive_bool)
         tab_content = wibox.widget({
             {
                 awful.widget.clienticon(c),
-                top = dpi(10),
+                top = dpi(6),
                 left = dpi(15),
-                bottom = dpi(10),
+                right = dpi(10),
+                bottom = dpi(6),
                 widget = wibox.container.margin,
             },
             text_temp,
@@ -143,7 +145,7 @@ local function create(c, focused_bool, buttons, inactive_bool)
                 bottom = dpi(10),
                 widget = wibox.container.margin,
             },
-            expand = "none",
+            expand = "inside",
             layout = wibox.layout.align.horizontal,
         })
     end

@@ -28,7 +28,7 @@ bling.widget.tabbed_misc.titlebar_indicator(client, {
 })
 ```
 
-a widget_template option is also available:
+A `widget_template` option is also available:
 ```lua
 bling.widget.tabbed_misc.titlebar_indicator(client, {
     widget_template = {
@@ -50,7 +50,7 @@ bling.widget.tabbed_misc.titlebar_indicator(client, {
 
 ### Example Implementation
 
-You normally embed the widget in your titlebar...
+The widget is typically embedded in a titlebar:
 ```lua
 awful.titlebar(c).widget = {
         { -- Left
@@ -75,7 +75,7 @@ awful.titlebar(c).widget = {
 ```
 
 ## Tasklist
-The module exports a function that can be added to your tasklist as a `update_callback`
+This module exports a function that can be added to your tasklist as an `update_callback`.
 
 ### Usage
 ```lua
@@ -108,7 +108,7 @@ awful.widget.tasklist({
 })
 ```
 
-If you need to do something else, it can be used like so
+If you need to do something else, it can be used like so:
 ```lua
 update_callback = function(self, client, index, clients)
     require("bling.widget.tabbed_misc").custom_tasklist(self, client, index, clients)

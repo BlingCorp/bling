@@ -30,7 +30,7 @@ bling.widget.window_switcher.enable {
 }
 ```
 
-To run the window swicher you have to emit this signal from within your configuration (usually using a keybind).
+To run the window swicher, emit this signal (usually with a keybind):
 
 ```lua
 awesome.emit_signal("bling::window_switcher::turn_on")

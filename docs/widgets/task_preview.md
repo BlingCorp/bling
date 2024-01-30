@@ -1,6 +1,6 @@
 ## 🔍 Task Preview <!-- {docsify-ignore} -->
 
-This is a popup widget that will show a preview of the specified client. It is supposed to mimic the small popup that Windows has when hovering over the application icon.
+This is a popup widget that will show a preview of the specified client. It intends to mimic the small popup when hovering over an application icon on Windows.
 
 ![](https://user-images.githubusercontent.com/33443763/124705653-d7b98b80-deaa-11eb-8091-42bbe62365be.png)
 
@@ -26,7 +26,7 @@ bling.widget.task_preview.enable {
 }
 ```
 
-To allow for more customization, there is also a `widget_structure` property (as seen in some default awesome widgets) which is optional. An example is as follows -
+To allow for more customization, there is also a `widget_structure` property (as seen in some default awesome widgets) which is optional. An example is as follows:
 ```lua
 bling.widget.task_preview.enable {
     x = 20,                    -- The x-coord of the popup
@@ -82,7 +82,7 @@ By default, the widget is not visible. You must implement when it will update an
 
 ### Example Implementation
 
-We can trigger the widget to show the specific client when hovering over it in the tasklist. The code shown below is the example icon only tasklist from the [AwesomeWM docs](https://awesomewm.org/doc/api/classes/awful.widget.tasklist.html). Basically, we are going to toggle the widget through the tasklist's `create_callback`. (The bling addons are commented)
+We can trigger the widget to show the specific client when hovering over it in the tasklist. The code shown below is the example icon only tasklist from the [AwesomeWM docs](https://awesomewm.org/doc/api/classes/awful.widget.tasklist.html). We are going to toggle the widget through the tasklist's `create_callback` (bling addons are commented).
 ```lua
 s.mytasklist = awful.widget.tasklist {
     screen   = s,

@@ -4,7 +4,7 @@ Can your window manager swallow? It probably can...
 
 ### Usage
 
-To activate and deactivate window swallowing here are the following functions. If you want to activate it, just call the `start` function once in your `rc.lua`.
+To activate and deactivate window swallowing use the following functions. If you only want to activate it, call the `start` function once in your `rc.lua`.
 ```lua
 bling.module.window_swallowing.start()  -- activates window swallowing
 bling.module.window_swallowing.stop()   -- deactivates window swallowing

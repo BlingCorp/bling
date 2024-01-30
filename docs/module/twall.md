@@ -2,7 +2,7 @@
 
 ### Usage
 
-The function to set an automatically created tiled wallpaper can be called the following way (you don't need to set every option in the table):
+The function to set a tiled wallpaper can be called by the following (not every option is necessary):
 ```lua
 awful.screen.connect_for_each_screen(function(s) -- that way the wallpaper is applied to every screen
     bling.module.tiled_wallpaper("x", s, {       -- call the actual function ("x" is the string that will be tiled)
@@ -20,7 +20,7 @@ end)
 
 ### Preview
 
-![](https://media.discordapp.net/attachments/702548913999314964/773887721294135296/tiled-wallpapers.png?width=1920&height=1080)
+![](https://user-images.githubusercontent.com/70270606/213927382-bdb1b402-0e14-4a00-bfd1-5a1591c71d96.png)
 
 *screenshots by [Nooo37](https://github.com/Nooo37)*
 

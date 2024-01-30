@@ -2,7 +2,7 @@
 
 Choose layouts from the list below and add them to to your `awful.layouts` list in your `rc.lua`.
 
-Everyone of them supports multiple master clients and master width factor making them easy to use.
+Each layout supports multiple master clients and master width factors, making them easy to use.
 
 The mstab layout uses the tab theme from the tabbed module.
 

@@ -1,6 +1,6 @@
 ## 📑 Tabbed <!-- {docsify-ignore} -->
 
-Tabbed implements a tab container. There are also different themes for the tabs.
+Tabbed implements a tab container. There are several different themes for the tabs as well.
 
 ### Usage
 
@@ -8,7 +8,7 @@ You should bind these functions to keys in order to use the tabbed module effect
 ```lua
 bling.module.tabbed.pick()                 -- picks a client with your cursor to add to the tabbing group
 bling.module.tabbed.pop()                  -- removes the focused client from the tabbing group
-bling.module.tabbed.iter()            	   -- iterates through the currently focused tabbing group
+bling.module.tabbed.iter()                 -- iterates through the currently focused tabbing group
 bling.module.tabbed.pick_with_dmenu()      -- picks a client with a dmenu application (defaults to rofi, other options can be set with a string parameter like "dmenu")
 bling.module.tabbed.pick_by_direction(dir) -- picks a client based on direction ("up", "down", "left" or "right")
 ```
@@ -51,7 +51,7 @@ Modern theme:
 *screenshot by [JavaCafe01](https://github.com/JavaCafe01)*
 
 ### Signals
-The tabbed module emits a few signals for the purpose of integration,
+The tabbed module emits a few signals for the purpose of integration:
 ```lua
 -- bling::tabbed::update -- triggered whenever a tabbed object is updated
 --             tabobj -- the object that caused the update
