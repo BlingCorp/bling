@@ -119,6 +119,7 @@ local args = {
     app_icon_width = dpi(70)                                          -- App icon wigth
     app_icon_height = dpi(70)                                         -- App icon height
     app_show_name = true                                              -- Should show app name?
+    app_name_layout = wibox.layout.fixed.vertical                     -- App name layout
     app_name_generic_name_spacing = dpi(0)                            -- Generic name spacing (If show_generic_name)
     app_name_halign = "center"                                        -- App name horizontal alignment
     app_name_font = "Comic Sans"                                      -- App name font
