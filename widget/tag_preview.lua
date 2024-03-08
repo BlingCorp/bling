@@ -16,6 +16,8 @@ local cairo = require("lgi").cairo
 
 local function draw_widget(
     t,
+    client_widget_str,
+    root_widget_str,
     tag_preview_image,
     scale,
     screen_radius,
@@ -38,8 +40,42 @@ local function draw_widget(
     for i, c in ipairs(t:clients()) do
         if not c.hidden and not c.minimized then
 
+            local client_box = wibox.widget(client_widget_str or {
+                {
+                    nil,
+                    {
+                        nil,
+                        {
+                            widget = wibox.widget.imagebox,
+                            id = 'content_role'
+                        },
+                        nil,
+                        expand = "outside",
+                        layout = wibox.layout.align.horizontal,
+                    },
+                    nil,
+                    expand = "outside",
+                    widget = wibox.layout.align.vertical,
+                },
+                forced_height = math.floor(c.height * scale),
+                forced_width = math.floor(c.width * scale),
+                bg = client_bg,
+                shape_border_color = client_border_color,
+                shape_border_width = client_border_width,
+                shape = helpers.shape.rrect(client_radius),
+                widget = wibox.container.background,
+            })
 
-            local img_box = wibox.widget ({
+            client_box.point = {
+                x = math.floor((c.x - geo.x) * scale),
+                y = math.floor((c.y - geo.y) * scale),
+            }
+
+            client_list:add(client_box)
+
+            local img_box = client_box:get_children_by_id("content_role")[1]
+
+            gears.table.crush(img_box, {
                 resize = true,
                 forced_height = 100 * scale,
                 forced_width = 100 * scale,
@@ -71,7 +107,7 @@ local function draw_widget(
                     cr.operator = cairo.Operator.SOURCE
                     cr:paint()
 
-                    img_box = wibox.widget({
+                    gears.table.crush(img_box, {
                         image = gears.surface.load(img),
                         resize = true,
                         opacity = client_opacity,
@@ -82,46 +118,17 @@ local function draw_widget(
                 end
             end
 
-            local client_box = wibox.widget({
-                {
-                    nil,
-                    {
-                        nil,
-                        img_box,
-                        nil,
-                        expand = "outside",
-                        layout = wibox.layout.align.horizontal,
-                    },
-                    nil,
-                    expand = "outside",
-                    widget = wibox.layout.align.vertical,
-                },
-                forced_height = math.floor(c.height * scale),
-                forced_width = math.floor(c.width * scale),
-                bg = client_bg,
-                shape_border_color = client_border_color,
-                shape_border_width = client_border_width,
-                shape = helpers.shape.rrect(client_radius),
-                widget = wibox.container.background,
-            })
-
-            client_box.point = {
-                x = math.floor((c.x - geo.x) * scale),
-                y = math.floor((c.y - geo.y) * scale),
-            }
-
-            client_list:add(client_box)
         end
     end
 
-    return wibox.widget {
+    local ret = wibox.widget (root_widget_str or {
         {
             background_image,
             {
                 {
                     {
                         {
-                            client_list,
+                            id = 'content_role',
                             forced_height = geo.height,
                             forced_width = geo.width,
                             widget = wibox.container.place,
@@ -140,7 +147,11 @@ local function draw_widget(
         shape_border_color = widget_border_color,
         shape = helpers.shape.rrect(screen_radius),
         widget = wibox.container.background,
-    }
+    })
+
+    ret:get_children_by_id("content_role")[1].widget = client_list
+
+    return ret
 end
 
 local enable = function(opts)
@@ -211,6 +222,8 @@ local enable = function(opts)
 
         tag_preview_box.widget = draw_widget(
             t,
+            opts.client_widget_structure,
+            opts.root_widget_structure,
             tag_preview_image,
             scale,
             screen_radius,
