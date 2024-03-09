@@ -31,7 +31,7 @@ local function tabobj_support(self, c, index, clients)
 
 	-- To get the ball rolling.
 	for idx, c in ipairs(group.clients) do
-		if not (c and c.icon) then goto skip end
+		if (c and c.icon) then 
 
 		-- Add to the last layout
 		layout_v:add(wibox.widget {
@@ -43,7 +43,7 @@ local function tabobj_support(self, c, index, clients)
 			width = dpi(24),
 			height = dpi(24)
 		})
-		::skip::
+        end
 	end
 	self.widget = wrapper
 end
