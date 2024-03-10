@@ -35,6 +35,32 @@ bling.widget.tag_preview.enable {
 }
 ```
 
+To allow more customization, there are also `client_widget_structure` & `root_widget_structure` properties that allow to finely customize the widget layout
+```lua
+bling.widget.tag_preview.enable {
+	...
+	client_widget_structure = {
+		layout = wibox.layout.align,
+		nil,
+		{
+			widget = wibox.widget.imagebox,
+			id = 'content_role' -- Where the client content will be placed, must be an imagebox
+		},
+		nil
+	},
+
+	root_widget_structure = {
+		widget = wibox.container.margin,
+		margins = 20,
+		{
+			widget = wibox.container.place,
+			id = 'content_role' -- Where the clients will be placed, must be a place container for the positions to work
+		}
+	}
+}
+```
+Feel free to refer the source code for the default layout works: https://github.com/BlingCorp/bling/blob/master/widget/tag_preview.lua
+
 Here are the signals available:
 
 ```lua
