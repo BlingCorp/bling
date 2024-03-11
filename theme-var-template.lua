@@ -13,6 +13,7 @@ theme.dont_swallow_filter_activated = true -- whether the filter above should be
 -- flash focus
 theme.flash_focus_start_opacity = 0.6 -- the starting opacity
 theme.flash_focus_step = 0.01 -- the step of animation
+theme.flash_focus_transparency_rules = {"Code:70", "Alacrity:80"} -- a list of opacity rules for flash focus to use
 
 -- playerctl signal
 theme.playerctl_backend = "playerctl_cli" -- backend to use
