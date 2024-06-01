@@ -1,5 +1,5 @@
 package = "bling"
-version = "dev-2"
+version = "dev-1"
 
 source = {
    url = "git://github.com/BlingCorp/bling",
