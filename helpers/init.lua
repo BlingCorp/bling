@@ -4,4 +4,5 @@ return {
     filesystem = require(... .. ".filesystem"),
     shape = require(... .. ".shape"),
     time = require(... .. ".time"),
+    requests = require(... .. ".requests"),
 }
