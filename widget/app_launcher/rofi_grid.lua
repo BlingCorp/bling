@@ -73,23 +73,23 @@ local function scroll(self, dir, page_dir)
         if grid_orientation == "horizontal" then
             next_widget_index = grid:index(self:get_selected_widget()) - 1
         elseif grid_orientation == "vertical" then
-            next_widget_index = grid:index(self:get_selected_widget()) - grid.forced_num_cols
+            next_widget_index = grid:index(self:get_selected_widget()) - grid.column_count
         end
     elseif dir == "down" then
         if grid_orientation == "horizontal" then
             next_widget_index = grid:index(self:get_selected_widget()) + 1
         elseif grid_orientation == "vertical" then
-            next_widget_index = grid:index(self:get_selected_widget()) + grid.forced_num_cols
+            next_widget_index = grid:index(self:get_selected_widget()) + grid.column_count
         end
     elseif dir == "left" then
         if grid_orientation == "horizontal" then
-            next_widget_index = grid:index(self:get_selected_widget()) - grid.forced_num_rows
+            next_widget_index = grid:index(self:get_selected_widget()) - grid.row_count
         elseif grid_orientation == "vertical" then
             next_widget_index = grid:index(self:get_selected_widget()) - 1
         end
     elseif dir == "right" then
         if grid_orientation == "horizontal" then
-            next_widget_index = grid:index(self:get_selected_widget()) + grid.forced_num_rows
+            next_widget_index = grid:index(self:get_selected_widget()) + grid.row_count
         elseif grid_orientation == "vertical" then
             next_widget_index = grid:index(self:get_selected_widget()) + 1
         end
@@ -281,7 +281,7 @@ function rofi_grid:set_widget_template(widget_template)
         end)
     end
 
-    self._private.max_entries_per_page = self:get_grid().forced_num_cols * self:get_grid().forced_num_rows
+    self._private.max_entries_per_page = self:get_grid().column_count * self:get_grid().row_count
     self._private.entries_per_page = self._private.max_entries_per_page
 
     self:set_widget(widget_template)

@@ -88,8 +88,8 @@ local function build_widget(self)
                             orientation = "horizontal",
                             homogeneous = true,
                             spacing = dpi(15),
-                            forced_num_cols = self.apps_per_column,
-                            forced_num_rows = self.apps_per_row,
+                            column_count = self.apps_per_column,
+                            row_count = self.apps_per_row,
                         },
                         {
                             layout = wibox.container.rotate,
