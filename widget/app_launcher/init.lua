@@ -593,7 +593,8 @@ local function generate_apps(self)
         if app.should_show(app) then
             local name = app_info.get_name(app)
             local commandline = app_info.get_commandline(app)
-            local executable = app_info.get_executable(app)
+            local executable = app:get_string("Exec")
+            executable = executable:match("^(.-)%%") or executable
             local icon = icon_theme:get_gicon_path(app_info.get_icon(app))
 
             -- Check if this app should be skipped, depanding on the skip_names / skip_commands table
