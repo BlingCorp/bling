@@ -25,7 +25,8 @@ local terminal_commands_lookup =
     alacritty = "alacritty -e",
     termite = "termite -e",
     rxvt = "rxvt -e",
-    terminator = "terminator -e"
+    terminator = "terminator -e",
+    tym = "tym --"
 }
 
 local function string_levenshtein(str1, str2)
